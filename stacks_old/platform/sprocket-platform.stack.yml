@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  bot-service:
+    -
+
+  matchmaking-service:
+    -
+
+  replay-parse-service:
+    -
+
+  server-analytics:
+    -
+
+  core:
+    -
+
+  web:
+    -
+
+

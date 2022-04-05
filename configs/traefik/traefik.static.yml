@@ -1,0 +1,48 @@
+entryPoints:
+  web:
+    address: ':80'
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ':443'
+
+  tcp-nonstandard:
+    address: ':895'
+
+api:
+  dashboard: true
+
+certificatesResolvers:
+  lets-encrypt-dns:
+    acme:
+      email: actualsovietshark@gmail.com
+      storage: /data/le.json
+      dnsChallenge:
+        provider: digitalocean
+        delayBeforeCheck: 0
+  lets-encrypt-tls:
+    acme:
+      email: actualsovietshark@gmail.com
+      storage: /data/le-tls.json
+      tlsChallenge: {}
+
+providers:
+  docker:
+    watch: true
+    exposedByDefault: false
+    swarmMode: true
+    network: traefik-ingress
+    endpoint: "tcp://socket-proxy:2375"
+
+  file:
+    filename: /traefik.dynamic.yml
+# TODO: Uncomment this
+#metrics:
+#  influxDB:
+#    address: telegraf:8081
+#    protocol: http
+log:
+  level: debug
