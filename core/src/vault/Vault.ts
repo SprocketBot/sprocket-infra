@@ -1,0 +1,80 @@
+import * as docker from "@pulumi/docker";
+import * as pulumi from "@pulumi/pulumi";
+
+import { ConfigFile } from "global/docker/ConfigFile";
+import { TraefikLabels } from "global/docker/TraefikLabels";
+import { HOSTNAME } from "global/constants";
+import DefaultLogDriver from "global/docker/DefaultLogDriver";
+
+interface VaultArgs {
+    traefikNetworkId: docker.Network["id"]
+}
+
+
+export class Vault extends pulumi.ComponentResource {
+
+    private readonly network: docker.Network;
+    private readonly config: ConfigFile;
+    private readonly service: docker.Service;
+
+    readonly networkId: docker.Network["id"];
+
+    constructor(name: string, args: VaultArgs, opts?: pulumi.ComponentResourceOptions) {
+        super("SprocketBot:Services:Vault", name, {}, opts)
+        this.network = new docker.Network(`${name}-network`, { driver: "overlay" }, { parent: this })
+        this.config = new ConfigFile(`${name}-config`, {
+            transformation: this.transformConfiguration.bind(this),
+            filepath: `${__dirname}/config/vault.hcl`
+        }, { parent: this } )
+
+        this.service = new docker.Service(`${name}-service`, {
+            name: name,
+            labels: new TraefikLabels(name)
+                .rule(`Host(\`vault.${HOSTNAME}\`)`)
+                .tls("lets-encrypt-tls")
+                .targetPort(8200)
+                .complete,
+
+            taskSpec: {
+                containerSpec: {
+                    image: "vault:1.10.0",
+                    configs: [{
+                        configName: this.config.name,
+                        configId: this.config.id,
+                        fileName: "/vault.hcl"
+                    }],
+                    commands: ["vault", "server", "-config", "/vault.hcl"]
+                },
+                logDriver: DefaultLogDriver(name, true),
+                networks: [
+                    this.network.id,
+                    args.traefikNetworkId
+                ]
+            }
+        }, { parent: this })
+        
+        this.networkId = this.network.id;
+        this.registerOutputs({
+            networkId: this.networkId
+        })
+
+    }
+
+    private transformConfiguration(data: string) {
+        const config = new pulumi.Config();
+        return pulumi.all([
+            config.requireSecret<string>("vault-s3-access-key"),
+            config.requireSecret("vault-s3-secret-key"),
+            config.require("vault-s3-bucket"),
+            config.require("vault-s3-endpoint")
+        ]).apply(([accessKey, secretKey, bucket, endpoint]) => `${data}
+storage "s3" {
+    access_key = "${accessKey}"
+    secret_key = "${secretKey}"
+    bucket     = "${bucket}"
+    endpoint   = "${endpoint}"
+    path       = "vault_storage"
+}`)
+    }
+
+}

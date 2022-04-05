@@ -1,0 +1,6 @@
+encryptionsalt: v1:+wxPFXzv2Rc=:v1:czbAFiWCR6qODxIH:arsPROv8rNZRVMC7HCnPJHQ33imEEA==
+config:
+  monitoring-applications:influx-token:
+    secure: v1:j49Cq53Pyzr1QHMx:TgVCDN32iqq1jGKSsUwBIeATyZA+OCRHWljokpy4niFF5Db61dvxr2GnNt9OQaERJtmub9uNcMveWVLkgy3UekwyQ/kRxePfll2ySY0n8u7lvIvveaQNSpUawDm5QzTLC1edQAZZTPA=
+  monitoring-applications:vault-token:
+    secure: v1:9OrufuW31+QM7teZ:6e3fQ7jXeDVFRVqwE+Zow7MODgXlIsayLHpMim+irFXRrUoQOknYnkNKYUrMTMg0rP2G5YkxNO9nEanfVKDnBeY8AtgLoZIUiZ0lWD7obNRDTMxrIvjfyHtN5tZchByAQ58GUH9XcuC8RjDw2rE1

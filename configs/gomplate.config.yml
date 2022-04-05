@@ -1,5 +1,0 @@
-datasources:
-  config:
-    url: file:/mnt/gomplate.vars.yml
-  vault:
-    url: vault+http://vault:8200

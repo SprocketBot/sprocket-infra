@@ -1,0 +1,10 @@
+encryptionsalt: v1:dSjppwZHUPE=:v1:Upy3rdn2kOBekcXw:Oy6FRb9vDHdz7NPhF2ra0/8L1H43hg==
+config:
+  core:vault-s3-access-key:
+    secure: v1:sxY372YHzaTuWdkk:qfDbzktYyKhirVu0h5sBCoFK9x0NQFMAnFlVhdbHYW65gb24
+  core:vault-s3-bucket: sprocket
+  core:vault-s3-endpoint: nyc3.digitaloceanspaces.com
+  core:vault-s3-secret-key:
+    secure: v1:QiLDpv8A5dpa3acv:mwREpsdpZZce22kN/+Cbvfa/vAgTrlQ3bHe96vYCK57uI9C0mD38+MsUo0Xzl7jKclNEEvD+UXNOAlI=
+  core:vault-token:
+    secure: v1:G88ugYNZE7QT5mo+:/2DulQM+CL+fsyWp1yOoQAilRiMkC0nnTfl9G5mkyE15/dwcAdFz/ChPatGbWMTOcPp18NFn+Tou39IQXE0/xbWX4jQeTIVq8DJyT8HqW5/KKUjPguDLADvLnwOvsTAv+nZu05pmx2kR6wIkyspt

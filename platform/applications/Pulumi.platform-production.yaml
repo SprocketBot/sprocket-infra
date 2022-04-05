@@ -1,0 +1,4 @@
+encryptionsalt: v1:rlWUdMDzOAU=:v1:c7BrV/V9MMph38m4:acVs/rnaMsP1BHJHSh0sv/HiVhWzCQ==
+config:
+  platform-production:vault-token:
+    secure: v1:nNExetmKrvT0vA38:rXGo6trE5krXPBy1fS+QJk3kXjGyctMEo4+bdlqY6ZaEhm6ykQvgsVfJss9d5Fy2T0e7XMYVb8vf0XZ0WW84DQ8jJwa72xryUvxvk5Wqf7PQNv+rmb9x4fjzIgQta49KCI/qxlmP66rS52tk3Gvd

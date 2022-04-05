@@ -1,0 +1,7 @@
+encryptionsalt: v1:+FA05NOiT6I=:v1:WeJfq+bLKVfLoTCq:BM+0+Ej+T+44zRK/+fubVbmxRSVo5w==
+config:
+  vault-policies:vault-token:
+    secure: v1:zrk8uWY+9HB1hxCc:kFIftmVO/IcrWS6YKrU2uugfY/aX5jM5fk7oUf7+0tIV/RYlVHyIH3x3C/c=
+  vault:address: https://vault.spr.ocket.cloud
+  vault:token:
+    secure: v1:BjA8L+wcNsQq2pfr:3v9jJPTe+oq90D7mBdL3BSKQJOAeg682w9vW4TFMWb13ZngW3DbvisvsqMg=

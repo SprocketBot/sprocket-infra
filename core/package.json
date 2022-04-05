@@ -1,0 +1,14 @@
+{
+    "name": "core",
+    "devDependencies": {
+        "@types/node": "^14"
+    },
+    "dependencies": {
+        "@pulumi/docker": "^3.1.0",
+        "@pulumi/pulumi": "^3.0.0",
+        "@pulumi/random": "^4.4.2",
+        "@types/yaml": "^1.9.7",
+        "global": "file:../global",
+        "yaml": "^1.10.2"
+    }
+}
