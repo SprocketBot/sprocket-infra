@@ -1,0 +1,19 @@
+{
+  "db": {
+    "host": "mlesports.dev",
+    "port": "56497",
+    "username": "root",
+    "database": "MLEDB_DEV",
+    "enable_logs": false
+  },
+  "transport": {
+    "url": "amqp://${{rabbitmq}}"
+  },
+  "s3": {
+    "endpoint": "{{ s3.endpoint }}",
+    "port": {{ s3.port }},
+    "ssl": {{ s3.ssl }},
+    "accessKey": "{{ s3.accessKey }}",
+    "bucket": "svg-reports"
+  }
+}

@@ -1,0 +1,7 @@
+encryptionsalt: v1:fug2aa9x0aU=:v1:KB4Se8oH2vnDXVq1:w9GHeRK969TVpFDsayGZe45kJpX0ng==
+config:
+  layer_1:vault-s3-access-key: 2CUL33XKLZXGIGB5CSSV
+  layer_1:vault-s3-bucket: sprocket
+  layer_1:vault-s3-endpoint: https://nyc3.digitaloceanspaces.com
+  layer_1:vault-s3-secret-key:
+    secure: v1:4DvCrgKyoFYYrsZJ:qHZZfm4wZvnXld9wVZ/3FfuHj3aB7Xhci5eySVRjjLjieRCLPiE7eVcDtXk9C1LTZlcm2jhe/bvCccw=

@@ -1,0 +1,14 @@
+{
+  "transport": {
+    "url": "amqp://rabbitmq:5672",
+    "analytics_queue": "dev-analytics"
+  },
+  "logger": {
+    "levels": true
+  },
+  "influx": {
+    "address": "http://influx:8086",
+    "org": "sprocket",
+    "bucket": "sprocket_dev"
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "name": "platform-datastores",
+    "devDependencies": {
+        "@types/node": "^14"
+    },
+    "dependencies": {
+        "@pulumi/docker": "^3.1.0",
+        "@pulumi/pulumi": "^3.0.0",
+        "@pulumi/vault": "^5.4.1",
+        "global": "file:../../global"
+    }
+}

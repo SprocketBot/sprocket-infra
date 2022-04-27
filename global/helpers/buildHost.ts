@@ -1,0 +1,1 @@
+export const buildHost = (...x: string[]) => x.filter(Boolean).join(".")

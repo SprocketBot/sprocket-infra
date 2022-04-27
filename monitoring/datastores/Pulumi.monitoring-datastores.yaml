@@ -1,4 +1,0 @@
-encryptionsalt: v1:w9to4ljbLgc=:v1:5mt7TO7hbIIMCGkM:6wWXBgsgrKV+OAiEwN10ewSweGC+vg==
-config:
-  monitoring-datastores:vault-token:
-    secure: v1:9Qcgc69UPnV7RjPn:84jm8xAxb5FYFHtC8nAV6wh40M4EcBN8rSCU2cPqVCjy/Dg9M0CIyeEj0iHBc7Niy0fz9+qKaGIuN/ZB52yGhpoYr5U6k5eNJJoOdsy0uTotp7cQbk54UVl07iIDT5dkRftJa7KfCWoL26cp7gjL

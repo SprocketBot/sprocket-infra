@@ -1,0 +1,17 @@
+{
+  "bot": {
+    "prefix": "{{ bot.prefix }}"
+  },
+
+  "transport": {
+    "url": "amqp://${{rmq.host}}:5672",
+    "core_queue": "dev-core",
+    "bot_queue": "dev-bot",
+    "analytics_queue": "dev-analytics",
+    "matchmaking_queue": "dev-matchmaking"
+  },
+
+  "gql": {
+    "url": "http://${{gql.host}}/graphql"
+  }
+}

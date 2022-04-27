@@ -1,0 +1,25 @@
+{
+  "db": {
+    "host": "db-postgresql-nyc3-12498-do-user-8409189-0.b.db.ondigitalocean.com",
+    "port": 25060,
+    "username": "dev",
+    "database": "MLEDB_DEV",
+    "enable_logs": false,
+    "sslmode" : "require"
+  },
+  "transport": {
+    "url": "amqp://${{rabbitmq}}",
+    "queue": "dev-image-generation"
+  },
+  "logger": {
+    "levels": true
+  },
+  "s3": {
+    "endpoint":"minio",
+    "port": 9000,
+    "ssl": false,
+    "accessKey": "admin",
+    "bucket": "svg-reports"
+  }
+
+}

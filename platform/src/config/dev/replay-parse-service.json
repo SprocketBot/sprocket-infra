@@ -1,0 +1,19 @@
+{
+  "celery": {
+    "broker": "amqp://rabbitmq",
+    "backend": "redis://celery:GtZtHknrfpb6Gc8eLVeNvaEHXrNxSbSMUZ6gXvmRSF5qZBpEHcDcfcXwdc26NS@redis:6379",
+    "queue": "dev-celery-default"
+  },
+  "transport": {
+    "url": "rabbitmq",
+    "analytics_queue": "dev-analytics"
+  },
+  "minio": {
+    "hostname": "minio.local.sprocket.gg",
+    "bucket": "replays",
+    "parsed_object_prefix": "dev",
+    "accessKey": "admin",
+    "secretKey": "6Kcop6xELATAgH"
+  },
+  "tempDir": "/tmp"
+}

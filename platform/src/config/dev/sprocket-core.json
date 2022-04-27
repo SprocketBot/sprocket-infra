@@ -1,0 +1,29 @@
+{
+  "transport": {
+    "url": "amqp://{{rmq.host}}:5672",
+    "core_queue": "dev-core",
+    "bot_queue": "dev-bot",
+    "analytics_queue": "dev-analytics"
+  },
+  "logger": {
+    "levels": true
+  },
+  "minio": {
+    "endPoint": "{{s3.endpoint}}",
+    "bucketNames": {
+      "replays": "{{s3.bucket}}"
+    }
+  },
+  "celery": {
+    "broker": "{{celery.broker}}",
+    "backend": "{{celery.backend}}",
+    "queue": "{{celery.queue}}"
+  },
+  "db": {
+    "host": "{{database.host}}",
+    "port": {{database.port}},
+    "username": "{{database.username}}",
+    "database": "{{database.database}}",
+    "enable_logs": true
+  }
+}

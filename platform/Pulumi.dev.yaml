@@ -1,0 +1,10 @@
+encryptionsalt: v1:t7zhsibQJLA=:v1:efYD/s9jglLhBUyX:iqxfRbMraMUDGl5Yoo2i+LzHS01kmQ==
+config:
+  platform:docker-access-token:
+    secure: v1:UZTQGqf5GwlmmTUo:SXCoN0cx4MMzNvUjAByBXP22tzL+olbI9GAp278dXZlTe70LnXVtOFa8VuohfXv9LZKhPQ==
+  platform:docker-username: actualsovietshark
+  platform:image-tag: dev
+  platform:s3-access-key: 2CUL33XKLZXGIGB5CSSV
+  platform:s3-secret-key:
+    secure: v1:ge4JoNeSfaivv7XP:MloCgQ5BaVvxK6Yz2Wz8QRuasVDtziILA4ASBuXt2pKvEEt3QttksJVG2V3GpL+Y5qfbTkOhQkGd8VQ=
+  platform:subdomain: dev

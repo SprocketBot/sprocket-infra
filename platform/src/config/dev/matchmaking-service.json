@@ -1,0 +1,15 @@
+{
+  "transport": {
+    "url": "amqp://rabbitmq:5672",
+    "matchmaking_queue": "dev-matchmaking",
+    "core_queue": "dev-core",
+    "bot_queue": "dev-bot",
+    "analytics_queue": "dev-analytics",
+    "events_queue": "dev-events",
+    "events_application_key": "dev-matchmaking-service"
+  },
+  "redis": {
+    "port": 6379,
+    "host": "redis"
+  }
+}
