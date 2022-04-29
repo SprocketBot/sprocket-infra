@@ -28,37 +28,49 @@ export class PlatformSecrets extends pulumi.ComponentResource {
 
     readonly jwtSecret: docker.Secret
 
+    readonly googleClientId: docker.Secret
+    readonly googleClientSecret: docker.Secret
+
     constructor(name: string, args: PlatformSecretsArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:Secrets", name, {}, opts)
 
 
         this.influxToken = new docker.Secret(`${name}-influx-token`, {
-            data: LayerTwo.stack.requireOutput(LayerTwoExports.InfluxDbToken)
-        })
+            data: LayerTwo.stack.requireOutput(LayerTwoExports.InfluxDbToken).apply(btoa)
+        }, { parent: this })
 
         this.s3SecretKey = new docker.Secret(`${name}-s3-secret`, {
-            data: config.requireSecret("s3-secret-key")
-        })
-        this.s3SecretKey = new docker.Secret(`${name}-s3-secret`, {
-            data: config.require("s3-access-key")
-        })
+            data: config.requireSecret("s3-secret-key").apply(btoa)
+        }, { parent: this })
+
+        this.s3AccessKey = new docker.Secret(`${name}-s3-access`, {
+            data: btoa(config.require("s3-access-key"))
+        }, { parent: this })
 
         this.redisPassword = new docker.Secret(`${name}-redis-password`, {
-            data: args.datastore.redis.credentials.password
-        })
+            data: args.datastore.redis.credentials.password.apply(btoa)
+        }, { parent: this })
 
         this.discordBotToken = new docker.Secret(`${name}-discord-token`, {
-            data: config.requireSecret("discord-bot-token")
-        })
+            data: config.requireSecret("discord-bot-token").apply(btoa)
+        }, { parent: this })
 
         this.postgresPassword = new docker.Secret(`${name}-db-password`, {
-            data: args.database.credentials.password
-        })
+            data: args.database.credentials.password.apply(btoa)
+        }, { parent: this })
 
         this.jwtSecret = new docker.Secret(`${name}-jwt-secret`, {
             data: new random.RandomPassword(`${name}-jwt-secret-randomizer`, {
                 length: 128
-            }).result
-        })
+            }).result.apply(btoa)
+        }, { parent: this })
+
+        this.googleClientId = new docker.Secret(`${name}-google-client-id`, {
+            data: btoa("blah")
+        }, { parent: this })
+
+        this.googleClientSecret = new docker.Secret(`${name}-google-secret`, {
+            data: btoa("blah")
+        }, { parent: this })
     }
 }

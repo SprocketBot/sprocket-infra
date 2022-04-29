@@ -1,6 +1,6 @@
 {
   "transport": {
-    "url": "amqp://rabbitmq:5672",
+    "url": "amqp://{{ rmq.host }}",
     "analytics_queue": "dev-analytics"
   },
   "logger": {

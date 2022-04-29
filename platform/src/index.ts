@@ -9,21 +9,31 @@ import {SprocketPostgresProvider} from "global/providers/SprocketPostgresProvide
 import {Platform} from "./Platform";
 
 
-const vaultProvider = new vault.Provider("VaultProvider", {
+const infrastructureVaultProvider = new vault.Provider("InfrastructureVaultProvider", {
     address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
     token: LayerTwo.stack.requireOutput(LayerTwoExports.InfrastructureVaultToken)
 })
 
-const postgresProvider = new SprocketPostgresProvider({
-    vaultProvider
+const platformVaultProvider = new vault.Provider("PlatformVaultProvider", {
+    address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
+    token: LayerTwo.stack.requireOutput(LayerTwoExports.PlatformVaultToken)
 })
-// TODO: Build support for automatic variable interpolation in configuration files (i.e. rabbitmq host)
+
+const postgresProvider = new SprocketPostgresProvider({
+    vaultProvider: infrastructureVaultProvider
+})
+
+const postgresNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.PostgresNetworkId) as pulumi.Output<string>
+
 export const platform = new Platform(pulumi.getStack(), {
-    vaultProvider,
+    vault: {
+        infrastructure: infrastructureVaultProvider,
+        platform: platformVaultProvider
+    },
     postgresProvider: postgresProvider as postgres.Provider,
-
-
+    postgresNetworkId,
     postgresHostname: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresHostname) as pulumi.Output<string>,
+
     configRoot: `${__dirname}/config/${pulumi.getStack()}`,
 
     ingressNetworkId: LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>,

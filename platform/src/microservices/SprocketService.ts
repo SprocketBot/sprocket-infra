@@ -25,32 +25,41 @@ type AdditionalConfigInput = ConfigInput & { destFilePath: string }
 
 export type SprocketServiceConfigTemplateValues = {
     rmq: {
-        host: string,
+        host: string | pulumi.Output<string>,
     },
     database: {
-        host: string,
+        host: string | pulumi.Output<string>,
         port: number,
-        passwordSecretId: string,
-        username: string,
-        database: string
+        passwordSecret: docker.Secret,
+        username: string | pulumi.Output<string>,
+        database: string | pulumi.Output<string>,
+        networkId: string | pulumi.Output<string>
     },
     s3: {
-        endpoint: string,
+        endpoint: string | pulumi.Output<string>,
         port: number,
         ssl: boolean,
-        accessKey: string,
-        bucket: string
+        accessKey: string | pulumi.Output<string>,
+        bucket: string | pulumi.Output<string>
+    },
+    influx: {
+        host: string | pulumi.Output<string>,
+        org: string | pulumi.Output<string>,
+        bucket: string | pulumi.Output<string>,
+    },
+    redis: {
+        host: string | pulumi.Output<string>,
     },
     celery: {
-        broker: string,
-        backend: string,
-        queue: string
+        broker: string | pulumi.Output<string>,
+        backend: string | pulumi.Output<string>,
+        queue: string | pulumi.Output<string>
     },
     bot: {
-        prefix: string
+        prefix: string | pulumi.Output<string>
     },
     gql: {
-        host: string
+        host: string | pulumi.Output<string>
     }
 }
 
@@ -82,11 +91,13 @@ export class SprocketService extends pulumi.ComponentResource {
     private readonly service: docker.Service
     private readonly coreConfig: ConfigFile
 
+    readonly hostname: docker.Service["name"]
+
     constructor(name: string, args: SprocketServiceArgs, opts?: ComponentResourceOptions) {
         super("SprocketBot:Application:Microservice", name, {}, opts);
 
         this.applyConfigurationValues = (fileContent: string) => {
-            return handlebars.compile(fileContent)(args.configValues)
+            return pulumi.output(args.configValues).apply(cv => handlebars.compile(fileContent)(cv))
         }
 
         const secrets: docker.types.input.ServiceTaskSpecContainerSpecSecret[] = [];
@@ -95,7 +106,7 @@ export class SprocketService extends pulumi.ComponentResource {
 
         this.coreConfig = new ConfigFile(`${name}-config`, {
             filepath: args.configFile.sourceFilePath,
-            transformation: x => args.configFile.transformation ? args.configFile.transformation(this.applyConfigurationValues(x)) : pulumi.output(this.applyConfigurationValues(x))
+            transformation: x => args.configFile.transformation ? this.applyConfigurationValues(x).apply(args.configFile.transformation) : pulumi.output(this.applyConfigurationValues(x))
         }, { parent: this })
 
         const configs: ConfigSpec[] = [
@@ -109,9 +120,13 @@ export class SprocketService extends pulumi.ComponentResource {
 
         if (args.flags?.database) {
             secrets.push({
-                fileName: "/app/secret/db-password",
-                secretId: args.configValues.database.passwordSecretId
+                fileName: "/app/secret/db-password.txt",
+                secretId: args.configValues.database.passwordSecret.id,
+                secretName: args.configValues.database.passwordSecret.name
             })
+            networks.push(
+                pulumi.output(args.configValues.database.networkId)
+            )
         }
 
         this.service = new docker.Service(`${name}-service`, {
@@ -129,6 +144,7 @@ export class SprocketService extends pulumi.ComponentResource {
                         ...(args.secrets ?? [])
                     ],
                     env: {
+                        NODE_ENV: "production",
                         ...environment,
                         ...(args.env ?? {})
                     },
@@ -142,9 +158,10 @@ export class SprocketService extends pulumi.ComponentResource {
             },
             labels: args.labels
         }, {parent: this, provider: DockerProvider})
+        this.hostname = this.service.name
     }
 
-    applyConfigurationValues: (fileContent: string) => string;
+    applyConfigurationValues: (fileContent: string) => pulumi.Output<string>;
 
     buildConfigs(configs: AdditionalConfigInput[] | undefined) {
         if (!configs) return [];
@@ -158,7 +175,7 @@ export class SprocketService extends pulumi.ComponentResource {
                 const filename = sourceFilePath.split("/").pop()
                 const config = new ConfigFile(`${name}-${filename}`, {
                     filepath: sourceFilePath,
-                    transformation: (x) => transformation ? transformation(this.applyConfigurationValues(x)) : pulumi.output(this.applyConfigurationValues(x))
+                    transformation: (x) => transformation ? this.applyConfigurationValues(x).apply(transformation) : this.applyConfigurationValues(x)
                 }, {parent: this})
 
                 return {

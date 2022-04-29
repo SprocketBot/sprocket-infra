@@ -1,5 +1,7 @@
 encryptionsalt: v1:t7zhsibQJLA=:v1:efYD/s9jglLhBUyX:iqxfRbMraMUDGl5Yoo2i+LzHS01kmQ==
 config:
+  platform:discord-bot-token:
+    secure: v1:I0m32LGWq0GCfLPb:edsmVrF0EPIgf4DB7sUM6nM4t3qAr2QQEQi6kljfWfa0HkKgQ8x+Engv5e++qVvWxoxHbifwI0We2FksIUFt8yFOQE9G4f3XFHLz
   platform:docker-access-token:
     secure: v1:UZTQGqf5GwlmmTUo:SXCoN0cx4MMzNvUjAByBXP22tzL+olbI9GAp278dXZlTe70LnXVtOFa8VuohfXv9LZKhPQ==
   platform:docker-username: actualsovietshark

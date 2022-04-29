@@ -4,7 +4,7 @@
   },
 
   "transport": {
-    "url": "amqp://${{rmq.host}}:5672",
+    "url": "amqp://{{ rmq.host }}:5672",
     "core_queue": "dev-core",
     "bot_queue": "dev-bot",
     "analytics_queue": "dev-analytics",
@@ -12,6 +12,6 @@
   },
 
   "gql": {
-    "url": "http://${{gql.host}}/graphql"
+    "url": "http://{{ gql.host }}/graphql"
   }
 }

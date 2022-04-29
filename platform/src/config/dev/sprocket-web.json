@@ -1,4 +1,4 @@
 {
-  "gqlUrl": "api.dev.sprocket.gg",
+  "gqlUrl": "{{ gql.host }}",
   "secure": true
 }

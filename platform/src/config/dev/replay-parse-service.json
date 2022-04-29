@@ -1,19 +1,18 @@
 {
   "celery": {
-    "broker": "amqp://rabbitmq",
-    "backend": "redis://celery:GtZtHknrfpb6Gc8eLVeNvaEHXrNxSbSMUZ6gXvmRSF5qZBpEHcDcfcXwdc26NS@redis:6379",
-    "queue": "dev-celery-default"
+    "broker": "{{ celery.broker }}",
+    "backend": "{{ celery.backend }}",
+    "queue": "{{ celery.queue }}"
   },
   "transport": {
-    "url": "rabbitmq",
+    "url": "amqp://{{ rmq.host }}",
     "analytics_queue": "dev-analytics"
   },
   "minio": {
-    "hostname": "minio.local.sprocket.gg",
-    "bucket": "replays",
+    "hostname": "{{ s3.endpoint }}",
+    "bucket": "{{ s3.bucket }}",
     "parsed_object_prefix": "dev",
-    "accessKey": "admin",
-    "secretKey": "6Kcop6xELATAgH"
+    "accessKey": "{{ s3.accessKey }}"
   },
   "tempDir": "/tmp"
 }

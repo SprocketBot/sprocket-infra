@@ -6,6 +6,7 @@ export enum LayerTwoExports {
     PostgresHostname = "PostgresHostname",
     PostgresNetworkId = "PostgresNetworkId",
     InfrastructureVaultToken = "InfrastructureVaultToken",
+    PlatformVaultToken = "PlatformVaultToken",
     InfluxDbToken = "InfluxDbToken"
 }
 

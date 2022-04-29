@@ -1,2 +1,4 @@
 
 global/node_modules/
+
+*.iml

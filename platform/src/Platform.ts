@@ -15,19 +15,25 @@ import {PlatformDatabase} from "./PlatformDatabase";
 const config = new pulumi.Config()
 
 export interface PlatformArgs {
-    vaultProvider: vault.Provider,
+    vault: {
+        infrastructure: vault.Provider,
+        platform: vault.Provider
+    }
+
     postgresProvider: postgresql.Provider
     postgresHostname: string | pulumi.Output<string>
 
+
     ingressNetworkId: docker.Network["id"],
     monitoringNetworkId: docker.Network["id"],
+    postgresNetworkId: docker.Network["id"]
 
     configRoot: string
 }
 
-
 export class Platform extends pulumi.ComponentResource {
     readonly environmentSubdomain: string
+    readonly postgresNetworkId: string | pulumi.Output<string>
 
     readonly datastore: PlatformDatastore
     readonly network: docker.Network
@@ -52,14 +58,14 @@ export class Platform extends pulumi.ComponentResource {
         super("SprocketBot:Platform", name, {}, opts)
 
         this.environmentSubdomain = config.require("subdomain")
-
+        this.postgresNetworkId = args.postgresNetworkId
         this.network = new docker.Network(`${name}-net`, {driver: "overlay"}, {parent: this})
 
 
         this.datastore = new PlatformDatastore(`${name}-datastores`, {
             environmentSubdomain: this.environmentSubdomain,
             ingressNetworkId: args.ingressNetworkId,
-            vaultProvider: args.vaultProvider,
+            vaultProvider: args.vault.infrastructure,
             platformNetworkId: this.network.id,
             configRoot: `${args.configRoot}/datastores`
         }, {parent: this})
@@ -68,7 +74,7 @@ export class Platform extends pulumi.ComponentResource {
             environmentSubdomain: this.environmentSubdomain,
             postgresHostname: args.postgresHostname,
             postgresProvider: args.postgresProvider,
-            vaultProvider: args.vaultProvider
+            vaultProvider: args.vault.infrastructure
         }, {parent: this})
 
         this.secrets = new PlatformSecrets(`${name}-secrets`, {
@@ -76,50 +82,6 @@ export class Platform extends pulumi.ComponentResource {
             database: this.database
         }, {parent: this})
 
-
-        /////////////////
-        // Create Microservices
-        /////////////////
-
-        this.services = {
-            // TODO: Set up Minio for internal storage
-            imageGen: new SprocketService(`${name}-image-generation-service`, {
-                ...this.buildDefaultConfiguration("image-generation-service", args.configRoot),
-                secrets: [{
-                    secretId: this.secrets.s3SecretKey.id,
-                    fileName: "/app/secret/s3-password.txt"
-                }]
-            }, {parent: this}),
-
-            analytics: new SprocketService(`${name}-server-analytics-service`, {
-                ...this.buildDefaultConfiguration("server-analytics-service", args.configRoot),
-                networks: [
-                    args.monitoringNetworkId
-                ],
-                secrets: [{
-                    secretId: this.secrets.influxToken.id,
-                    fileName: "/app/secret/influx-token"
-                }],
-                image: {
-                    namespace: "actualsovietshark", repository: "server-analytics-service", tag: "main"
-                }
-            }, {parent: this}),
-
-            matchmaking: new SprocketService(`${name}-matchmaking-service`, {
-                ...this.buildDefaultConfiguration("matchmaking-service", args.configRoot),
-                secrets: [{
-                    secretId: this.secrets.redisPassword.id,
-                    fileName: "/app/secret/redis-password.txt"
-                }]
-            }, {parent: this}),
-
-            replayParse: new SprocketService(`${name}-replay-parse-service`, {
-                ...this.buildDefaultConfiguration("replay-parse-service", args.configRoot),
-                image: {
-                    namespace: "actualsovietshark", repository: "replay-parse-service", tag: "main"
-                }
-            }, {parent: this})
-        };
 
         /////////////////
         // Create Clients / Core
@@ -133,13 +95,24 @@ export class Platform extends pulumi.ComponentResource {
             flags: {database: true},
             secrets: [{
                 secretId: this.secrets.jwtSecret.id,
+                secretName: this.secrets.jwtSecret.name,
                 fileName: "/app/secret/jwtSecret.txt"
             }, {
                 secretId: this.secrets.s3SecretKey.id,
+                secretName: this.secrets.s3SecretKey.name,
                 fileName: "/app/secret/minio-secret.txt"
             }, {
                 secretId: this.secrets.s3AccessKey.id,
+                secretName: this.secrets.s3AccessKey.name,
                 fileName: "/app/secret/minio-access.txt"
+            }, {
+                secretId: this.secrets.googleClientId.id,
+                secretName: this.secrets.googleClientId.name,
+                fileName: "/app/secret/googleClientId.txt"
+            }, {
+                secretId: this.secrets.googleClientSecret.id,
+                secretName: this.secrets.googleClientSecret.name,
+                fileName: "/app/secret/googleSecret.txt"
             }]
         }, {parent: this})
 
@@ -161,9 +134,70 @@ export class Platform extends pulumi.ComponentResource {
                 ...this.buildDefaultConfiguration("discord-bot", args.configRoot),
                 image: {
                     namespace: "actualsovietshark", repository: "discord-bot", tag: "main"
-                }
+                },
+                secrets: [{
+                    secretId: this.secrets.discordBotToken.id,
+                    secretName: this.secrets.discordBotToken.name,
+                    fileName: "/app/secret/bot-token.txt"
+                }]
             }, {parent: this})
         }
+
+
+        /////////////////
+        // Create Microservices
+        /////////////////
+
+        this.services = {
+            // TODO: Set up Minio for internal storage
+            imageGen: new SprocketService(`${name}-image-generation-service`, {
+                ...this.buildDefaultConfiguration("image-generation-service", args.configRoot),
+                secrets: [{
+                    secretId: this.secrets.s3SecretKey.id,
+                    secretName: this.secrets.s3SecretKey.name,
+                    fileName: "/app/secret/s3-password.txt"
+                }]
+            }, {parent: this}),
+
+            analytics: new SprocketService(`${name}-server-analytics-service`, {
+                ...this.buildDefaultConfiguration("server-analytics-service", args.configRoot),
+                networks: [
+                    args.monitoringNetworkId
+                ],
+                secrets: [{
+                    secretId: this.secrets.influxToken.id,
+                    secretName: this.secrets.influxToken.name,
+                    fileName: "/app/secret/influx-token"
+                }],
+                image: {
+                    namespace: "actualsovietshark", repository: "server-analytics-service", tag: "main"
+                }
+            }, {parent: this}),
+
+            matchmaking: new SprocketService(`${name}-matchmaking-service`, {
+                ...this.buildDefaultConfiguration("matchmaking-service", args.configRoot),
+                secrets: [{
+                    secretId: this.secrets.redisPassword.id,
+                    secretName: this.secrets.redisPassword.name,
+                    fileName: "/app/secret/redis-password.txt"
+                }]
+            }, {parent: this}),
+
+            replayParse: new SprocketService(`${name}-replay-parse-service`, {
+                ...this.buildDefaultConfiguration("replay-parse-service", args.configRoot),
+                image: {
+                    namespace: "actualsovietshark", repository: "replay-parse-service", tag: "main"
+                },
+                env: {
+                    ENV: "production"
+                },
+                secrets: [{
+                    secretId: this.secrets.s3SecretKey.id,
+                    secretName: this.secrets.s3SecretKey.name,
+                    fileName: "/app/secret/s3-secret"
+                }]
+            }, {parent: this})
+        };
     }
 
     buildDefaultConfiguration = (name: string, configRoot: string): SprocketServiceArgs => ({
@@ -174,25 +208,39 @@ export class Platform extends pulumi.ComponentResource {
             database: {
                 host: this.database.host,
                 port: 5432,
-                passwordSecretId: this.secrets.postgresPassword.id
+                passwordSecret: this.secrets.postgresPassword,
+                username: this.database.credentials.username,
+                database: this.database.database.name,
+                networkId: this.postgresNetworkId
+            },
+            redis: {
+                host: this.datastore.redis.hostname
+            },
+            rmq: {
+                host: this.datastore.rabbitmq.hostname
+            },
+            influx: {
+                host: "",
+                org: "",
+                bucket: "",
             },
             s3: {
-                endpoint: "https://nyc3.digitaloceanspaces.com",
+                endpoint: "nyc3.digitaloceanspaces.com",
                 port: 443,
                 ssl: true,
                 accessKey: "2CUL33XKLZXGIGB5CSSV",
                 bucket: "sprocket"
             },
             celery: {
-                broker: `amqp://${this.datastore.rabbitmq.hostname}`,
-                backend: `redis://${this.datastore.redis.hostname}`,
+                broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}`) ?? "",
+                backend: this.datastore.redis?.hostname.apply(h => `redis://${h}`) ?? "",
                 queue: `${this.environmentSubdomain}-celery`
             },
             bot: {
                 prefix: this.environmentSubdomain === "main" ? "s." : `${this.environmentSubdomain}.`
             },
             gql: {
-                host: ""
+                host: this.core?.hostname ? this.core.hostname.apply(h => `${h}:3001`) : ""
             }
 
         }
