@@ -1,4 +1,4 @@
 {
-  "gqlUrl": "{{ gql.host }}",
+  "gqlUrl": "https://{{ gql.public }}",
   "secure": true
 }

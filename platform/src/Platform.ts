@@ -11,6 +11,7 @@ import {buildHost} from "global/helpers/buildHost";
 import {HOSTNAME} from "global/constants"
 import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
+import {PlatformVault} from "./PlatformVault";
 
 const config = new pulumi.Config()
 
@@ -46,6 +47,11 @@ export class Platform extends pulumi.ComponentResource {
         discordBot: SprocketService,
         web: SprocketService
     }
+
+    readonly apiUrl: string
+    readonly webUrl: string
+
+    readonly vaultSync: PlatformVault
 
     readonly services: {
         imageGen: SprocketService,
@@ -87,11 +93,20 @@ export class Platform extends pulumi.ComponentResource {
         // Create Clients / Core
         /////////////////
 
+        this.apiUrl = buildHost("api", this.environmentSubdomain, HOSTNAME)
+        this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
         this.core = new SprocketService(`${name}-sprocket-core`, {
             ...this.buildDefaultConfiguration("sprocket-core", args.configRoot),
             image: {
                 namespace: "actualsovietshark", repository: "sprocket-core", tag: "main"
             },
+            labels: [
+                ...new TraefikLabels("sprocket-core")
+                    .tls("lets-encrypt-tls")
+                    .rule(`Host(\`${this.apiUrl}\`)`)
+                    .targetPort(3001)
+                    .complete
+            ],
             flags: {database: true},
             secrets: [{
                 secretId: this.secrets.jwtSecret.id,
@@ -122,8 +137,16 @@ export class Platform extends pulumi.ComponentResource {
                 labels: [
                     ...new TraefikLabels("sprocket-web")
                         .tls("lets-encrypt-tls")
-                        .rule(`Host(\`${buildHost(this.environmentSubdomain), HOSTNAME}\`)`)
+                        .rule(`Host(\`${this.webUrl}\`)`)
+                        .targetPort(3000)
                         .complete
+                ],
+                configFile: {
+                    destFilePath: "/app/src/config.json",
+                    sourceFilePath: `${args.configRoot}/sprocket-web.json`,
+                },
+                networks: [
+                    args.ingressNetworkId
                 ],
                 image: {
                     namespace: "actualsovietshark", repository: "sprocket-web", tag: "main"
@@ -198,6 +221,26 @@ export class Platform extends pulumi.ComponentResource {
                 }]
             }, {parent: this})
         };
+
+        this.vaultSync = new PlatformVault(`${name}-vault-sync`, {
+            vaultProvider: args.vault.platform,
+            environment: this.environmentSubdomain,
+            redis: {
+                url: this.datastore.redis.url,
+                password: this.datastore.redis.credentials.password
+            },
+            rabbitmq: {
+                url: this.datastore.rabbitmq.url,
+                management: this.datastore.rabbitmq.managementUrl
+            },
+            postgres: {
+                url: HOSTNAME,
+                port: "30000",
+                username: this.database.credentials.username,
+                password: this.database.credentials.password,
+                database: this.database.database.name
+            }
+        })
     }
 
     buildDefaultConfiguration = (name: string, configRoot: string): SprocketServiceArgs => ({
@@ -240,9 +283,9 @@ export class Platform extends pulumi.ComponentResource {
                 prefix: this.environmentSubdomain === "main" ? "s." : `${this.environmentSubdomain}.`
             },
             gql: {
-                host: this.core?.hostname ? this.core.hostname.apply(h => `${h}:3001`) : ""
+                internal: this.core?.hostname ? this.core.hostname.apply(h => `${h}:3001/graphql`) : "",
+                public: `${this.apiUrl}/graphql`
             }
-
         }
     })
 }

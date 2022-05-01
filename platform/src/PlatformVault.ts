@@ -8,12 +8,47 @@ import * as vault from "@pulumi/vault"
 export type PlatformVaultArgs = {
     environment: string
     vaultProvider: vault.Provider
+
+    redis: {
+        url: string | pulumi.Output<string>,
+        password: pulumi.Output<string>
+    },
+    rabbitmq: {
+        url: string | pulumi.Output<string>,
+        management: string | pulumi.Output<string>
+    },
+    postgres: {
+        url: string | pulumi.Output<string>,
+        port: string | pulumi.Output<string>,
+        username: string | pulumi.Output<string>,
+        password: string | pulumi.Output<string>,
+        database: string | pulumi.Output<string>
+        connstring?: string | pulumi.Output<string>
+    }
 }
 
 export class PlatformVault extends pulumi.ComponentResource {
+    readonly redisSecret: vault.generic.Secret
+    readonly rabbitmqSecret: vault.generic.Secret
+    readonly postgresSecret: vault.generic.Secret
+    
+    
     constructor(name: string, args: PlatformVaultArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:VaultSync", name, {}, opts)
 
+        this.redisSecret = new vault.generic.Secret(`${name}-redis-vault`, {
+            path: `platform/${args.environment}/redis`,
+            dataJson: pulumi.output(args.redis).apply(r => JSON.stringify(r))
+        }, { parent: this, provider: args.vaultProvider })
 
+        this.rabbitmqSecret = new vault.generic.Secret(`${name}-rabbitmq-vault`, {
+            path: `platform/${args.environment}/rabbitmq`,
+            dataJson: pulumi.output(args.rabbitmq).apply(r => JSON.stringify(r))
+        }, { parent: this, provider: args.vaultProvider })
+
+        this.postgresSecret = new vault.generic.Secret(`${name}-postgres-vault`, {
+            path: `platform/${args.environment}/postgres`,
+            dataJson: pulumi.output(args.postgres).apply(r => JSON.stringify(r))
+        }, { parent: this, provider: args.vaultProvider })
     }
 }

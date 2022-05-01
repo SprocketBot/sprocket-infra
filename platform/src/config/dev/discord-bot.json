@@ -12,6 +12,6 @@
   },
 
   "gql": {
-    "url": "http://{{ gql.host }}/graphql"
+    "url": "http://{{ gql.internal }}"
   }
 }

@@ -59,7 +59,8 @@ export type SprocketServiceConfigTemplateValues = {
         prefix: string | pulumi.Output<string>
     },
     gql: {
-        host: string | pulumi.Output<string>
+        internal: string | pulumi.Output<string>
+        public: string | pulumi.Output<string>
     }
 }
 

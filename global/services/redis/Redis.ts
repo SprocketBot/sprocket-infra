@@ -14,7 +14,7 @@ export interface RedisArgs {
 
     platformNetworkId: docker.Network["id"]
 
-    url?: string;
+    url: string;
 }
 
 export class Redis extends pulumi.ComponentResource {
@@ -26,10 +26,11 @@ export class Redis extends pulumi.ComponentResource {
 
     readonly hostname: docker.Service["name"]
     readonly credentials: VaultCredentials
+    readonly url: string | pulumi.Output<string>
 
     constructor(name: string, args: RedisArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Redis", name, {}, opts)
-
+        this.url = args.url
         this.credentials = new VaultCredentials(`${name}-root-credentials`, {
             username: "",
             vault: {
@@ -75,7 +76,7 @@ export class Redis extends pulumi.ComponentResource {
                 ]
             },
             labels: args.url ? new TraefikLabels(`${name}`, "tcp")
-                .rule(`Host(\`${args.url}\`)`)
+                .rule(`HostSNI(\`${args.url}\`)`)
                 .tls("lets-encrypt-tls")
                 .targetPort(6379)
                 .complete : []

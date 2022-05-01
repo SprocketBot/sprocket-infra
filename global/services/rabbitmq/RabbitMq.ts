@@ -10,7 +10,7 @@ export interface RabbitMqArgs {
     configFilepath: string
     ingressNetworkId: docker.Network["id"],
     platformNetworkId: docker.Network["id"],
-    url?: string;
+    url: string;
 }
 
 export class RabbitMq extends pulumi.ComponentResource {
@@ -21,8 +21,14 @@ export class RabbitMq extends pulumi.ComponentResource {
 
     readonly hostname: docker.Service["name"]
 
+    readonly url: string
+    readonly managementUrl: string
+
     constructor(name: string, args: RabbitMqArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:RabbitMq", name, {}, opts)
+
+        this.url = args.url
+        this.managementUrl = `management.${args.url}`
 
         this.config = new ConfigFile(`${name}-config`, {
             filepath: args.configFilepath
