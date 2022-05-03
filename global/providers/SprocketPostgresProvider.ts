@@ -1,16 +1,17 @@
 import * as pulumi from "@pulumi/pulumi"
 import * as postgres from "@pulumi/postgresql";
 import * as vault from "@pulumi/vault";
-import {HOSTNAME} from "../constants";
 import {VaultCredentials} from "../helpers/vault/VaultCredentials";
+import {HOSTNAME} from "../constants";
 
 export interface SprocketPostgresProviderArgs extends Omit<postgres.ProviderArgs, "username" | "password" | "host" | "sslmode" | "port"> {
     vaultProvider: vault.Provider,
-    postgresCredentials?: VaultCredentials
+    postgresCredentials?: VaultCredentials,
+    postgresHostname: pulumi.Output<string> | string
 }
 
 export class SprocketPostgresProvider extends postgres.Provider {
-    constructor({vaultProvider, postgresCredentials, ...args}: SprocketPostgresProviderArgs, opts?: pulumi.ResourceOptions) {
+    constructor({vaultProvider, postgresCredentials, postgresHostname, ...args}: SprocketPostgresProviderArgs, opts?: pulumi.ResourceOptions) {
         let username, password;
         if (postgresCredentials) {
             username = postgresCredentials.username;

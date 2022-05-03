@@ -55,7 +55,7 @@ export class Vault extends pulumi.ComponentResource {
                 networks: [
                     this.network.id,
                     args.traefikNetworkId
-                ]
+                ],
             }
         }, { parent: this })
         

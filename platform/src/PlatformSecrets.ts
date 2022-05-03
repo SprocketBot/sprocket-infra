@@ -1,6 +1,7 @@
 import * as docker from "@pulumi/docker"
 import * as pulumi from "@pulumi/pulumi"
 import * as random from "@pulumi/random"
+import * as minio from "@pulumi/minio"
 
 import {LayerTwo, LayerTwoExports} from "global/refs"
 import {PlatformDatastore} from "./PlatformDatastore";
@@ -11,7 +12,8 @@ const config = new pulumi.Config()
 
 export interface PlatformSecretsArgs {
     datastore: PlatformDatastore,
-    database: PlatformDatabase
+    database: PlatformDatabase,
+    minioUser: minio.IamUser
 }
 
 
@@ -40,11 +42,11 @@ export class PlatformSecrets extends pulumi.ComponentResource {
         }, { parent: this })
 
         this.s3SecretKey = new docker.Secret(`${name}-s3-secret`, {
-            data: config.requireSecret("s3-secret-key").apply(btoa)
+            data: args.minioUser.secret.apply(btoa)
         }, { parent: this })
 
         this.s3AccessKey = new docker.Secret(`${name}-s3-access`, {
-            data: btoa(config.require("s3-access-key"))
+            data: args.minioUser.name.apply(btoa)
         }, { parent: this })
 
         this.redisPassword = new docker.Secret(`${name}-redis-password`, {

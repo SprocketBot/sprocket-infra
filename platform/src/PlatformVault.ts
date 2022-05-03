@@ -25,12 +25,19 @@ export type PlatformVaultArgs = {
         database: string | pulumi.Output<string>
         connstring?: string | pulumi.Output<string>
     }
+    minio: {
+        url: string | pulumi.Output<string>,
+        accessKey: string | pulumi.Output<string>,
+        secretKey: string | pulumi.Output<string>,
+        bucket: string | pulumi.Output<string>,
+    }
 }
 
 export class PlatformVault extends pulumi.ComponentResource {
     readonly redisSecret: vault.generic.Secret
     readonly rabbitmqSecret: vault.generic.Secret
     readonly postgresSecret: vault.generic.Secret
+    readonly minioSecret: vault.generic.Secret
     
     
     constructor(name: string, args: PlatformVaultArgs, opts?: pulumi.ComponentResourceOptions) {
@@ -50,5 +57,11 @@ export class PlatformVault extends pulumi.ComponentResource {
             path: `platform/${args.environment}/postgres`,
             dataJson: pulumi.output(args.postgres).apply(r => JSON.stringify(r))
         }, { parent: this, provider: args.vaultProvider })
+
+        this.minioSecret = new vault.generic.Secret(`${name}-minio-vault`, {
+            path: `platform/${args.environment}/minio`,
+            dataJson: pulumi.output(args.minio).apply(r => JSON.stringify(r))
+        }, { parent: this, provider: args.vaultProvider })
+
     }
 }

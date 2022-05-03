@@ -57,6 +57,11 @@ export class RabbitMq extends pulumi.ComponentResource {
                     args.ingressNetworkId
                 ],
                 logDriver: DefaultLogDriver("rabbitmq", true),
+                placement: {
+                    constraints: [
+                        "node.labels.role==storage",
+                    ]
+                },
             },
             labels: args.url
                 ? [
@@ -66,7 +71,7 @@ export class RabbitMq extends pulumi.ComponentResource {
                         .targetPort(15672)
                         .complete,
                     ...new TraefikLabels(`${name}-management`, "tcp")
-                        .rule(`Host(\`${args.url}\`)`)
+                        .rule(`HostSNI(\`${args.url}\`)`)
                         .tls("lets-encrypt-tls")
                         .targetPort(5672)
                         .complete

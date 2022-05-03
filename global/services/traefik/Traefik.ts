@@ -82,7 +82,7 @@ export class Traefik extends pulumi.ComponentResource {
                 // overprovision certificates
                 placement: {
                     constraints: [
-                        "node.labels.ingress==true"
+                        "node.labels.role==ingress"
                     ]
                 },
                 // Ensure we are on the ingress network, along with the socket proxy network

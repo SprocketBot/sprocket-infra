@@ -49,6 +49,11 @@ export class Grafana extends pulumi.ComponentResource {
                 .targetPort(3000)
                 .complete,
             taskSpec: {
+                placement: {
+                    constraints: [
+                        "node.labels.role!=ingress"
+                    ]
+                },
                 containerSpec: {
                     image: "grafana/grafana:8.4.4",
                     env: {

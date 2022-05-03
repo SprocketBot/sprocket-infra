@@ -33,7 +33,7 @@ export class Loki extends pulumi.ComponentResource {
                 ],
                 placement: {
                     constraints: [
-                        "node.role==manager"
+                        "node.labels.role==storage",
                     ]
                 }
             }

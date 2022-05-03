@@ -1,5 +1,5 @@
 // Handles self
-import {Postgres, VaultPolicies} from "global/services";
+import {Postgres, VaultPolicies, Minio} from "global/services";
 import {Monitoring} from "./monitoring";
 import * as pulumi from "@pulumi/pulumi";
 import * as vault from "@pulumi/vault";
@@ -8,6 +8,7 @@ import {LayerOne, LayerOneExports} from "global/refs"
 
 import {SprocketPostgresProvider} from "global/providers/SprocketPostgresProvider"
 
+const ingressNetworkId = LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>;
 export const policies = new VaultPolicies("policies", {})
 
 const vaultProvider = new vault.Provider("VaultProvider", {
@@ -15,17 +16,20 @@ const vaultProvider = new vault.Provider("VaultProvider", {
     token: policies.infraToken.clientToken
 })
 
-export const pg = new Postgres("postgres", { vaultProvider: vaultProvider })
+export const pg = new Postgres("postgres", {ingressNetworkId, vaultProvider})
+
+export const minio = new Minio("minio", { ingressNetworkId, vaultProvider})
 
 const postgresProvider = new SprocketPostgresProvider({
     vaultProvider: vaultProvider,
-    postgresCredentials: pg.credentials
-}, {  }) as postgres.Provider
+    postgresCredentials: pg.credentials,
+    postgresHostname: pg.url
+}, {}) as postgres.Provider
 
 export const monitoring = new Monitoring("monitoring", {
     postgres: pg,
     exposeInfluxUi: true,
-    ingressNetworkId: LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>,
+    ingressNetworkId,
 
     providers: {
         vault: vaultProvider,

@@ -1,4 +1,7 @@
+import * as pulumi from "@pulumi/pulumi"
 import axios from "axios";
+
+const config = new pulumi.Config()
 
 type DockerHubResponse = {
     count: number,
@@ -25,23 +28,33 @@ type DockerHubResponse = {
  * @param username {string} Dockerhub username
  * @param pat {string} Dockerhub personal access token
  */
-export async function getImageSha(namespace: string, repository: string, tag: string, username: string, pat: string) {
-    const tokenResponse = await axios.post("https://hub.docker.com/v2/users/login", {
-        "username": username, "password": pat
-    }, {
-        headers: {
-            "Content-Type": "application/json"
-        },
-    })
-    const token = tokenResponse.data.token
+export function getImageSha(namespace: string, repository: string, tag: string): pulumi.Output<string> {
+    return pulumi.all([config.require("docker-username"), config.requireSecret("docker-access-token")]).apply(
+        async ([username, pat]) => {
+            const tokenResponse = await axios.post("https://hub.docker.com/v2/users/login", {
+                "username": username, "password": pat
+            }, {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            }).catch(e => {
+                console.log(`Failed to look up ${namespace}/${repository}:${tag}`)
+                throw e
+            })
+            const token = tokenResponse.data.token
 
-    const results = await axios.get<DockerHubResponse>(`https://hub.docker.com/v2/namespaces/${namespace}/repositories/${repository}/images?currently_tagged=true`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
+            const results = await axios.get<DockerHubResponse>(`https://hub.docker.com/v2/namespaces/${namespace}/repositories/${repository}/images?currently_tagged=true`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }).catch(e => {
+                console.log(`Failed to look up ${namespace}/${repository}:${tag}`)
+                throw e
+            })
 
-    const result = results.data.results.find(r => r.tags.some(t => t.tag === tag))
-    if (!result) throw new Error(`Tag not found! ${namespace}/${repository}:${tag}`)
-    return `${namespace}/${repository}@${result.digest}`
+            const result = results.data.results.find(r => r.tags.some(t => t.tag === tag))
+            if (!result) throw new Error(`Tag not found! ${namespace}/${repository}:${tag}`)
+            return `${namespace}/${repository}@${result.digest}`
+        })
+
 }

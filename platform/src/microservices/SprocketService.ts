@@ -138,8 +138,7 @@ export class SprocketService extends pulumi.ComponentResource {
             },
             taskSpec: {
                 containerSpec: {
-                    image: pulumi.all([config.require("docker-username"), config.requireSecret("docker-access-token")])
-                        .apply(([username, pat]) => getImageSha(args.image.namespace, args.image.repository, args.image.tag, username, pat)),
+                    image: getImageSha(args.image.namespace, args.image.repository, args.image.tag),
                     secrets: [
                         ...secrets,
                         ...(args.secrets ?? [])

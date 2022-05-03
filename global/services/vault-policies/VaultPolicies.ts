@@ -39,14 +39,15 @@ export class VaultPolicies extends pulumi.ComponentResource {
             path: "infrastructure",
             type: "kv"
         }, {
-            provider: this.vaultProvider, parent: this
+            provider: this.vaultProvider, parent: this,
         })
 
         this.infraPolicy = new vault.Policy(`${name}-infrastructure-policy`, {
             name: "infrastructure",
             policy: readFileSync(`${__dirname}/policies/infrastructure.hcl`).toString()
         }, {
-            provider: this.vaultProvider, parent: this
+            provider: this.vaultProvider, parent: this,
+            import: "infrastructure"
         })
 
         this.infraToken = new vault.Token(`${name}-infrastructure-token`, {
@@ -58,7 +59,7 @@ export class VaultPolicies extends pulumi.ComponentResource {
         }, {
             provider: this.vaultProvider,
             additionalSecretOutputs: ["clientToken"],
-            parent: this
+            parent: this,
         })
 
         this.platformBackend = new vault.Mount(`${name}-platform-backend`, {
@@ -67,7 +68,8 @@ export class VaultPolicies extends pulumi.ComponentResource {
             type: "kv"
         }, {
             provider: this.vaultProvider,
-            parent: this
+            parent: this,
+            import: "platform"
         })
 
         this.miscBackend = new vault.Mount(`${name}-misc-backend`, {
@@ -92,12 +94,12 @@ export class VaultPolicies extends pulumi.ComponentResource {
         }, {
             provider: this.vaultProvider,
             additionalSecretOutputs: ["clientToken"],
-            parent: this
+            parent: this,
         })
 
         this.githubAuth = new vault.github.AuthBackend(`${name}-github-auth`, {
             organization: "SprocketBot"
-        }, {provider: this.vaultProvider, parent: this})
+        }, {provider: this.vaultProvider, parent: this, import: `github`})
 
         this.githubReadonlyPolicy = new vault.Policy(`${name}-github-readonly-policy`, {
             name: "github-readonly",

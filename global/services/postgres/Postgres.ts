@@ -4,26 +4,30 @@ import * as vault from "@pulumi/vault";
 
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
 import {VaultCredentials} from "../../helpers/vault/VaultCredentials"
+import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
+import {HOSTNAME} from "../../constants";
 
 export interface PostgresArgs {
     vaultProvider: vault.Provider
+    ingressNetworkId: docker.Network["id"]
 }
 
 // TODO: https://hub.docker.com/r/bitnami/wal-g
 
 export class Postgres extends pulumi.ComponentResource {
-
-
     private readonly volume: docker.Volume
     private readonly network: docker.Network
     private readonly service: docker.Service
 
     readonly networkId: docker.Network["id"]
     readonly hostname: docker.Service["name"]
+    readonly url: string
     readonly credentials: VaultCredentials
 
     constructor(name: string, args: PostgresArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Postgres", name, {}, opts)
+
+        this.url = `db.${HOSTNAME}`
 
         this.credentials = new VaultCredentials(`${name}-root-credentials`, {
             username: "postgres",
@@ -62,13 +66,19 @@ export class Postgres extends pulumi.ComponentResource {
                 logDriver: DefaultLogDriver("postgres", true),
                 placement: {
                     constraints: [
-                        "node.role==manager"
+                        "node.labels.role==storage",
                     ]
                 },
                 networks: [
-                    this.network.id
+                    this.network.id,
+                    args.ingressNetworkId
                 ]
-            }
+            },
+            labels: new TraefikLabels("postgres", "tcp")
+                .rule(`HostSNI(\`${this.url}\`)`)
+                .tls("lets-encrypt-tls")
+                .targetPort(5432)
+                .complete
         }, {parent: this})
 
         this.networkId = this.network.id

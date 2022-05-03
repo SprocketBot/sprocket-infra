@@ -13,6 +13,7 @@ export interface RedisArgs {
     vaultProvider: vault.Provider
 
     platformNetworkId: docker.Network["id"]
+    ingressNetworkId: docker.Network["id"]
 
     url: string;
 }
@@ -68,11 +69,12 @@ export class Redis extends pulumi.ComponentResource {
                 logDriver: DefaultLogDriver("redis", true),
                 placement: {
                     constraints: [
-                        "node.role==manager"
+                        "node.labels.role==storage",
                     ]
                 },
                 networks: [
-                    args.platformNetworkId
+                    args.platformNetworkId,
+                    args.ingressNetworkId
                 ]
             },
             labels: args.url ? new TraefikLabels(`${name}`, "tcp")

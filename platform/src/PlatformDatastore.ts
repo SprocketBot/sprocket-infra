@@ -33,6 +33,7 @@ export class PlatformDatastore extends pulumi.ComponentResource {
         this.redis = new Redis(`${name}-redis`, {
             configFilepath: `${args.configRoot}/redis.conf`,
             vaultProvider: args.vaultProvider,
+            ingressNetworkId: args.ingressNetworkId,
             platformNetworkId: args.platformNetworkId,
             url: buildHost("redis", args.environmentSubdomain, HOSTNAME)
         })
