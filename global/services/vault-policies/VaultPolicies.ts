@@ -47,7 +47,6 @@ export class VaultPolicies extends pulumi.ComponentResource {
             policy: readFileSync(`${__dirname}/policies/infrastructure.hcl`).toString()
         }, {
             provider: this.vaultProvider, parent: this,
-            import: "infrastructure"
         })
 
         this.infraToken = new vault.Token(`${name}-infrastructure-token`, {
@@ -69,14 +68,13 @@ export class VaultPolicies extends pulumi.ComponentResource {
         }, {
             provider: this.vaultProvider,
             parent: this,
-            import: "platform"
         })
 
         this.miscBackend = new vault.Mount(`${name}-misc-backend`, {
             description: "Contains secrets that are manually created by developers",
             path: "misc",
             type: "kv"
-        }, { provider: this.vaultProvider, parent: this })
+        }, {provider: this.vaultProvider, parent: this})
 
         this.platformPolicy = new vault.Policy(`${name}-platform-policy`, {
             name: "platform",
@@ -99,30 +97,30 @@ export class VaultPolicies extends pulumi.ComponentResource {
 
         this.githubAuth = new vault.github.AuthBackend(`${name}-github-auth`, {
             organization: "SprocketBot"
-        }, {provider: this.vaultProvider, parent: this, import: `github`})
+        }, {provider: this.vaultProvider, parent: this,})
 
         this.githubReadonlyPolicy = new vault.Policy(`${name}-github-readonly-policy`, {
             name: "github-readonly",
             policy: readFileSync(`${__dirname}/policies/github-readonly.hcl`).toString()
-        }, { parent: this, provider: this.vaultProvider })
+        }, {parent: this, provider: this.vaultProvider})
         this.githubReadonlyTeam = new vault.github.Team(`${name}-github-readonly-team`, {
             policies: [
                 this.githubReadonlyPolicy.name
             ],
             team: "contributor"
-        }, { parent: this, provider: this.vaultProvider })
+        }, {parent: this, provider: this.vaultProvider})
 
 
         this.githubAdminPolicy = new vault.Policy(`${name}-github-admin-policy`, {
             name: "github-admin",
             policy: readFileSync(`${__dirname}/policies/github-admin.hcl`).toString()
-        }, { parent: this, provider: this.vaultProvider })
+        }, {parent: this, provider: this.vaultProvider})
         this.githubAdminTeam = new vault.github.Team(`${name}-github-admin-team`, {
             policies: [
                 this.githubAdminPolicy.name
             ],
             team: "maintainers"
-        }, { parent: this, provider: this.vaultProvider })
+        }, {parent: this, provider: this.vaultProvider})
 
     }
 }

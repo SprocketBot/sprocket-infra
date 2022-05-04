@@ -1,7 +1,7 @@
-encryptionsalt: v1:fug2aa9x0aU=:v1:KB4Se8oH2vnDXVq1:w9GHeRK969TVpFDsayGZe45kJpX0ng==
+encryptionsalt: v1:imM0LPy+Pn0=:v1:cbZAM7OXeuOFsG3r:xMj8Umq5hMzmeINpaKAc0zuioZ3Ndg==
 config:
-  layer_1:vault-s3-access-key: 2CUL33XKLZXGIGB5CSSV
+  layer_1:vault-s3-access-key: YWS9AKY66LS815BUPG6G
   layer_1:vault-s3-bucket: sprocket
-  layer_1:vault-s3-endpoint: https://nyc3.digitaloceanspaces.com
+  layer_1:vault-s3-endpoint: https://us-southeast-1.linodeobjects.com
   layer_1:vault-s3-secret-key:
-    secure: v1:4DvCrgKyoFYYrsZJ:qHZZfm4wZvnXld9wVZ/3FfuHj3aB7Xhci5eySVRjjLjieRCLPiE7eVcDtXk9C1LTZlcm2jhe/bvCccw=
+    secure: v1:N/lqsnXq5Y+p5XcJ:pyJno6q4d+vUqVlQ+Kw9TyDD7NFebl7RIvIcQVvmSMiA0veOJfGtJyu4ho8CO38djCUNi1SVONE=

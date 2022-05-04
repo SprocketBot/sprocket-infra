@@ -1,7 +1,4 @@
-encryptionsalt: v1:021LX/7ynSA=:v1:4IP5Ry2MAD2bKqtO:0G8ERMmBKcnSwh9/hA1WPKYMUK3K1Q==
+encryptionsalt: v1:GxNyqtfVwuM=:v1:nrLj9XcU9Yi/G0iX:3kt8tc1Y6GWcR1B4Ph4cMJDVdB4CXQ==
 config:
-  layer_2:docker-access-token:
-    secure: v1:RLcy6UnAOgBQMLIF:7RIE1ID4BdeccJ/vX1I7VpWM2LVbFU75tW7QC3HP4pD9JPvgK8LLWuAQsqLeLKVyX0hw2w==
-  layer_2:docker-username: actualsovietshark
   layer_2:root-vault-token:
-    secure: v1:e+/qdUmk4PtCiyQ3:Egm720zK9Tb/u1CoKc1e9fRrzu5EeCsTnf39h0pcyGaXXFhQnrWgQqYnnIc=
+    secure: v1:s/yVBSPKSJ+xqeVH:VrjJSQtvOLCd4MdBD0pWHLevwMFsE13Mbfs5F9YAoMBRDUEOytz85guMM/E=

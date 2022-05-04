@@ -13,6 +13,7 @@ import {HOSTNAME} from "global/constants"
 import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
 import {PlatformVault} from "./PlatformVault";
+import {PlatformMinio} from "./PlatformMinio";
 
 const config = new pulumi.Config()
 
@@ -43,6 +44,7 @@ export class Platform extends pulumi.ComponentResource {
 
     readonly secrets: PlatformSecrets
     readonly database: PlatformDatabase
+    readonly objectStorage: PlatformMinio
 
     readonly core: SprocketService
     readonly clients: {
@@ -50,9 +52,6 @@ export class Platform extends pulumi.ComponentResource {
         web: SprocketService
     }
 
-    readonly bucket: minio.S3Bucket
-    readonly minioUser: minio.IamUser
-    readonly minioUrl: string | pulumi.Output<string>
 
     readonly apiUrl: string
     readonly webUrl: string
@@ -73,15 +72,11 @@ export class Platform extends pulumi.ComponentResource {
         this.postgresNetworkId = args.postgresNetworkId
         this.network = new docker.Network(`${name}-net`, {driver: "overlay"}, {parent: this})
 
-        this.bucket = new minio.S3Bucket(`${name}-bucket`, {
-            bucket: `sprocket-${this.environmentSubdomain}`
-        }, { parent: this, provider: args.minioProvider })
 
-        this.minioUser = new minio.IamUser(`${name}-s3-user`, {
-            name: `sprocket-${this.environmentSubdomain}`
-        }, { parent: this, provider: args.minioProvider })
-        this.minioUrl = args.minioProvider.minioServer
-
+        this.objectStorage = new PlatformMinio(`${name}-minio`, {
+            environment: this.environmentSubdomain,
+            minioProvider: args.minioProvider
+        })
 
         this.datastore = new PlatformDatastore(`${name}-datastores`, {
             environmentSubdomain: this.environmentSubdomain,
@@ -101,7 +96,7 @@ export class Platform extends pulumi.ComponentResource {
         this.secrets = new PlatformSecrets(`${name}-secrets`, {
             datastore: this.datastore,
             database: this.database,
-            minioUser: this.minioUser
+            minioUser: this.objectStorage.minioUser
         }, {parent: this})
 
 
@@ -257,10 +252,10 @@ export class Platform extends pulumi.ComponentResource {
                 database: this.database.database.name
             },
             minio: {
-                url: this.minioUrl,
-                accessKey: this.minioUser.name,
-                secretKey: this.minioUser.secret,
-                bucket: this.bucket.bucket
+                url: this.objectStorage.minioUrl,
+                accessKey: this.objectStorage.minioUser.name,
+                secretKey: this.objectStorage.minioUser.secret,
+                bucket: this.objectStorage.bucket.bucket
             }
         })
     }
@@ -290,11 +285,11 @@ export class Platform extends pulumi.ComponentResource {
                 bucket: "",
             },
             s3: {
-                endpoint: this.minioUrl,
+                endpoint: this.objectStorage.minioUrl,
                 port: 443,
                 ssl: true,
-                accessKey: this.minioUser.name,
-                bucket: this.bucket.bucket
+                accessKey: this.objectStorage.minioUser.name,
+                bucket: this.objectStorage.bucket.bucket
             },
             celery: {
                 broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}`) ?? "",

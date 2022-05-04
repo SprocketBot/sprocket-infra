@@ -1,6 +1,0 @@
-encryptionsalt: v1:Hb6XibK3JDo=:v1:PfJ2rXfx8xv8hJ3P:ch0JfChxDBxeI+LE7mKSRf/l8aEUGg==
-config:
-  platform-applications:docker-access-token: 74ed8635-ed17-45b0-8beb-9b167a00ccf2
-  platform-applications:docker-username: actualsovietshark
-  platform-dev:vault-token:
-    secure: v1:iumZvtvoHoG+roiZ:+Ke0WD5CiJ9MSmyfjci0sWcUiYUX1iyvYZ0rXUbwegYI7JpJL9GyFGg+2u6sN5X1O6ZDVRen4lkq9H+kRJkjn0YBn3QeG5dAe6RlyY4yR8V4EDSrvzMigrhIHbva2ks1P1kjhMQnQrxwzTldBqvJ
