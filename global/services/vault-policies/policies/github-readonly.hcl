@@ -6,6 +6,10 @@ path "platform/dev/*" {
   capabilities = ["read", "list"]
 }
 
+path "platform/dev/manual/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
 path "misc/*" {
-  capabilities = ["read", "list"]
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
