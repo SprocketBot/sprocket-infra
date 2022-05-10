@@ -2,6 +2,7 @@ import * as docker from "@pulumi/docker"
 import * as pulumi from "@pulumi/pulumi"
 import * as random from "@pulumi/random"
 import * as minio from "@pulumi/minio"
+import * as vault from "@pulumi/vault"
 
 import {LayerTwo, LayerTwoExports} from "global/refs"
 import {PlatformDatastore} from "./PlatformDatastore";
@@ -13,7 +14,9 @@ const config = new pulumi.Config()
 export interface PlatformSecretsArgs {
     datastore: PlatformDatastore,
     database: PlatformDatabase,
-    minioUser: minio.IamUser
+    minioUser: minio.IamUser,
+    vault: vault.Provider,
+    environment: string
 }
 
 
@@ -32,6 +35,9 @@ export class PlatformSecrets extends pulumi.ComponentResource {
 
     readonly googleClientId: docker.Secret
     readonly googleClientSecret: docker.Secret
+
+    readonly discordClientSecret: docker.Secret
+    readonly discordClientId: docker.Secret
 
     constructor(name: string, args: PlatformSecretsArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:Secrets", name, {}, opts)
@@ -73,6 +79,18 @@ export class PlatformSecrets extends pulumi.ComponentResource {
 
         this.googleClientSecret = new docker.Secret(`${name}-google-secret`, {
             data: btoa("blah")
+        }, { parent: this })
+
+        const discordSecret = vault.generic.getSecretOutput({
+            path: `platform/${args.environment}/manual/oauth/discord`
+        }, { parent: this, provider: args.vault })
+
+        this.discordClientSecret = new docker.Secret(`${name}-discord-secret`, {
+            data: discordSecret.data.apply(d => btoa(d.client_secret))
+        }, { parent: this })
+
+        this.discordClientId = new docker.Secret(`${name}-discord-client-id`, {
+            data: discordSecret.data.apply(d => btoa(d.client_id))
         }, { parent: this })
     }
 }

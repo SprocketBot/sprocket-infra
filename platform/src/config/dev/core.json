@@ -25,5 +25,10 @@
     "username": "{{database.username}}",
     "database": "{{database.database}}",
     "enable_logs": true
+  },
+  "auth": {
+    "discordCallbackUrl": "https://{{ api.url }}/login",
+    "jwt_expiry": 12000,
+    "frontend_callback": "https://{{ frontend.url }}/auth/callback"
   }
 }

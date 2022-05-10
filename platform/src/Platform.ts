@@ -96,7 +96,9 @@ export class Platform extends pulumi.ComponentResource {
         this.secrets = new PlatformSecrets(`${name}-secrets`, {
             datastore: this.datastore,
             database: this.database,
-            minioUser: this.objectStorage.minioUser
+            minioUser: this.objectStorage.minioUser,
+            vault: args.vault.platform,
+            environment: this.environmentSubdomain
         }, {parent: this})
 
 
@@ -107,10 +109,7 @@ export class Platform extends pulumi.ComponentResource {
         this.apiUrl = buildHost("api", this.environmentSubdomain, HOSTNAME)
         this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
         this.core = new SprocketService(`${name}-sprocket-core`, {
-            ...this.buildDefaultConfiguration("sprocket-core", args.configRoot),
-            image: {
-                namespace: "actualsovietshark", repository: "sprocket-core", tag: "main"
-            },
+            ...this.buildDefaultConfiguration("core", args.configRoot),
             labels: [
                 ...new TraefikLabels("sprocket-core")
                     .tls("lets-encrypt-tls")
@@ -139,12 +138,20 @@ export class Platform extends pulumi.ComponentResource {
                 secretId: this.secrets.googleClientSecret.id,
                 secretName: this.secrets.googleClientSecret.name,
                 fileName: "/app/secret/googleSecret.txt"
+            }, {
+                secretId: this.secrets.discordClientSecret.id,
+                secretName: this.secrets.discordClientSecret.name,
+                fileName: "/app/secret/disccord-secret.txt"
+            },{
+                secretId: this.secrets.discordClientId.id,
+                secretName: this.secrets.discordClientId.name,
+                fileName: "/app/secret/disccord-client.txt"
             }]
         }, {parent: this})
 
         this.clients = {
             web: new SprocketService(`${name}-sprocket-web`, {
-                ...this.buildDefaultConfiguration("sprocket-web", args.configRoot),
+                ...this.buildDefaultConfiguration("web", args.configRoot),
                 labels: [
                     ...new TraefikLabels("sprocket-web")
                         .tls("lets-encrypt-tls")
@@ -154,21 +161,15 @@ export class Platform extends pulumi.ComponentResource {
                 ],
                 configFile: {
                     destFilePath: "/app/src/config.json",
-                    sourceFilePath: `${args.configRoot}/sprocket-web.json`,
+                    sourceFilePath: `${args.configRoot}/web.json`,
                 },
                 networks: [
                     args.ingressNetworkId
-                ],
-                image: {
-                    namespace: "actualsovietshark", repository: "sprocket-web", tag: "main"
-                }
+                ]
             }, {parent: this}),
 
             discordBot: new SprocketService(`${name}-discord-bot`, {
                 ...this.buildDefaultConfiguration("discord-bot", args.configRoot),
-                image: {
-                    namespace: "actualsovietshark", repository: "discord-bot", tag: "main"
-                },
                 secrets: [{
                     secretId: this.secrets.discordBotToken.id,
                     secretName: this.secrets.discordBotToken.name,
@@ -202,10 +203,7 @@ export class Platform extends pulumi.ComponentResource {
                     secretId: this.secrets.influxToken.id,
                     secretName: this.secrets.influxToken.name,
                     fileName: "/app/secret/influx-token"
-                }],
-                image: {
-                    namespace: "actualsovietshark", repository: "server-analytics-service", tag: "main"
-                }
+                }]
             }, {parent: this}),
 
             matchmaking: new SprocketService(`${name}-matchmaking-service`, {
@@ -302,6 +300,12 @@ export class Platform extends pulumi.ComponentResource {
             gql: {
                 internal: this.core?.hostname ? this.core.hostname.apply(h => `${h}:3001/graphql`) : "",
                 public: this.apiUrl
+            },
+            frontend: {
+                url: this.webUrl
+            },
+            api: {
+                url: this.apiUrl
             }
         }
     })

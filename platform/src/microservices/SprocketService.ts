@@ -61,7 +61,14 @@ export type SprocketServiceConfigTemplateValues = {
     gql: {
         internal: string | pulumi.Output<string>
         public: string | pulumi.Output<string>
+    },
+    frontend: {
+        url: string | pulumi.Output<string>
+    },
+    api: {
+        url: string | pulumi.Output<string>
     }
+
 }
 
 export type SprocketServiceArgs = {
