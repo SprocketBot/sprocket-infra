@@ -58,7 +58,11 @@ export class Redis extends pulumi.ComponentResource {
                     }],
                     args: [
                         "--requirepass",
-                        this.credentials.password
+                        this.credentials.password,
+                        "--loadmodule",
+                        "/usr/lib/redis/modules/rejson.so",
+                        "--loadmodule",
+                        "/usr/lib/redis/modules/redisearch.so"
                     ],
                     configs: [{
                         configId: this.config.id,

@@ -48,6 +48,7 @@ export type SprocketServiceConfigTemplateValues = {
         bucket: string | pulumi.Output<string>,
     },
     redis: {
+        port: number | pulumi.Output<number>,
         host: string | pulumi.Output<string>,
     },
     celery: {

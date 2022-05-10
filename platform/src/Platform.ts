@@ -141,11 +141,15 @@ export class Platform extends pulumi.ComponentResource {
             }, {
                 secretId: this.secrets.discordClientSecret.id,
                 secretName: this.secrets.discordClientSecret.name,
-                fileName: "/app/secret/disccord-secret.txt"
+                fileName: "/app/secret/discord-secret.txt"
             },{
                 secretId: this.secrets.discordClientId.id,
                 secretName: this.secrets.discordClientId.name,
-                fileName: "/app/secret/disccord-client.txt"
+                fileName: "/app/secret/discord-client.txt"
+            }, {
+                secretId: this.secrets.redisPassword.id,
+                secretName: this.secrets.redisPassword.name,
+                fileName: "/app/secret/redis-password.txt"
             }]
         }, {parent: this})
 
@@ -272,6 +276,7 @@ export class Platform extends pulumi.ComponentResource {
                 networkId: this.postgresNetworkId
             },
             redis: {
+                port: 6379,
                 host: this.datastore.redis.hostname
             },
             rmq: {

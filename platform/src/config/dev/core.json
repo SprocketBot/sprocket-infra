@@ -1,9 +1,15 @@
 {
   "transport": {
     "url": "amqp://{{rmq.host}}:5672",
+    "matchmaking_queue": "dev-matchmaking",
     "core_queue": "dev-core",
     "bot_queue": "dev-bot",
-    "analytics_queue": "dev-analytics"
+    "analytics_queue": "dev-analytics",
+    "events_queue": "dev-events",
+    "events_application_key": "dev-core"
+  },
+  "gql": {
+    "playground": false
   },
   "logger": {
     "levels": true
@@ -19,6 +25,10 @@
     "backend": "{{celery.backend}}",
     "queue": "{{celery.queue}}"
   },
+  "redis": {
+    "port": {{redis.port}},
+    "host": "{{ redis.host }}"
+  },
   "db": {
     "host": "{{database.host}}",
     "port": {{database.port}},
@@ -27,7 +37,8 @@
     "enable_logs": true
   },
   "auth": {
-    "discordCallbackUrl": "https://{{ api.url }}/login",
+    "discordCallbackURL": "https://{{ api.url }}/auth/discord/redirect",
+    "googleCallbackURL": "https://{{ api.url }}/auth/google/redirect",
     "jwt_expiry": 12000,
     "frontend_callback": "https://{{ frontend.url }}/auth/callback"
   }
