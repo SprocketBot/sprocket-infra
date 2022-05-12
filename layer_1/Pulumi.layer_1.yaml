@@ -1,5 +1,10 @@
 encryptionsalt: v1:imM0LPy+Pn0=:v1:cbZAM7OXeuOFsG3r:xMj8Umq5hMzmeINpaKAc0zuioZ3Ndg==
 config:
+  layer_1:discord-fa-client-secret:
+    secure: v1:jJikJCveqopPM+b8:ROi3hBNnSOSN99eCpAOAumv/l76WJv81+RFMlKUTY5KqQMfMe324N0z2fy1wwxlC
+  layer_1:docker-access-token:
+    secure: v1:GnJG9CE7EY5olJWj:bw96o6j6SMIJzcok92R+U/scDFWdASIwKIPXt33N1ktOc8JAU3J4iD+nMHEcgRWN1pU9UQ==
+  layer_1:docker-username: actualsovietshark
   layer_1:vault-s3-access-key: YWS9AKY66LS815BUPG6G
   layer_1:vault-s3-bucket: sprocket
   layer_1:vault-s3-endpoint: https://us-southeast-1.linodeobjects.com

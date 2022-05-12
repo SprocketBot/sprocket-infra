@@ -42,4 +42,4 @@ providers:
 #    address: telegraf:8081
 #    protocol: http
 log:
-  level: debug
+  level: info

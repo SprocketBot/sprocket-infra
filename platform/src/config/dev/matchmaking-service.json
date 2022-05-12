@@ -9,7 +9,7 @@
     "events_application_key": "dev-matchmaking-service"
   },
   "redis": {
-    "port": 6379,
+    "port": {{redis.port}},
     "host": "{{ redis.host }}",
     "prefix": "{{ redis.prefix }}"
   }

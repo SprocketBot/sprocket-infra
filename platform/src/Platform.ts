@@ -105,17 +105,26 @@ export class Platform extends pulumi.ComponentResource {
         /////////////////
         // Create Clients / Core
         /////////////////
-
         this.apiUrl = buildHost("api", this.environmentSubdomain, HOSTNAME)
         this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
+
+        const coreLabels = new TraefikLabels("sprocket-core")
+            .tls("lets-encrypt-tls")
+            .rule(`Host(\`${this.apiUrl}\`)`)
+            .targetPort(3001)
+        const webLabels = new TraefikLabels("sprocket-web")
+            .tls("lets-encrypt-tls")
+            .rule(`Host(\`${this.webUrl}\`)`)
+            .targetPort(3000)
+
+        if (config.getBoolean("alpha-restrictions")) {
+            webLabels.forwardAuthRule("AlphaTesters")
+        }
+
         this.core = new SprocketService(`${name}-sprocket-core`, {
             ...this.buildDefaultConfiguration("core", args.configRoot),
             labels: [
-                ...new TraefikLabels("sprocket-core")
-                    .tls("lets-encrypt-tls")
-                    .rule(`Host(\`${this.apiUrl}\`)`)
-                    .targetPort(3001)
-                    .complete
+                ...coreLabels.complete
             ],
             flags: {database: true},
             secrets: [{
@@ -160,11 +169,7 @@ export class Platform extends pulumi.ComponentResource {
             web: new SprocketService(`${name}-sprocket-web`, {
                 ...this.buildDefaultConfiguration("web", args.configRoot),
                 labels: [
-                    ...new TraefikLabels("sprocket-web")
-                        .tls("lets-encrypt-tls")
-                        .rule(`Host(\`${this.webUrl}\`)`)
-                        .targetPort(3000)
-                        .complete
+                    ...webLabels.complete
                 ],
                 configFile: {
                     destFilePath: "/app/src/config.json",

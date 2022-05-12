@@ -1,29 +1,25 @@
 export class TraefikLabels {
-    get routerPrefix() { return `traefik.${this.type}.routers.${this.name}` }
-    get servicePrefix() { return `traefik.${this.type}.services.${this.name}` }
-    
-    private routerLabel(key: string, value: string): { label: string, value: string } {
-        return {
-            label: `${this.routerPrefix}.${key}`,
-            value: value
-        }
-    }
-
-    private serviceLabel(key: string, value: string): { label: string, value: string } {
-        return {
-            label: `${this.servicePrefix}.${key}`,
-            value: value
-        }
-    }
-
-    constructor(readonly name: string, readonly type: "http" | "tcp" = "http") {}
-
-    private output: {label: string, value: string}[] = [{
+    private output: { label: string, value: string }[] = [{
         label: "traefik.enable", value: "true"
     }]
 
-    get complete(): {label: string, value: string}[] {
+    constructor(readonly name: string, readonly type: "http" | "tcp" = "http") {
+    }
+
+    get complete(): { label: string, value: string }[] {
         return this.output;
+    }
+
+    private get routerPrefix() {
+        return `traefik.${this.type}.routers.${this.name}`
+    }
+
+    private get servicePrefix() {
+        return `traefik.${this.type}.services.${this.name}`
+    }
+
+    private get middlewarePrefix() {
+        return `traefik.${this.type}.middlewares.${this.name}`
     }
 
     rule(rule: string): TraefikLabels {
@@ -51,5 +47,30 @@ export class TraefikLabels {
     targetPort(port: number): TraefikLabels {
         this.output.push(this.serviceLabel("loadbalancer.server.port", port.toString()))
         return this;
+    }
+
+    forwardAuthRule(rule: string): TraefikLabels {
+        this.output.push({
+            label: `${this.middlewarePrefix}.forwardauth.address`,
+            value: `https://fa.spr.ocket.cloud/login${rule ? `?rule=${rule}` : ""}`
+        })
+        if (!this.output.some(l => l.label.endsWith("middlewares"))) {
+            this.output.push(this.routerLabel("middlewares", this.name))
+        }
+        return this
+    }
+
+    private routerLabel(key: string, value: string): { label: string, value: string } {
+        return {
+            label: `${this.routerPrefix}.${key}`,
+            value: value
+        }
+    }
+
+    private serviceLabel(key: string, value: string): { label: string, value: string } {
+        return {
+            label: `${this.servicePrefix}.${key}`,
+            value: value
+        }
     }
 }

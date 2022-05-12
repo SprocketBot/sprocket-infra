@@ -7,20 +7,24 @@ import { HOSTNAME } from "../../constants";
 import { ConfigFile } from "../../helpers/docker/ConfigFile";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 import { SocketProxy } from "./SocketProxy";
+import {DiscordForwardAuth} from "./DiscordForwardAuth";
 
 
 export interface TraefikArgs {
     staticConfigurationPath: string
+    faConfigurationPath: string
 }
 
 export class Traefik extends pulumi.ComponentResource {
     private readonly staticConfig: ConfigFile
-    
+
     private readonly network: docker.Network;
     private readonly volume: docker.Volume;
 
     private readonly service: docker.Service;
     private readonly socketProxy: SocketProxy;
+
+    readonly forwardAuth: DiscordForwardAuth
 
     readonly networkId: docker.Network["id"]
 
@@ -53,6 +57,7 @@ export class Traefik extends pulumi.ComponentResource {
                         .entryPoints("websecure")
                         .tls("lets-encrypt-tls")
                         .targetPort(9999)
+                        .forwardAuthRule("SprocketAdmin")
                         .complete,
             taskSpec: {
                 containerSpec: {
@@ -110,6 +115,11 @@ export class Traefik extends pulumi.ComponentResource {
             parent: this
         })
 
+        this.forwardAuth = new DiscordForwardAuth(`${name}-fa`, {
+            networkId: this.networkId,
+            configFilePath: args.faConfigurationPath
+        }, { parent: this })
+
         this.registerOutputs({
             networkId: this.networkId
         })
@@ -117,15 +127,15 @@ export class Traefik extends pulumi.ComponentResource {
 
     private updateDockerSocketPath(data: string) {
         const doc = yaml.parse(data)
-        
+
         return this.socketProxy.serviceName.apply(name => {
             if (doc?.providers?.docker) {
-                doc.providers.docker.endpoint = `tcp://${name}:2375`    
+                doc.providers.docker.endpoint = `tcp://${name}:2375`
             }
 
             return yaml.stringify(doc);
-            
-        })        
+
+        })
     }
-    
+
 }
