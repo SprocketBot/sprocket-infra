@@ -50,6 +50,7 @@ export type SprocketServiceConfigTemplateValues = {
     redis: {
         port: number | pulumi.Output<number>,
         host: string | pulumi.Output<string>,
+        prefix: string | pulumi.Output<string>,
     },
     celery: {
         broker: string | pulumi.Output<string>,

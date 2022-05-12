@@ -10,6 +10,7 @@
   },
   "redis": {
     "port": 6379,
-    "host": "{{ redis.host }}"
+    "host": "{{ redis.host }}",
+    "prefix": "{{ redis.prefix }}"
   }
 }

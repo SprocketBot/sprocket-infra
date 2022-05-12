@@ -150,7 +150,10 @@ export class Platform extends pulumi.ComponentResource {
                 secretId: this.secrets.redisPassword.id,
                 secretName: this.secrets.redisPassword.name,
                 fileName: "/app/secret/redis-password.txt"
-            }]
+            }],
+            networks: [
+                args.ingressNetworkId
+            ]
         }, {parent: this})
 
         this.clients = {
@@ -277,7 +280,8 @@ export class Platform extends pulumi.ComponentResource {
             },
             redis: {
                 port: 6379,
-                host: this.datastore.redis.hostname
+                host: this.datastore.redis.hostname,
+                prefix: this.environmentSubdomain
             },
             rmq: {
                 host: this.datastore.rabbitmq.hostname

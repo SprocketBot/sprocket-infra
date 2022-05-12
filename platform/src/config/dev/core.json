@@ -27,7 +27,8 @@
   },
   "redis": {
     "port": {{redis.port}},
-    "host": "{{ redis.host }}"
+    "host": "{{ redis.host }}",
+    "prefix": "{{ redis.prefix }}"
   },
   "db": {
     "host": "{{database.host}}",
@@ -37,8 +38,8 @@
     "enable_logs": true
   },
   "auth": {
-    "discordCallbackURL": "https://{{ api.url }}/auth/discord/redirect",
-    "googleCallbackURL": "https://{{ api.url }}/auth/google/redirect",
+    "discordCallbackURL": "https://{{ api.url }}/login",
+    "googleCallbackURL": "https://{{ api.url }}/google/redirect",
     "jwt_expiry": 12000,
     "frontend_callback": "https://{{ frontend.url }}/auth/callback"
   }
