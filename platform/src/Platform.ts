@@ -239,7 +239,12 @@ export class Platform extends pulumi.ComponentResource {
                     secretId: this.secrets.s3SecretKey.id,
                     secretName: this.secrets.s3SecretKey.name,
                     fileName: "/app/secret/s3-secret"
+                }, {
+                    secretId: this.secrets.ballchasingApiToken.id,
+                    secretName: this.secrets.ballchasingApiToken.name,
+                    fileName: "/app/secret/ballchasing-token"
                 }]
+
             }, {parent: this})
         };
 

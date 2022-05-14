@@ -39,6 +39,8 @@ export class PlatformSecrets extends pulumi.ComponentResource {
     readonly discordClientSecret: docker.Secret
     readonly discordClientId: docker.Secret
 
+    readonly ballchasingApiToken: docker.Secret
+
     constructor(name: string, args: PlatformSecretsArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:Secrets", name, {}, opts)
 
@@ -91,6 +93,10 @@ export class PlatformSecrets extends pulumi.ComponentResource {
 
         this.discordClientId = new docker.Secret(`${name}-discord-client-id`, {
             data: discordSecret.data.apply(d => btoa(d.client_id))
+        }, { parent: this })
+
+        this.ballchasingApiToken = new docker.Secret(`${name}-ballchasing-token`, {
+            data: vault.generic.getSecretOutput({ path: "platform/ballchasing"}, {parent: this, provider: args.vault}).data.apply((d) => btoa(d.token))
         }, { parent: this })
     }
 }
