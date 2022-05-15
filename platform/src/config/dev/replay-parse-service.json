@@ -14,5 +14,6 @@
     "parsed_object_prefix": "dev",
     "accessKey": "{{ s3.accessKey }}"
   },
-  "tempDir": "/tmp"
+  "tempDir": "/tmp",
+  "parser": "ballchasing"
 }
