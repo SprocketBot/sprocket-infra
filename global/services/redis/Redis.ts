@@ -12,22 +12,20 @@ export interface RedisArgs {
     configFilepath: string
     vaultProvider: vault.Provider
 
-    platformNetworkId: docker.Network["id"]
+    platformNetworkId?: docker.Network["id"]
     ingressNetworkId: docker.Network["id"]
 
-    url: string;
+    url?: string;
 }
 
 export class Redis extends pulumi.ComponentResource {
 
-    private readonly config: ConfigFile
-
-    private readonly volume: docker.Volume
-    private readonly service: docker.Service
-
     readonly hostname: docker.Service["name"]
     readonly credentials: VaultCredentials
-    readonly url: string | pulumi.Output<string>
+    readonly url?: string | pulumi.Output<string>
+    private readonly config: ConfigFile
+    private readonly volume: docker.Volume
+    private readonly service: docker.Service
 
     constructor(name: string, args: RedisArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Redis", name, {}, opts)
@@ -76,10 +74,10 @@ export class Redis extends pulumi.ComponentResource {
                         "node.labels.role==storage",
                     ]
                 },
-                networks: [
+                networks: args.platformNetworkId ? [
                     args.platformNetworkId,
                     args.ingressNetworkId
-                ]
+                ] : [args.ingressNetworkId]
             },
             labels: args.url ? new TraefikLabels(`${name}`, "tcp")
                 .rule(`HostSNI(\`${args.url}\`)`)

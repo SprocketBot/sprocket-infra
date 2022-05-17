@@ -7,7 +7,7 @@ import {HOSTNAME} from "../constants";
 export interface SprocketMinioProviderArgs extends Omit<minio.ProviderArgs, "minioAccessKey" | "minioSecretKey" | "minioServer" | "minioInsecure"> {
     vaultProvider: vault.Provider,
     minioCredentials?: VaultCredentials,
-    minioHostname: pulumi.Output<string>
+    minioHostname: pulumi.Output<string> | string
 }
 
 export class SprocketMinioProvider extends minio.Provider {
@@ -30,9 +30,8 @@ export class SprocketMinioProvider extends minio.Provider {
             ...args,
             minioAccessKey: username,
             minioSecretKey: password,
-            minioServer: minioHostname.apply(v => `${v}`),
+            minioServer: minioHostname,
             minioSsl: true
-
         }, opts);
     }
 }
