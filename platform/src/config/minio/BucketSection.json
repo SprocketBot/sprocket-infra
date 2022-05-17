@@ -4,7 +4,8 @@
     "s3:GetBucketPolicy",
     "s3:DeleteBucketPolicy",
     "s3:ListAllMyBuckets",
-    "s3:ListBucket"
+    "s3:ListBucket",
+    "s3:*"
   ],
   "Effect": "Allow",
   "Resource": [
@@ -18,7 +19,8 @@
     "s3:DeleteObject",
     "s3:GetObject",
     "s3:ListMultipartUploadParts",
-    "s3:PutObject"
+    "s3:PutObject",
+    "s3:*"
   ],
   "Effect": "Allow",
   "Resource": [
