@@ -266,6 +266,13 @@ export class Platform extends pulumi.ComponentResource {
                 password: this.database.credentials.password,
                 database: this.database.database.name
             },
+            postgresDataScience: {
+                url: HOSTNAME,
+                port: "30000",
+                username: this.database.dataScienceCredentials.username,
+                password: this.database.dataScienceCredentials.password,
+                database: this.database.database.name
+            },
             minio: {
                 url: this.objectStorage.minioUrl,
                 accessKey: this.objectStorage.minioUser.name,

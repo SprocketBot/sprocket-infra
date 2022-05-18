@@ -23,7 +23,15 @@ export type PlatformVaultArgs = {
         username: string | pulumi.Output<string>,
         password: string | pulumi.Output<string>,
         database: string | pulumi.Output<string>
-        connstring?: string | pulumi.Output<string>
+        connstring?: string | pulumi.Output<string>,
+    },
+    postgresDataScience: {
+        url: string | pulumi.Output<string>,
+        port: string | pulumi.Output<string>,
+        username: string | pulumi.Output<string>,
+        password: string | pulumi.Output<string>,
+        database: string | pulumi.Output<string>
+        connstring?: string | pulumi.Output<string>,
     }
     minio: {
         url: string | pulumi.Output<string>,
@@ -37,9 +45,11 @@ export class PlatformVault extends pulumi.ComponentResource {
     readonly redisSecret: vault.generic.Secret
     readonly rabbitmqSecret: vault.generic.Secret
     readonly postgresSecret: vault.generic.Secret
+    readonly postgresDataScienceSecret: vault.generic.Secret
+
     readonly minioSecret: vault.generic.Secret
-    
-    
+
+
     constructor(name: string, args: PlatformVaultArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:VaultSync", name, {}, opts)
 
@@ -56,6 +66,11 @@ export class PlatformVault extends pulumi.ComponentResource {
         this.postgresSecret = new vault.generic.Secret(`${name}-postgres-vault`, {
             path: `platform/${args.environment}/postgres`,
             dataJson: pulumi.output(args.postgres).apply(r => JSON.stringify(r))
+        }, { parent: this, provider: args.vaultProvider })
+
+        this.postgresDataScienceSecret  = new vault.generic.Secret(`${name}-postgres-data-science-vault`, {
+            path: `platform/data-science/${args.environment}/postgres`,
+            dataJson: pulumi.output(args.postgresDataScience).apply(r => JSON.stringify(r))
         }, { parent: this, provider: args.vaultProvider })
 
         this.minioSecret = new vault.generic.Secret(`${name}-minio-vault`, {

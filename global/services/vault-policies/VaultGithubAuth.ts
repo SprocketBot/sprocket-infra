@@ -15,6 +15,9 @@ export class VaultGithubAuth extends pulumi.ComponentResource {
     readonly githubAdminTeam: vault.github.Team
     readonly githubAdminPolicy: vault.Policy
 
+    readonly githubDataScienceTeam: vault.github.Team
+    readonly githubDataSciencePolicy: vault.Policy
+
     readonly vaultProvider: vault.Provider
 
     constructor(name: string, args: VaultGithubAuthArgs, opts?: pulumi.ComponentResourceOptions) {
@@ -47,6 +50,18 @@ export class VaultGithubAuth extends pulumi.ComponentResource {
                 this.githubAdminPolicy.name
             ],
             team: "maintainers"
+        }, {parent: this, provider: this.vaultProvider})
+
+        this.githubDataSciencePolicy = new vault.Policy(`${name}-github-ds-policy`, {
+            name: "github-data-science",
+            policy: readFileSync(`${__dirname}/policies/github-data-science.hcl`).toString()
+        }, {parent: this, provider: this.vaultProvider})
+
+        this.githubDataScienceTeam = new vault.github.Team(`${name}-github-datascience-team`, {
+            policies: [
+                this.githubDataSciencePolicy.name
+            ],
+            team: "data-science"
         }, {parent: this, provider: this.vaultProvider})
     }
 }
