@@ -1,1 +1,6 @@
-export const HOSTNAME = "spr.ocket.cloud";
+import * as pulumi from "@pulumi/pulumi"
+const config = new pulumi.Config()
+
+
+
+export const HOSTNAME = config.get("hostname") ?? "spr.ocket.cloud";

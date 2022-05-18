@@ -1,3 +1,7 @@
+import * as pulumi from "@pulumi/pulumi"
+const config = new pulumi.Config()
+
+
 export class TraefikLabels {
     private output: { label: string, value: string }[] = [{
         label: "traefik.enable", value: "true"
@@ -39,6 +43,7 @@ export class TraefikLabels {
     }
 
     tls(certResolver: string): TraefikLabels {
+        if (config.getBoolean("no-tls")) return this;
         this.output.push(this.routerLabel("tls", "true"));
         this.output.push(this.routerLabel("tls.certResolver", certResolver))
         return this;
