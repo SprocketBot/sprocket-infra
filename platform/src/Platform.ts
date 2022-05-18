@@ -252,7 +252,7 @@ export class Platform extends pulumi.ComponentResource {
             vaultProvider: args.vault.platform,
             environment: this.environmentSubdomain,
             redis: {
-                url: this.datastore.redis.url,
+                url: this.datastore.redis.url ?? "",
                 password: this.datastore.redis.credentials.password
             },
             rabbitmq: {
