@@ -38,8 +38,12 @@
     "enable_logs": true
   },
   "auth": {
-    "discordCallbackURL": "https://{{ api.url }}/login",
-    "googleCallbackURL": "https://{{ api.url }}/google/redirect",
+    "discord": {
+      "callbackUrl": "https://{{ api.url }}/login"
+    },
+    "google": {
+      "callbackUrl": "https://{{ api.url }}/google/redirect"
+    },
     "jwt_expiry": 12000,
     "frontend_callback": "https://{{ frontend.url }}/auth/callback"
   }
