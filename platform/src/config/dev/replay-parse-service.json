@@ -14,6 +14,10 @@
     "parsed_object_prefix": "dev",
     "accessKey": "{{ s3.accessKey }}"
   },
+  "ballchasing": {
+    "maxRetries": 4,
+    "backoffFactor": 4
+  },
   "tempDir": "/tmp",
   "parser": "ballchasing"
 }
