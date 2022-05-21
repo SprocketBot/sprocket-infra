@@ -6,7 +6,8 @@
     "bot_queue": "dev-bot",
     "analytics_queue": "dev-analytics",
     "events_queue": "dev-events",
-    "events_application_key": "dev-core"
+    "events_application_key": "dev-core",
+    "queue": "{{celery.queue}}"
   },
   "gql": {
     "playground": false
@@ -21,11 +22,6 @@
     "bucketNames": {
       "replays": "{{s3.bucket}}"
     }
-  },
-  "celery": {
-    "broker": "{{celery.broker}}",
-    "backend": "{{celery.backend}}",
-    "queue": "{{celery.queue}}"
   },
   "redis": {
     "port": {{redis.port}},
