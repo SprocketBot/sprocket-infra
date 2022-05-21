@@ -7,7 +7,7 @@
     "analytics_queue": "dev-analytics",
     "events_queue": "dev-events",
     "events_application_key": "dev-core",
-    "queue": "{{celery.queue}}"
+    "celery-queue": "{{celery.queue}}"
   },
   "gql": {
     "playground": false

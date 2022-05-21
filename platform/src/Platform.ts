@@ -151,7 +151,7 @@ export class Platform extends pulumi.ComponentResource {
                 secretId: this.secrets.discordClientSecret.id,
                 secretName: this.secrets.discordClientSecret.name,
                 fileName: "/app/secret/discord-secret.txt"
-            },{
+            }, {
                 secretId: this.secrets.discordClientId.id,
                 secretName: this.secrets.discordClientId.name,
                 fileName: "/app/secret/discord-client.txt"
@@ -298,7 +298,7 @@ export class Platform extends pulumi.ComponentResource {
             redis: {
                 port: 6379,
                 host: this.datastore.redis.hostname,
-                prefix: this.environmentSubdomain
+                prefix: this.environmentSubdomain,
             },
             rmq: {
                 host: this.datastore.rabbitmq.hostname
@@ -317,8 +317,8 @@ export class Platform extends pulumi.ComponentResource {
             },
             celery: {
                 broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}`) ?? "",
-                backend: this.datastore.redis?.hostname.apply(h => `redis://${h}`) ?? "",
-                queue: `${this.environmentSubdomain}-celery`
+                backend: pulumi.all([this.datastore.redis?.hostname, this.datastore.redis?.credentials.password]).apply(([h,p]) => `redis://:${p}@${h}`) ?? "",
+                queue: `${this.environmentSubdomain}-celery-hosted`
             },
             bot: {
                 prefix: this.environmentSubdomain === "main" ? "s." : `${this.environmentSubdomain}.`
