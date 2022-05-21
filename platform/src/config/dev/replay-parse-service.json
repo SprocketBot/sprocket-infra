@@ -5,14 +5,15 @@
     "queue": "{{ celery.queue }}"
   },
   "transport": {
-    "url": "amqp://{{ rmq.host }}",
+    "url": "amqp://{{ rmq.host }}:5672",
     "analytics_queue": "dev-analytics"
   },
   "minio": {
     "hostname": "{{ s3.endpoint }}",
     "bucket": "{{ s3.bucket }}",
     "parsed_object_prefix": "dev",
-    "accessKey": "{{ s3.accessKey }}"
+    "accessKey": "{{ s3.accessKey }}",
+    "secure": true
   },
   "ballchasing": {
     "maxRetries": 4,

@@ -229,9 +229,6 @@ export class Platform extends pulumi.ComponentResource {
 
             replayParse: new SprocketService(`${name}-replay-parse-service`, {
                 ...this.buildDefaultConfiguration("replay-parse-service", args.configRoot),
-                image: {
-                    namespace: "actualsovietshark", repository: "replay-parse-service", tag: "main"
-                },
                 env: {
                     ENV: "production"
                 },
