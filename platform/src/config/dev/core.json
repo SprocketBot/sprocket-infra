@@ -16,6 +16,8 @@
   },
   "minio": {
     "endPoint": "{{s3.endpoint}}",
+    "port": {{ s3.port }},
+    "useSSL": {{ s3.ssl }},
     "bucketNames": {
       "replays": "{{s3.bucket}}"
     }
