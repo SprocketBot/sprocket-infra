@@ -202,7 +202,11 @@ export class Platform extends pulumi.ComponentResource {
                 secrets: [{
                     secretId: this.secrets.s3SecretKey.id,
                     secretName: this.secrets.s3SecretKey.name,
-                    fileName: "/app/secret/s3-password.txt"
+                    fileName: "/app/secret/minio-secret.txt"
+                },{
+                    secretId: this.secrets.s3AccessKey.id,
+                    secretName: this.secrets.s3AccessKey.name,
+                    fileName: "/app/secret/minio-access.txt"
                 }]
             }, {parent: this}),
 
@@ -284,6 +288,20 @@ export class Platform extends pulumi.ComponentResource {
         platformNetworkId: this.network.id,
         configFile: {sourceFilePath: `${configRoot}/${name}.json`},
         configValues: {
+            transport: pulumi.all([this.datastore.rabbitmq.hostname]).apply(([rmqHost]) => JSON.stringify({
+                url: `amqp://${rmqHost}:5672`,
+                matchmaking_queue: `${pulumi.getStack()}-matchmaking`,
+                core_queue: `${pulumi.getStack()}-core`,
+                bot_queue: `${pulumi.getStack()}-bot`,
+                analytics_queue: `${pulumi.getStack()}-analytics`,
+                events_queue: `${pulumi.getStack()}-events`,
+                events_application_key: `${pulumi.getStack()}-${name}`,
+                "celery-queue": `${pulumi.getStack()}-celery`,
+                image_generation_queue: `${pulumi.getStack()}-ig`
+            }, null, 2)),
+            logger: {
+                levels: pulumi.getStack() === "main" ? JSON.stringify(["error", "warn", "log"]) : true
+            },
             database: {
                 host: this.database.host,
                 port: 5432,

@@ -24,6 +24,10 @@ type ConfigInput = {
 type AdditionalConfigInput = ConfigInput & { destFilePath: string }
 
 export type SprocketServiceConfigTemplateValues = {
+    transport: string | pulumi.Output<string>,
+    logger: {
+        levels: string | pulumi.Output<string> | boolean
+    },
     rmq: {
         host: string | pulumi.Output<string>,
     },

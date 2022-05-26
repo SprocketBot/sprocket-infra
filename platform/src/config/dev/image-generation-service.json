@@ -6,14 +6,16 @@
     "database": "MLEDB_DEV",
     "enable_logs": false
   },
-  "transport": {
-    "url": "amqp://{{ rmq.host }}"
+  "transport": {{{transport}}},
+  "logger": {
+    "levels": {{{logger.levels}}}
   },
-  "s3": {
-    "endpoint": "{{ s3.endpoint }}",
+  "minio": {
+    "endPoint": "{{s3.endpoint}}",
     "port": {{ s3.port }},
-    "ssl": {{ s3.ssl }},
-    "accessKey": "{{ s3.accessKey }}",
-    "bucket": "svg-reports"
+    "useSSL": {{ s3.ssl }},
+    "bucketNames": {
+      "replays": "{{s3.bucket}}"
+    }
   }
 }

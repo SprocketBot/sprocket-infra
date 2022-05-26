@@ -1,10 +1,7 @@
 {
-  "transport": {
-    "url": "amqp://{{ rmq.host }}",
-    "analytics_queue": "dev-analytics"
-  },
+  "transport": {{{transport}}},
   "logger": {
-    "levels": true
+    "levels": {{{logger.levels}}}
   },
   "influx": {
     "address": "http://influx:8086",

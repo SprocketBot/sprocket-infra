@@ -1,20 +1,10 @@
 {
-  "transport": {
-    "url": "amqp://{{rmq.host}}:5672",
-    "matchmaking_queue": "dev-matchmaking",
-    "core_queue": "dev-core",
-    "bot_queue": "dev-bot",
-    "analytics_queue": "dev-analytics",
-    "events_queue": "dev-events",
-    "events_application_key": "dev-core",
-    "celery-queue": "{{celery.queue}}",
-    "image_generation_queue": "dev-image-gen"
-  },
+  "transport": {{{transport}}},
   "gql": {
     "playground": false
   },
   "logger": {
-    "levels": true
+    "levels": {{{logger.levels}}}
   },
   "minio": {
     "endPoint": "{{s3.endpoint}}",

@@ -4,10 +4,7 @@
     "backend": "{{ celery.backend }}",
     "queue": "{{ celery.queue }}"
   },
-  "transport": {
-    "url": "amqp://{{ rmq.host }}:5672",
-    "analytics_queue": "dev-analytics"
-  },
+  "transport": {{{transport}}},
   "minio": {
     "hostname": "{{ s3.endpoint }}",
     "bucket": "{{ s3.bucket }}",

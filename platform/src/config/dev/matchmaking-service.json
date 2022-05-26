@@ -1,16 +1,11 @@
 {
-  "transport": {
-    "url": "amqp://{{ rmq.host }}:5672",
-    "matchmaking_queue": "dev-matchmaking",
-    "core_queue": "dev-core",
-    "bot_queue": "dev-bot",
-    "analytics_queue": "dev-analytics",
-    "events_queue": "dev-events",
-    "events_application_key": "dev-matchmaking-service"
-  },
+  "transport": {{{transport}}},
   "redis": {
     "port": {{redis.port}},
     "host": "{{ redis.host }}",
     "prefix": "{{ redis.prefix }}"
+  },
+  "logger": {
+    "levels": {{{logger.levels}}}
   }
 }
