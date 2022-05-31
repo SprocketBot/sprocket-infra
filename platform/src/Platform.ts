@@ -333,7 +333,7 @@ export class Platform extends pulumi.ComponentResource {
             celery: {
                 broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}`) ?? "",
                 backend: pulumi.all([this.datastore.redis?.hostname, this.datastore.redis?.credentials.password]).apply(([h,p]) => `redis://:${p}@${h}`) ?? "",
-                queue: `${this.environmentSubdomain}-celery-hosted`
+                queue: `${this.environmentSubdomain}-celery`
             },
             bot: {
                 prefix: this.environmentSubdomain === "main" ? "s." : `${this.environmentSubdomain}.`
