@@ -68,7 +68,7 @@ export class Redis extends pulumi.ComponentResource {
                         fileName: "/usr/local/etc/redis/redis.conf"
                     }]
                 },
-                logDriver: DefaultLogDriver("redis", true),
+                logDriver: DefaultLogDriver(name, true),
                 placement: {
                     constraints: [
                         "node.labels.role==storage",

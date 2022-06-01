@@ -17,7 +17,8 @@ export interface VaultPasswordArgs {
     vault: {
         path: string,
         provider: vault.Provider
-    }
+    },
+    additionalVaultData?: Record<string, string>
 }
 
 export class VaultCredentials extends pulumi.ComponentResource {
@@ -36,8 +37,9 @@ export class VaultCredentials extends pulumi.ComponentResource {
         this.vaultSecret = new vault.generic.Secret(`${name}-vs`, {
             path: args.vault.path,
             dataJson: this.passwordResource.result.apply(pw => JSON.stringify({
+                ...args.additionalVaultData ?? {},
                 username: args.username,
-                password: pw
+                password: pw,
             }))
         }, {parent: this, provider: args.vault.provider})
 

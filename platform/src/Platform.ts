@@ -14,6 +14,7 @@ import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
 import {PlatformVault} from "./PlatformVault";
 import {PlatformMinio} from "./PlatformMinio";
+import {EloService} from "./microservices/EloService";
 
 const config = new pulumi.Config()
 
@@ -62,7 +63,8 @@ export class Platform extends pulumi.ComponentResource {
         imageGen: SprocketService,
         analytics: SprocketService,
         matchmaking: SprocketService,
-        replayParse: SprocketService
+        replayParse: SprocketService,
+        elo: EloService
     }
 
     constructor(name: string, args: PlatformArgs, opts?: pulumi.ComponentResourceOptions) {
@@ -245,8 +247,16 @@ export class Platform extends pulumi.ComponentResource {
                     secretName: this.secrets.ballchasingApiToken.name,
                     fileName: "/app/secret/ballchasing-token"
                 }]
+            }, {parent: this}),
 
-            }, {parent: this})
+            elo: new EloService(`${name}-elo-service`, {
+                vault: args.vault.platform,
+                ...this.buildDefaultConfiguration("elo-service", args.configRoot),
+                env: {
+                    ENV: "production"
+                },
+                ingressNetworkId: args.ingressNetworkId
+            }, {parent: this}),
         };
 
         this.vaultSync = new PlatformVault(`${name}-vault-sync`, {

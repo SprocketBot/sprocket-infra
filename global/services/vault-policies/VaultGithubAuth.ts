@@ -1,6 +1,7 @@
 import * as vault from "@pulumi/vault"
 import * as pulumi from "@pulumi/pulumi"
 import {readFileSync} from "fs";
+import {VaultGithubTeam} from "./VaultGithubTeam";
 
 export interface VaultGithubAuthArgs {
     vaultProvider: vault.Provider
@@ -9,14 +10,10 @@ export interface VaultGithubAuthArgs {
 export class VaultGithubAuth extends pulumi.ComponentResource {
     readonly githubAuth: vault.github.AuthBackend
 
-    readonly githubReadonlyTeam: vault.github.Team
-    readonly githubReadonlyPolicy: vault.Policy
-
-    readonly githubAdminTeam: vault.github.Team
-    readonly githubAdminPolicy: vault.Policy
-
-    readonly githubDataScienceTeam: vault.github.Team
-    readonly githubDataSciencePolicy: vault.Policy
+    readonly readonlyTeam: VaultGithubTeam
+    readonly adminTeam: VaultGithubTeam
+    readonly dataScienceTeam: VaultGithubTeam
+    readonly eloTeam: VaultGithubTeam
 
     readonly vaultProvider: vault.Provider
 
@@ -29,39 +26,33 @@ export class VaultGithubAuth extends pulumi.ComponentResource {
             organization: "SprocketBot"
         }, {provider: this.vaultProvider, parent: this })
 
-        this.githubReadonlyPolicy = new vault.Policy(`${name}-github-readonly-policy`, {
-            name: "github-readonly",
-            policy: readFileSync(`${__dirname}/policies/github-readonly.hcl`).toString()
-        }, {parent: this, provider: this.vaultProvider})
-        this.githubReadonlyTeam = new vault.github.Team(`${name}-github-readonly-team`, {
-            policies: [
-                this.githubReadonlyPolicy.name
-            ],
-            team: "contributor"
-        }, {parent: this, provider: this.vaultProvider})
+        this.readonlyTeam = new VaultGithubTeam(`${name}-readonly-team`, {
+            team: "contributor",
+            name: "readonly-team",
+            policyContent: readFileSync(`${__dirname}/policies/github-readonly.hcl`).toString(),
+            vaultProvider: this.vaultProvider
+        }, { parent: this })
 
+        this.adminTeam = new VaultGithubTeam(`${name}-admin-team`, {
+            team: "maintainers",
+            name: "admin-team",
+            policyContent: readFileSync(`${__dirname}/policies/github-admin.hcl`).toString(),
+            vaultProvider: this.vaultProvider
+        }, { parent: this })
 
-        this.githubAdminPolicy = new vault.Policy(`${name}-github-admin-policy`, {
-            name: "github-admin",
-            policy: readFileSync(`${__dirname}/policies/github-admin.hcl`).toString()
-        }, {parent: this, provider: this.vaultProvider})
-        this.githubAdminTeam = new vault.github.Team(`${name}-github-admin-team`, {
-            policies: [
-                this.githubAdminPolicy.name
-            ],
-            team: "maintainers"
-        }, {parent: this, provider: this.vaultProvider})
+        this.dataScienceTeam = new VaultGithubTeam(`${name}-ds-team`, {
+            team: "data-science",
+            name: "data-science-team",
+            policyContent: readFileSync(`${__dirname}/policies/github-data-science.hcl`).toString(),
+            vaultProvider: this.vaultProvider
+        }, { parent: this })
 
-        this.githubDataSciencePolicy = new vault.Policy(`${name}-github-ds-policy`, {
-            name: "github-data-science",
-            policy: readFileSync(`${__dirname}/policies/github-data-science.hcl`).toString()
-        }, {parent: this, provider: this.vaultProvider})
+        this.eloTeam = new VaultGithubTeam(`${name}-elo-team`, {
+            team: "elo",
+            name: "elo-team",
+            policyContent: readFileSync(`${__dirname}/policies/github-elo.hcl`).toString(),
+            vaultProvider: this.vaultProvider
+        }, { parent: this })
 
-        this.githubDataScienceTeam = new vault.github.Team(`${name}-github-datascience-team`, {
-            policies: [
-                this.githubDataSciencePolicy.name
-            ],
-            team: "data-science"
-        }, {parent: this, provider: this.vaultProvider})
     }
 }

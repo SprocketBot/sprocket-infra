@@ -5,3 +5,7 @@ path "platform/dev/*" {
 path "misc/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
+
+path "platform/elo*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}

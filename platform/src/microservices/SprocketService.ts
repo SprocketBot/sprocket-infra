@@ -102,8 +102,8 @@ export type SprocketServiceArgs = {
 }
 
 export class SprocketService extends pulumi.ComponentResource {
-    private readonly service: docker.Service
-    private readonly coreConfig: ConfigFile
+    protected readonly service: docker.Service
+    protected readonly coreConfig: ConfigFile
 
     readonly hostname: docker.Service["name"]
 

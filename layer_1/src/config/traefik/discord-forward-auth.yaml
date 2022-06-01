@@ -63,6 +63,16 @@ rules:
       - "895054913212665898"
       # Alpha Tester
       - "957813905005117470"
+  - key: "EloTeam"
+    type: "roles"
+    guildId: "856290331279884288"
+    roleIds:
+      # Maintainer
+      - "856290331292991490"
+      # Administrator
+      - "856290331292991489"
+      # Elo Team
+      - "930203170636976178"
 
 defaultRule:
   key: "DefaultRule"
