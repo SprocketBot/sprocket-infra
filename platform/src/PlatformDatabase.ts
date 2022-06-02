@@ -3,6 +3,7 @@ import * as postgresql from "@pulumi/postgresql"
 import * as pulumi from "@pulumi/pulumi"
 import * as vault from "@pulumi/vault"
 import {PostgresUser} from "global/helpers/datastore/PostgresUser";
+import {PostgresVaultProvider} from "global/services/postgres/PostgresVaultProvider";
 
 
 const config = new pulumi.Config()
@@ -53,19 +54,25 @@ export class PlatformDatabase extends pulumi.ComponentResource {
         }
     } as PlatformGrants
 
+    readonly vault: PostgresVaultProvider
+
     constructor(name: string, args: PlatformDatabaseArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:Database", name, {}, opts)
 
         this.host = args.postgresHostname
 
+        const devUsername = `sprocket_${args.environmentSubdomain}`
         this.credentials = new PostgresUser(`${name}-db-user`, {
             providers: {postgres: args.postgresProvider, vault: args.vaultProvider},
-            username: `sprocket_${args.environmentSubdomain}`
+            keepers: { rotate: "1" },
+            username: devUsername
         })
 
+        const dsUsername = `sprocket_${args.environmentSubdomain}_data_science`;
         this.dataScienceCredentials = new PostgresUser(`${name}-db-ds-user`, {
             providers: {postgres: args.postgresProvider, vault: args.vaultProvider},
-            username: `sprocket_${args.environmentSubdomain}_data_science`
+            keepers: { rotate: "1" },
+            username: dsUsername
         })
 
         this.database = new postgresql.Database(`${name}-database`, {
@@ -125,7 +132,6 @@ export class PlatformDatabase extends pulumi.ComponentResource {
             role: this.dataScienceCredentials.username
         }, {parent: this, provider: args.postgresProvider})
 
-
         // Revoke everything on elo data
         this.grants.elo.dataScience = new postgresql.Grant(`${name}-data-science-elo-revoke`, {
             database: this.database.name,
@@ -144,6 +150,19 @@ export class PlatformDatabase extends pulumi.ComponentResource {
             privileges: [],
             role: this.credentials.username
         }, {parent: this, provider: args.postgresProvider})
+
+        this.vault = new PostgresVaultProvider(`${name}-vault`, {
+            environment: args.environmentSubdomain,
+            pg: {
+                credentials: this.credentials,
+                hostname: pulumi.output(args.postgresHostname),
+                dbName: this.database.name,
+                provider: args.postgresProvider
+            },
+            dataScienceRole: dsUsername,
+            developerRole: devUsername,
+            vaultProvider: args.vaultProvider
+        }, { parent: this })
 
 
 

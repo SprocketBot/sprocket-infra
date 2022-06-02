@@ -11,6 +11,7 @@ export interface PostgresUserArgs {
         vault: vault.Provider,
         postgres: postgres.Provider
     }
+    keepers?: Record<string, string>
 }
 
 export class PostgresUser extends pulumi.ComponentResource {
@@ -25,7 +26,10 @@ export class PostgresUser extends pulumi.ComponentResource {
 
         this.credentials = new VaultCredentials(`${name}-pw`, {
             vault: {path: `infrastructure/postgres/${args.username}`, provider: args.providers.vault},
-            username: args.username
+            username: args.username,
+            passwordOptions: {
+                keepers: args.keepers
+            }
         }, { parent: this })
 
         this.role = new postgres.Role(`${name}-role`, {

@@ -18,6 +18,7 @@ export class VaultPolicies extends pulumi.ComponentResource {
 
     private readonly vaultProvider: vault.Provider
     private miscBackend: vault.Mount;
+    private databaseBackend: vault.Mount;
 
     constructor(name: string, args: {}, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:VaultPolicies", name, {}, opts)
@@ -53,6 +54,10 @@ export class VaultPolicies extends pulumi.ComponentResource {
             type: "kv"
         }, {provider: this.vaultProvider, parent: this})
 
+
+        this.databaseBackend = new vault.Mount(`${name}-mount`, {
+            type: "database", path: "database"
+        }, { parent: this, provider: this.vaultProvider})
 
         this.githubAuth = new VaultGithubAuth(`${name}-gh`, {
             vaultProvider: this.vaultProvider

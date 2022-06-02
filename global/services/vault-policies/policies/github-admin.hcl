@@ -9,3 +9,7 @@ path "misc/*" {
 path "platform/elo*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
+
+path "database/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}

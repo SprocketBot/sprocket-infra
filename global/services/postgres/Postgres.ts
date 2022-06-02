@@ -6,6 +6,7 @@ import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
 import {VaultCredentials} from "../../helpers/vault/VaultCredentials"
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
 import {HOSTNAME} from "../../constants";
+import {PostgresVaultProvider} from "./PostgresVaultProvider";
 
 export interface PostgresArgs {
     vaultProvider: vault.Provider
@@ -23,6 +24,8 @@ export class Postgres extends pulumi.ComponentResource {
     readonly hostname: docker.Service["name"]
     readonly url: string
     readonly credentials: VaultCredentials
+
+    // readonly vaultProvider: PostgresVaultProvider
 
     constructor(name: string, args: PostgresArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Postgres", name, {}, opts)
@@ -83,10 +86,5 @@ export class Postgres extends pulumi.ComponentResource {
 
         this.networkId = this.network.id
         this.hostname = this.service.name
-
-        this.registerOutputs({
-            networkId: this.networkId,
-            hostname: this.hostname
-        })
     }
 }

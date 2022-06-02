@@ -22,11 +22,12 @@ export interface VaultPasswordArgs {
 }
 
 export class VaultCredentials extends pulumi.ComponentResource {
-    private readonly passwordResource: random.RandomPassword
+
     private readonly vaultSecret: vault.generic.Secret
 
     readonly username: pulumi.Output<string>
     readonly password: pulumi.Output<string>
+    readonly passwordResource: random.RandomPassword
 
     constructor(name: string, args: VaultPasswordArgs, opts?: pulumi.ComponentResourceOptions) {
         if (!args.vault.path) throw new Error("vault.path must be defined!")
@@ -44,11 +45,7 @@ export class VaultCredentials extends pulumi.ComponentResource {
         }, {parent: this, provider: args.vault.provider})
 
         this.username = this.vaultSecret.data.username as pulumi.Output<string>
-        this.password = this.vaultSecret.data.password as pulumi.Output<string>
+        this.password = this.passwordResource.result as pulumi.Output<string>
 
-        this.registerOutputs({
-            username: this.username,
-            password: this.password
-        })
     }
 }

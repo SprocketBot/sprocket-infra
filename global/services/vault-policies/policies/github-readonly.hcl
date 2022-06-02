@@ -13,3 +13,11 @@ path "platform/dev/manual/*" {
 path "misc/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
+
+path "database/creds/developer*" {
+    capabilities = ["read", "list"]
+}
+
+path "database/roles" {
+    capabilities = ["read", "list"]
+}

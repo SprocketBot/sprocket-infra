@@ -16,3 +16,11 @@ path "misc" {
 path "misc/data-science/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
+
+path "database/creds/data_science*" {
+    capabilities = ["read", "list"]
+}
+
+path "database/roles/data_science*" {
+    capabilities = ["read", "list"]
+}
