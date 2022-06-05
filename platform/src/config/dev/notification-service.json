@@ -1,0 +1,9 @@
+{
+  "transport": {{{ transport }}},
+  "logger": {
+    "levels": {{{logger.levels}}}
+  },
+  "web": {
+    "url": "https://{{ frontend.url }}"
+  }
+}

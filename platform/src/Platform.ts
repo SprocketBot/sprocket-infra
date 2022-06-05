@@ -64,7 +64,8 @@ export class Platform extends pulumi.ComponentResource {
         analytics: SprocketService,
         matchmaking: SprocketService,
         replayParse: SprocketService,
-        elo: EloService
+        elo: EloService,
+        notifications: SprocketService
     }
 
     constructor(name: string, args: PlatformArgs, opts?: pulumi.ComponentResourceOptions) {
@@ -198,6 +199,9 @@ export class Platform extends pulumi.ComponentResource {
         /////////////////
 
         this.services = {
+            notifications: new SprocketService(`${name}-notification-service`, {
+                ...this.buildDefaultConfiguration("notification-service", args.configRoot),
+            }, { parent: this }),
             // TODO: Set up Minio for internal storage
             imageGen: new SprocketService(`${name}-image-generation-service`, {
                 ...this.buildDefaultConfiguration("image-generation-service", args.configRoot),
@@ -303,7 +307,8 @@ export class Platform extends pulumi.ComponentResource {
                 events_queue: `${pulumi.getStack()}-events`,
                 events_application_key: `${pulumi.getStack()}-${name}`,
                 "celery-queue": `${pulumi.getStack()}-celery`,
-                image_generation_queue: `${pulumi.getStack()}-ig`
+                image_generation_queue: `${pulumi.getStack()}-ig`,
+                notification_queue: `${pulumi.getStack()}-notifications`
             }, null, 2)),
             logger: {
                 levels: pulumi.getStack() === "main" ? JSON.stringify(["error", "warn", "log"]) : true

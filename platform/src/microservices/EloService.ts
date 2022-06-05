@@ -8,7 +8,7 @@ type EloServiceArgs = SprocketServiceArgs & { vault: vault.Provider, ingressNetw
 
 export class EloService extends pulumi.ComponentResource {
     readonly neo4j: Neo4j;
-    readonly service: SprocketService;
+    // readonly service: SprocketService;
     private readonly neo4jSecret: docker.Secret
 
 
@@ -25,7 +25,7 @@ export class EloService extends pulumi.ComponentResource {
             name: `${name}-creds`,
             data: this.neo4j.credentials.password.apply(v => btoa(v))
         }, {parent: this})
-        this.service = new SprocketService(`${name}-sprocketservice`, args, {parent: this})
+        // this.service = new SprocketService(`${name}-sprocketservice`, args, {parent: this})
     }
 
 }
