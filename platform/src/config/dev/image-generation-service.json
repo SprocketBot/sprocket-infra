@@ -15,7 +15,8 @@
     "port": {{ s3.port }},
     "useSSL": {{ s3.ssl }},
     "bucketNames": {
-      "replays": "{{s3.bucket}}"
+      "replays": "{{s3.bucket}}",
+      "image_generation": "{{s3.buckets.imageGeneration}}"
     }
   }
 }

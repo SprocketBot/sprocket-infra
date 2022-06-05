@@ -334,7 +334,11 @@ export class Platform extends pulumi.ComponentResource {
                 port: 443,
                 ssl: true,
                 accessKey: this.objectStorage.minioUser.name,
-                bucket: this.objectStorage.bucket.bucket
+                bucket: this.objectStorage.bucket.bucket,
+                buckets: {
+                    imageGeneration: this.objectStorage.imageGenBucket.bucket,
+                    replayParse: this.objectStorage.replayBucket.bucket
+                }
             },
             celery: {
                 broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}`) ?? "",

@@ -44,7 +44,11 @@ export type SprocketServiceConfigTemplateValues = {
         port: number,
         ssl: boolean,
         accessKey: string | pulumi.Output<string>,
-        bucket: string | pulumi.Output<string>
+        bucket: string | pulumi.Output<string>,
+        buckets: {
+            imageGeneration: string | pulumi.Output<string>,
+            replayParse: string | pulumi.Output<string>
+        }
     },
     influx: {
         host: string | pulumi.Output<string>,
