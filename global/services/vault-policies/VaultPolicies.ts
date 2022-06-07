@@ -33,7 +33,7 @@ export class VaultPolicies extends pulumi.ComponentResource {
             description: "Contains secrets needed for bootstrapping infrastructure auth elsewhere.",
             path: "infrastructure",
             policyContent: readFileSync(`${__dirname}/policies/infrastructure.hcl`).toString()
-        })
+        }, { provider: this.vaultProvider})
 
         this.infraToken = this.infraBackend.token
 
@@ -44,7 +44,7 @@ export class VaultPolicies extends pulumi.ComponentResource {
                 "dev/manual/* access is mutable by developers.",
             path: "platform",
             policyContent: readFileSync(`${__dirname}/policies/platform.hcl`).toString()
-        })
+        }, { provider: this.vaultProvider })
 
         this.platformToken = this.platformBackend.token
 

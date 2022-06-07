@@ -288,7 +288,9 @@ export class Platform extends pulumi.ComponentResource {
                 url: this.objectStorage.minioUrl,
                 accessKey: this.objectStorage.minioUser.name,
                 secretKey: this.objectStorage.minioUser.secret,
-                bucket: this.objectStorage.bucket.bucket
+                bucket: this.objectStorage.bucket.bucket,
+                imageGenerationBucket: this.objectStorage.imageGenBucket.bucket,
+                replayBucket: this.objectStorage.replayBucket.bucket
             }
         })
     }

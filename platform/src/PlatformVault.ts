@@ -32,6 +32,8 @@ export type PlatformVaultArgs = {
         accessKey: string | pulumi.Output<string>,
         secretKey: string | pulumi.Output<string>,
         bucket: string | pulumi.Output<string>,
+        imageGenerationBucket: string | pulumi.Output<string>,
+        replayBucket: string | pulumi.Output<string>,
     }
 }
 
