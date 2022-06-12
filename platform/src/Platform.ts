@@ -313,7 +313,7 @@ export class Platform extends pulumi.ComponentResource {
                 notification_queue: `${pulumi.getStack()}-notifications`
             }, null, 2)),
             logger: {
-                levels: pulumi.getStack() === "main" ? JSON.stringify(["error", "warn", "log"]) : true
+                levels: pulumi.getStack() === "main" ? JSON.stringify(["error", "warn", "log"]) : JSON.stringify(["error", "warn", "log", "debug"])
             },
             database: {
                 host: this.database.host,
