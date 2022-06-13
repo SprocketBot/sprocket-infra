@@ -339,6 +339,7 @@ export class Platform extends pulumi.ComponentResource {
                 events_application_key: `${pulumi.getStack()}-${name}`,
                 "celery-queue": `${pulumi.getStack()}-celery`,
                 image_generation_queue: `${pulumi.getStack()}-ig`,
+                submission_queue: `${pulumi.getStack()}-submissions`,
                 notification_queue: `${pulumi.getStack()}-notifications`
             }, null, 2)),
             logger: {
