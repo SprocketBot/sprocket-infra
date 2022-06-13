@@ -14,5 +14,5 @@
     "replays": "{{s3.buckets.replayParse}}",
         "image_generation": "{{s3.buckets.imageGeneration}}"
     }
-  },
+  }
 }

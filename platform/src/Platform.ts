@@ -180,7 +180,7 @@ export class Platform extends pulumi.ComponentResource {
                 },
                 networks: [
                     args.ingressNetworkId
-                ]
+                ],
             }, {parent: this}),
 
             discordBot: new SprocketService(`${name}-discord-bot`, {
@@ -189,6 +189,14 @@ export class Platform extends pulumi.ComponentResource {
                     secretId: this.secrets.discordBotToken.id,
                     secretName: this.secrets.discordBotToken.name,
                     fileName: "/app/secret/bot-token.txt"
+                }, {
+                    secretId: this.secrets.s3SecretKey.id,
+                    secretName: this.secrets.s3SecretKey.name,
+                    fileName: "/app/secret/minio-secret.txt"
+                }, {
+                    secretId: this.secrets.s3AccessKey.id,
+                    secretName: this.secrets.s3AccessKey.name,
+                    fileName: "/app/secret/minio-access.txt"
                 }]
             }, {parent: this})
         }
