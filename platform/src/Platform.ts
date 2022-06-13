@@ -65,7 +65,8 @@ export class Platform extends pulumi.ComponentResource {
         matchmaking: SprocketService,
         replayParse: SprocketService,
         elo: EloService,
-        notifications: SprocketService
+        notifications: SprocketService,
+        submissions: SprocketService
     }
 
     constructor(name: string, args: PlatformArgs, opts?: pulumi.ComponentResourceOptions) {
@@ -269,6 +270,26 @@ export class Platform extends pulumi.ComponentResource {
                 },
                 ingressNetworkId: args.ingressNetworkId
             }, {parent: this}),
+
+            submissions: new SprocketService(`${name}-submission-service`, {
+                ...this.buildDefaultConfiguration("submission-service", args.configRoot),
+                env: {
+                    ENV: "production"
+                },
+                secrets: [{
+                    secretId: this.secrets.s3SecretKey.id,
+                    secretName: this.secrets.s3SecretKey.name,
+                    fileName: "/app/secret/minio-secret.txt"
+                }, {
+                    secretId: this.secrets.s3AccessKey.id,
+                    secretName: this.secrets.s3AccessKey.name,
+                    fileName: "/app/secret/minio-access.txt"
+                }, {
+                    secretId: this.secrets.redisPassword.id,
+                    secretName: this.secrets.redisPassword.name,
+                    fileName: "/app/secret/redis-password.txt"
+                }]
+            })
         };
 
         this.vaultSync = new PlatformVault(`${name}-vault-sync`, {
