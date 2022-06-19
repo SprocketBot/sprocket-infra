@@ -15,6 +15,7 @@ import {PlatformDatabase} from "./PlatformDatabase";
 import {PlatformVault} from "./PlatformVault";
 import {PlatformMinio} from "./PlatformMinio";
 import {EloService} from "./microservices/EloService";
+import { LegacyPlatform } from './legacy/LegacyPlatform';
 
 const config = new pulumi.Config()
 
@@ -322,6 +323,16 @@ export class Platform extends pulumi.ComponentResource {
                 replayBucket: this.objectStorage.replayBucket.bucket
             }
         })
+
+        // Only include on dev.
+        if (pulumi.getStack() !== 'dev') return;
+        new LegacyPlatform(`${name}-legacy`, {
+            database: this.database,
+            minio: this.objectStorage,
+            postgresNetworkId: this.postgresNetworkId,
+            postgresProvider: args.postgresProvider,
+            vaultProvider: args.vault.infrastructure
+        }, { parent: this })
     }
 
     buildDefaultConfiguration = (name: string, configRoot: string): SprocketServiceArgs => ({

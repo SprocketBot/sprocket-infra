@@ -13,7 +13,7 @@ export interface RedisArgs {
     vaultProvider: vault.Provider
 
     platformNetworkId?: docker.Network["id"]
-    ingressNetworkId: docker.Network["id"]
+    ingressNetworkId?: docker.Network["id"]
 
     url?: string;
 }
@@ -45,6 +45,10 @@ export class Redis extends pulumi.ComponentResource {
 
         this.volume = new docker.Volume(`${name}-volume`, {}, {parent: this, retainOnDelete: true})
 
+        const networks: docker.Network["id"][] = []
+        if (args.platformNetworkId) networks.push(args.platformNetworkId)
+        if (args.ingressNetworkId) networks.push(args.ingressNetworkId)
+
         this.service = new docker.Service(`${name}-redis-primary`, {
             taskSpec: {
                 containerSpec: {
@@ -74,10 +78,7 @@ export class Redis extends pulumi.ComponentResource {
                         "node.labels.role==storage",
                     ]
                 },
-                networks: args.platformNetworkId ? [
-                    args.platformNetworkId,
-                    args.ingressNetworkId
-                ] : [args.ingressNetworkId]
+                networks: networks
             },
             labels: args.url ? new TraefikLabels(`${name}`, "tcp")
                 .rule(`HostSNI(\`${args.url}\`)`)

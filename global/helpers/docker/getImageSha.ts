@@ -25,8 +25,6 @@ type DockerHubResponse = {
  * @param namespace {string} Dockerhub username (i.e. namespace/repository:tag)
  * @param repository {string} Image name (i.e. namespace/repository:tag)
  * @param tag {string} Image Tag (i.e. namespace/repository:tag)
- * @param username {string} Dockerhub username
- * @param pat {string} Dockerhub personal access token
  */
 export function getImageSha(namespace: string, repository: string, tag: string): pulumi.Output<string> {
     return pulumi.all([config.require("docker-username"), config.requireSecret("docker-access-token")]).apply(
