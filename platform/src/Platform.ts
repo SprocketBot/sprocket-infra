@@ -3,6 +3,7 @@ import * as postgresql from "@pulumi/postgresql"
 import * as pulumi from "@pulumi/pulumi"
 import * as vault from "@pulumi/vault"
 import * as minio from "@pulumi/minio"
+import * as random from "@pulumi/random";
 
 import {SprocketService, SprocketServiceArgs} from "./microservices/SprocketService";
 import {PlatformDatastore} from "./PlatformDatastore";
@@ -51,12 +52,16 @@ export class Platform extends pulumi.ComponentResource {
     readonly core: SprocketService
     readonly clients: {
         discordBot: SprocketService,
-        web: SprocketService
+        web: SprocketService,
+        imageGen: SprocketService
     }
 
 
     readonly apiUrl: string
     readonly webUrl: string
+    readonly igUrl: string
+
+    readonly key: random.RandomUuid
 
     readonly vaultSync: PlatformVault
 
@@ -72,6 +77,8 @@ export class Platform extends pulumi.ComponentResource {
 
     constructor(name: string, args: PlatformArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform", name, {}, opts)
+
+        this.key = new random.RandomUuid(`${name}-key`)
 
         this.environmentSubdomain = config.require("subdomain")
         this.postgresNetworkId = args.postgresNetworkId
@@ -112,6 +119,7 @@ export class Platform extends pulumi.ComponentResource {
         /////////////////
         this.apiUrl = buildHost("api", this.environmentSubdomain, HOSTNAME)
         this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
+        this.igUrl = buildHost("image-generation", this.environmentSubdomain, HOSTNAME)
 
         const coreLabels = new TraefikLabels("sprocket-core")
             .tls("lets-encrypt-tls")
@@ -121,6 +129,10 @@ export class Platform extends pulumi.ComponentResource {
             .tls("lets-encrypt-tls")
             .rule(`Host(\`${this.webUrl}\`)`)
             .targetPort(3000)
+        const imageGenLabels = new TraefikLabels("sprocket-image-gen")
+          .tls("lets-encrypt-tls")
+          .rule(`Host(\`${this.igUrl}\`)`)
+          .targetPort(3000)
 
         if (config.getBoolean("alpha-restrictions")) {
             webLabels.forwardAuthRule("AlphaTesters")
@@ -184,6 +196,20 @@ export class Platform extends pulumi.ComponentResource {
                     args.ingressNetworkId
                 ],
             }, {parent: this}),
+
+            imageGen: new SprocketService(`${name}-sprocket-image-generation-frontend`, {
+                ...this.buildDefaultConfiguration("image-generation-frontend", args.configRoot),
+                labels: [
+                    ...imageGenLabels.complete
+                ],
+                configFile: {
+                    destFilePath: "/app/src/config.json",
+                    sourceFilePath: `${args.configRoot}/image-generation-frontend.json`,
+                },
+                networks: [
+                    args.ingressNetworkId
+                ],
+            }),
 
             discordBot: new SprocketService(`${name}-discord-bot`, {
                 ...this.buildDefaultConfiguration("discord-bot", args.configRoot),
@@ -347,7 +373,7 @@ export class Platform extends pulumi.ComponentResource {
                 bot_queue: `${pulumi.getStack()}-bot`,
                 analytics_queue: `${pulumi.getStack()}-analytics`,
                 events_queue: `${pulumi.getStack()}-events`,
-                events_application_key: `${pulumi.getStack()}-${name}`,
+                events_application_key: `${pulumi.getStack()}-${name}-${this.key.result}`,
                 "celery-queue": `${pulumi.getStack()}-celery`,
                 image_generation_queue: `${pulumi.getStack()}-ig`,
                 submission_queue: `${pulumi.getStack()}-submissions`,
