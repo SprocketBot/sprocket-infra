@@ -366,14 +366,14 @@ export class Platform extends pulumi.ComponentResource {
         platformNetworkId: this.network.id,
         configFile: {sourceFilePath: `${configRoot}/${name}.json`},
         configValues: {
-            transport: pulumi.all([this.datastore.rabbitmq.hostname]).apply(([rmqHost]) => JSON.stringify({
+            transport: pulumi.all([this.datastore.rabbitmq.hostname, this.key.result]).apply(([rmqHost, key]) => JSON.stringify({
                 url: `amqp://${rmqHost}:5672`,
                 matchmaking_queue: `${pulumi.getStack()}-matchmaking`,
                 core_queue: `${pulumi.getStack()}-core`,
                 bot_queue: `${pulumi.getStack()}-bot`,
                 analytics_queue: `${pulumi.getStack()}-analytics`,
                 events_queue: `${pulumi.getStack()}-events`,
-                events_application_key: `${pulumi.getStack()}-${name}-${this.key.result}`,
+                events_application_key: `${pulumi.getStack()}-${name}-${key}`,
                 "celery-queue": `${pulumi.getStack()}-celery`,
                 image_generation_queue: `${pulumi.getStack()}-ig`,
                 submission_queue: `${pulumi.getStack()}-submissions`,
