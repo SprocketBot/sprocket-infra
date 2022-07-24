@@ -41,7 +41,6 @@ export class Grafana extends pulumi.ComponentResource {
             owner: this.dbUser.username
         }, { parent: this, provider: args.providers.postgres, dependsOn: [this.dbUser] })
 
-
         this.service = new docker.Service(`${name}-service`, {
             labels: new TraefikLabels(name)
                 .rule(`Host(\`grafana.${HOSTNAME}\`)`)
@@ -56,14 +55,20 @@ export class Grafana extends pulumi.ComponentResource {
                 },
                 containerSpec: {
                     image: "grafana/grafana:8.4.4",
-                    env: {
+                    env: vault.generic.getSecretOutput({ path: "infrastructure/smtp"}, {provider: args.providers.vault}).apply(s => ({
                         GF_SERVER_ROOT_URL: `https://grafana.${HOSTNAME}`,
                         GF_DATABASE_TYPE: "postgres",
                         GF_DATABASE_HOST: args.postgresHostname,
                         GF_DATABASE_NAME: this.db.name,
                         GF_DATABASE_USER: this.dbUser.username,
-                        GF_DATABASE_PASSWORD: this.dbUser.password
-                    },
+                        GF_DATABASE_PASSWORD: this.dbUser.password,
+                        GF_SMTP_ENABLED: "true",
+                        GF_SMTP_HOST: "smtp.sendgrid.net:465",
+                        GF_FROM_ADDRESS: "noreply@sprocket.gg",
+                        GF_FROM_NAME: "Sprocket Noreply",
+                        GF_SMTP_PASSWORD: s.data['password'],
+                        GF_SMTP_USER: s.data['username']
+                    })),
                 },
                 logDriver: DefaultLogDriver(name, true),
                 networks: [

@@ -6,7 +6,7 @@ import {DockerProvider} from "global/providers/DockerProvider"
 import {ConfigFile, ConfigFileArgs} from "global/helpers/docker/ConfigFile"
 import {getImageSha} from "global/helpers/docker/getImageSha"
 import * as handlebars from "handlebars";
-
+import defaultLogDriver from "global/helpers/docker/DefaultLogDriver"
 const config = new pulumi.Config();
 
 
@@ -171,7 +171,8 @@ export class SprocketService extends pulumi.ComponentResource {
                     args.platformNetworkId,
                     ...networks,
                     ...(args.networks ?? [])
-                ]
+                ],
+                logDriver: defaultLogDriver(name, false)
             },
             labels: args.labels
         }, {parent: this, provider: DockerProvider})

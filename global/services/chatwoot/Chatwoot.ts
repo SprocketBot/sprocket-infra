@@ -8,6 +8,7 @@ import {HOSTNAME} from "../../constants";
 import {PostgresUser} from "../../helpers/datastore/PostgresUser";
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
 import {SprocketMinioProvider} from "../../providers/SprocketMinioProvider";
+import defaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import {readFileSync} from "fs";
 
 export interface ChatwootArgs {
@@ -156,7 +157,8 @@ export class Chatwoot extends pulumi.ComponentResource {
                     args.ingressNetworkId,
                     args.networkId,
                     args.postgresNetworkId
-                ]
+                ],
+                logDriver: defaultLogDriver(name, true)
             },
             labels: new TraefikLabels(name)
                 .tls("lets-encrypt-tls")

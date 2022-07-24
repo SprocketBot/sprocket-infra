@@ -115,6 +115,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
             SPROCKET: "yes"
           }
         },
+        logDriver: defaultLogDriver('legacy-worker', false),
         networks: [
           args.postgresNetworkId,
           this.network.id

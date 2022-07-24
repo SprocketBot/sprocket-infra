@@ -59,7 +59,7 @@ export const chatwoot = new Chatwoot("chatwoot", {
     smtp: {
         domain: "sprocket.gg",
         host: "smtp.sendgrid.net",
-        password: config.requireSecret("smtp-password"),
+        password: vault.generic.getSecretOutput({ path: "infrastructure/smtp"}, {provider: vaultProvider}).apply(s => s.data["password"]) as pulumi.Output<string>,
         port: 587,
         username: "apikey"
     },

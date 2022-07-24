@@ -249,6 +249,10 @@ export class Platform extends pulumi.ComponentResource {
                     secretId: this.secrets.s3AccessKey.id,
                     secretName: this.secrets.s3AccessKey.name,
                     fileName: "/app/secret/minio-access.txt"
+                }, {
+                    secretId: this.secrets.postgresPassword.id,
+                    secretName: this.secrets.postgresPassword.name,
+                    fileName: "/app/secret/db-secret.txt"
                 }]
             }, {parent: this}),
 
@@ -293,7 +297,11 @@ export class Platform extends pulumi.ComponentResource {
                 vault: args.vault.platform,
                 ...this.buildDefaultConfiguration("elo-service", args.configRoot),
                 env: {
-                    ENV: "production"
+                    ENV: "production",
+                    REDIS_HOST: "",
+                    REDIS_PORT: "",
+                    REDIS_PASSWORD: "",
+                    REDIS_SERVER_NAME: "",
                 },
                 ingressNetworkId: args.ingressNetworkId
             }, {parent: this}),
