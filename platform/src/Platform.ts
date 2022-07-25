@@ -206,6 +206,22 @@ export class Platform extends pulumi.ComponentResource {
                     destFilePath: "/app/src/config.json",
                     sourceFilePath: `${args.configRoot}/image-generation-frontend.json`,
                 },
+                secrets: [
+                    {
+                        secretId: this.secrets.s3SecretKey.id,
+                        secretName: this.secrets.s3SecretKey.name,
+                        fileName: "/app/secret/minio-secret.txt"
+                    }, {
+                        secretId: this.secrets.s3AccessKey.id,
+                        secretName: this.secrets.s3AccessKey.name,
+                        fileName: "/app/secret/minio-access.txt"
+                    }, {
+                        secretId: this.secrets.postgresPassword.id,
+                        secretName: this.secrets.postgresPassword.name,
+                        fileName: "/app/secret/db-secret.txt"
+
+                    }
+                ],
                 networks: [
                     args.ingressNetworkId
                 ],

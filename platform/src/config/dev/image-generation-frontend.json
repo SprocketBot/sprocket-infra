@@ -1,7 +1,7 @@
 {
   "minio": {
     "endpoint": "{{s3.endpoint}}",
-    "port": "{{s3.port}}",
+    "port": {{s3.port}},
     "bucket": "{{s3.buckets.imageGeneration}}",
     "ssl": {{ s3.ssl }}
   },
