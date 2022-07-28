@@ -423,9 +423,9 @@ export class Platform extends pulumi.ComponentResource {
                 host: this.datastore.rabbitmq.hostname
             },
             influx: {
-                host: "",
-                org: "",
-                bucket: "",
+                host: "http://influx:8086",
+                org: "sprocket",
+                bucket: "sprocket_" + this.environmentSubdomain,
             },
             s3: {
                 endpoint: this.objectStorage.minioUrl,
