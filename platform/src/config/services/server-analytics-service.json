@@ -4,8 +4,8 @@
     "levels": {{{logger.levels}}}
   },
   "influx": {
-    "address": "http://influx:8086",
-    "org": "sprocket",
-    "bucket": "sprocket_dev"
+    "address": "{{influx.host}}",
+    "org": "{{influx.org}}",
+    "bucket": "{{influx.bucket}}"
   }
 }
