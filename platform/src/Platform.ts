@@ -190,7 +190,7 @@ export class Platform extends pulumi.ComponentResource {
                 ],
                 configFile: {
                     destFilePath: "/app/src/config.json",
-                    sourceFilePath: `${args.configRoot}/web.json`,
+                    sourceFilePath: `${args.configRoot}/services/web.json`,
                 },
                 networks: [
                     args.ingressNetworkId
@@ -204,7 +204,7 @@ export class Platform extends pulumi.ComponentResource {
                 ],
                 configFile: {
                     destFilePath: "/app/src/config.json",
-                    sourceFilePath: `${args.configRoot}/image-generation-frontend.json`,
+                    sourceFilePath: `${args.configRoot}/services/image-generation-frontend.json`,
                 },
                 secrets: [
                     {
@@ -388,7 +388,7 @@ export class Platform extends pulumi.ComponentResource {
     buildDefaultConfiguration = (name: string, configRoot: string): SprocketServiceArgs => ({
         image: {namespace: "actualsovietshark", repository: name, tag: config.require("image-tag")},
         platformNetworkId: this.network.id,
-        configFile: {sourceFilePath: `${configRoot}/${name}.json`},
+        configFile: {sourceFilePath: `${configRoot}/services/${name}.json`},
         configValues: {
             transport: pulumi.all([this.datastore.rabbitmq.hostname, this.key.result]).apply(([rmqHost, key]) => JSON.stringify({
                 url: `amqp://${rmqHost}:5672`,

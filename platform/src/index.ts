@@ -44,7 +44,7 @@ export const platform = new Platform(pulumi.getStack(), {
 
     minioProvider: minioProvider as minio.Provider,
 
-    configRoot: `${__dirname}/config/${pulumi.getStack()}`,
+    configRoot: `${__dirname}/config`,
 
     ingressNetworkId: LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>,
     monitoringNetworkId: LayerTwo.stack.requireOutput(LayerTwoExports.MonitoringNetworkId) as pulumi.Output<string>,

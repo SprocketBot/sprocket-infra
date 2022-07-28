@@ -26,6 +26,10 @@ interface PlatformGrants {
             usage: postgresql.Grant,
             select: postgresql.Grant
         },
+        history: {
+            usage: postgresql.Grant,
+            select: postgresql.Grant
+        },
     }
     elo: {
         dataScience: postgresql.Grant
@@ -42,15 +46,13 @@ export class PlatformDatabase extends pulumi.ComponentResource {
     readonly dataScienceSchema: postgresql.Schema
     readonly mledbSchema: postgresql.Schema
     readonly sprocketSchema: postgresql.Schema
+    readonly historySchema: postgresql.Schema
 
     readonly grants: PlatformGrants = {
         dataScience: {
-            mledb: {
-            },
-            sprocket: {
-            }
-        },
-        elo: {
+            mledb: {},
+            sprocket: {},
+            history: {}
         }
     } as PlatformGrants
 
@@ -61,11 +63,11 @@ export class PlatformDatabase extends pulumi.ComponentResource {
 
         this.host = args.postgresHostname
 
-        const devUsername = `sprocket_${args.environmentSubdomain}`
+        const developerUsername = `sprocket_${args.environmentSubdomain}`
         this.credentials = new PostgresUser(`${name}-db-user`, {
             providers: {postgres: args.postgresProvider, vault: args.vaultProvider},
             keepers: { rotate: "1" },
-            username: devUsername
+            username: developerUsername
         })
 
         const dsUsername = `sprocket_${args.environmentSubdomain}_data_science`;
@@ -89,6 +91,12 @@ export class PlatformDatabase extends pulumi.ComponentResource {
         this.sprocketSchema = new postgresql.Schema(`${name}-sprocket-schema`, {
             database: this.database.name,
             name: "sprocket",
+            owner: this.credentials.username
+        }, {parent: this, provider: args.postgresProvider})
+
+        this.historySchema = new postgresql.Schema(`${name}-history-schema`, {
+            database: this.database.name,
+            name: "history",
             owner: this.credentials.username
         }, {parent: this, provider: args.postgresProvider})
 
@@ -132,24 +140,42 @@ export class PlatformDatabase extends pulumi.ComponentResource {
             role: this.dataScienceCredentials.username
         }, {parent: this, provider: args.postgresProvider})
 
-        // Revoke everything on elo data
-        this.grants.elo.dataScience = new postgresql.Grant(`${name}-data-science-elo-revoke`, {
+
+        this.grants.dataScience.history.usage = new postgresql.Grant(`${name}-data-science-history-grant-usage`, {
             database: this.database.name,
-            objectType: "table",
-            objects: ["elo_data"],
-            schema: this.mledbSchema.name,
-            privileges: [],
+            objectType: "schema",
+            schema: this.historySchema.name,
+            privileges: ["USAGE"],
             role: this.dataScienceCredentials.username
         }, {parent: this, provider: args.postgresProvider})
 
-        this.grants.elo.platform = new postgresql.Grant(`${name}-elo-revoke`, {
+
+        this.grants.dataScience.history.select = new postgresql.Grant(`${name}-data-science-history-grant`, {
             database: this.database.name,
             objectType: "table",
-            objects: ["elo_data"],
-            schema: this.mledbSchema.name,
-            privileges: [],
-            role: this.credentials.username
+            schema: this.historySchema.name,
+            privileges: ["SELECT"],
+            role: this.dataScienceCredentials.username
         }, {parent: this, provider: args.postgresProvider})
+
+        // // Revoke everything on elo data
+        // this.grants.elo.dataScience = new postgresql.Grant(`${name}-data-science-elo-revoke`, {
+        //     database: this.database.name,
+        //     objectType: "table",
+        //     objects: ["elo_data"],
+        //     schema: this.mledbSchema.name,
+        //     privileges: [],
+        //     role: this.dataScienceCredentials.username
+        // }, {parent: this, provider: args.postgresProvider})
+        //
+        // this.grants.elo.platform = new postgresql.Grant(`${name}-elo-revoke`, {
+        //     database: this.database.name,
+        //     objectType: "table",
+        //     objects: ["elo_data"],
+        //     schema: this.mledbSchema.name,
+        //     privileges: [],
+        //     role: this.credentials.username
+        // }, {parent: this, provider: args.postgresProvider})
 
         this.vault = new PostgresVaultProvider(`${name}-vault`, {
             environment: args.environmentSubdomain,
@@ -160,7 +186,7 @@ export class PlatformDatabase extends pulumi.ComponentResource {
                 provider: args.postgresProvider
             },
             dataScienceRole: dsUsername,
-            developerRole: devUsername,
+            developerRole: developerUsername,
             vaultProvider: args.vaultProvider
         }, { parent: this })
 
