@@ -45,7 +45,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
     this.buildPostgresGrants(name, args);
 
     this.redis = new Redis(`${name}-redis`, {
-      configFilepath: `${__dirname}/../config/dev/datastores/redis.conf`,
+      configFilepath: `${__dirname}/../config/datastores/redis.conf`,
       vaultProvider: args.vaultProvider,
       platformNetworkId: this.network.id
     }, { parent: this });
