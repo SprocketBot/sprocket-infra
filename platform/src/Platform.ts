@@ -191,7 +191,7 @@ export class Platform extends pulumi.ComponentResource {
                     ...webLabels.complete
                 ],
                 configFile: {
-                    destFilePath: "/app/clients/web/config/production.json",
+                    destFilePath: "/app/config/production.json",
                     sourceFilePath: `${args.configRoot}/services/web.json`,
                 },
                 secrets: [{
