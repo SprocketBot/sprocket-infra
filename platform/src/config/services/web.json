@@ -1,4 +1,13 @@
 {
-  "gqlUrl": "{{ gql.public }}",
-  "secure": true
+  "client": {
+    "gqlUrl": "{{ gql.public }}",
+    "secure": true,
+    "chatwoot": {
+      "enabled": true,
+      "url": "{{ chatwoot.url }}",
+      "websiteToken": "{{ chatwoot.websiteToken }}"
+    }
+  },
+
+  "server": {}
 }
