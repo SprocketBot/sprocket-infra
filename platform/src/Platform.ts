@@ -191,7 +191,7 @@ export class Platform extends pulumi.ComponentResource {
                     ...webLabels.complete
                 ],
                 configFile: {
-                    destFilePath: "/app/src/config.json",
+                    destFilePath: "/app/clients/web/config/production.json",
                     sourceFilePath: `${args.configRoot}/services/web.json`,
                 },
                 secrets: [{
@@ -199,6 +199,10 @@ export class Platform extends pulumi.ComponentResource {
                     secretName: this.secrets.chatwootHmacKey.name,
                     fileName: "/app/secret/chatwoot-hmac-key.txt"
                 }],
+                env: {
+                    ENV: "production",
+                    NODE_ENV: "production",
+                },
                 networks: [
                     args.ingressNetworkId
                 ],
