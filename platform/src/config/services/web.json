@@ -4,7 +4,7 @@
     "secure": true,
     "chatwoot": {
       "enabled": true,
-      "url": "{{ chatwoot.url }}",
+      "url": "https://chatwoot.spr.ocket.cloud",
       "websiteToken": "{{ chatwoot.websiteToken }}"
     }
   },
