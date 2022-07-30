@@ -77,8 +77,11 @@ export type SprocketServiceConfigTemplateValues = {
     },
     api: {
         url: string | pulumi.Output<string>
+    },
+    chatwoot: {
+        url: string | pulumi.Output<string>
+        websiteToken: string | pulumi.Output<string>
     }
-
 }
 
 export type SprocketServiceArgs = {

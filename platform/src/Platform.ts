@@ -10,13 +10,13 @@ import {PlatformDatastore} from "./PlatformDatastore";
 
 import {TraefikLabels} from "global/helpers/docker/TraefikLabels";
 import {buildHost} from "global/helpers/buildHost";
-import {HOSTNAME} from "global/constants"
+import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME} from "global/constants"
 import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
 import {PlatformVault} from "./PlatformVault";
 import {PlatformMinio} from "./PlatformMinio";
 import {EloService} from "./microservices/EloService";
-import { LegacyPlatform } from './legacy/LegacyPlatform';
+import {LegacyPlatform} from './legacy/LegacyPlatform';
 
 const config = new pulumi.Config()
 
@@ -59,6 +59,7 @@ export class Platform extends pulumi.ComponentResource {
 
     readonly apiUrl: string
     readonly webUrl: string
+    readonly chatwootUrl: string
     readonly igUrl: string
 
     readonly key: random.RandomUuid
@@ -119,6 +120,7 @@ export class Platform extends pulumi.ComponentResource {
         /////////////////
         this.apiUrl = buildHost("api", this.environmentSubdomain, HOSTNAME)
         this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
+        this.chatwootUrl = buildHost(CHATWOOT_SUBDOMAIN, HOSTNAME)
         this.igUrl = buildHost("image-generation", this.environmentSubdomain, HOSTNAME)
 
         const coreLabels = new TraefikLabels(`sprocket-core-${this.environmentSubdomain}`)
@@ -189,8 +191,17 @@ export class Platform extends pulumi.ComponentResource {
                     ...webLabels.complete
                 ],
                 configFile: {
-                    destFilePath: "/app/src/config.json",
+                    destFilePath: "/app/config/production.json",
                     sourceFilePath: `${args.configRoot}/services/web.json`,
+                },
+                secrets: [{
+                    secretId: this.secrets.chatwootHmacKey.id,
+                    secretName: this.secrets.chatwootHmacKey.name,
+                    fileName: "/app/secret/chatwoot-hmac-key.txt"
+                }],
+                env: {
+                    ENV: "production",
+                    NODE_ENV: "production",
                 },
                 networks: [
                     args.ingressNetworkId
@@ -455,7 +466,12 @@ export class Platform extends pulumi.ComponentResource {
             },
             api: {
                 url: this.apiUrl
-            }
+            },
+            chatwoot: {
+                url: this.chatwootUrl,
+                // TODO determine correct dev/staging/prod token
+                websiteToken: DEV_CHATWOOT_WEBSITE_TOKEN,
+            },
         }
     })
 }

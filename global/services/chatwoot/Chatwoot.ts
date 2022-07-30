@@ -4,7 +4,7 @@ import * as vault from "@pulumi/vault"
 import * as random from "@pulumi/random"
 import * as minio from "@pulumi/minio"
 import * as docker from "@pulumi/docker"
-import {HOSTNAME} from "../../constants";
+import {CHATWOOT_SUBDOMAIN, HOSTNAME} from "../../constants";
 import {PostgresUser} from "../../helpers/datastore/PostgresUser";
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
 import {SprocketMinioProvider} from "../../providers/SprocketMinioProvider";
@@ -89,7 +89,7 @@ export class Chatwoot extends pulumi.ComponentResource {
             policyName: this.s3Policy.name
         }, {parent: this, provider: args.providers.minio})
 
-        this.url = `chatwoot.${HOSTNAME}`
+        this.url = `${CHATWOOT_SUBDOMAIN}.${HOSTNAME}`
 
         const containerSpec = {
             image: "chatwoot/chatwoot:latest",
