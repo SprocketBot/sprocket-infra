@@ -36,5 +36,6 @@
     },
     "jwt_expiry": 12000,
     "frontend_callback": "https://{{ frontend.url }}/auth/callback"
-  }
+  },
+  "defaultOrganizationId": 2
 }
