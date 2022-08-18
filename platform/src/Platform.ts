@@ -264,6 +264,11 @@ export class Platform extends pulumi.ComponentResource {
         this.services = {
             notifications: new SprocketService(`${name}-notification-service`, {
                 ...this.buildDefaultConfiguration("notification-service", args.configRoot),
+                secrets: [{
+                    secretId: this.secrets.redisPassword.id,
+                    secretName: this.secrets.redisPassword.name,
+                    fileName: "/app/secret/redis-password.txt"
+                }]
             }, { parent: this }),
             // TODO: Set up Minio for internal storage
             imageGen: new SprocketService(`${name}-image-generation-service`, {
