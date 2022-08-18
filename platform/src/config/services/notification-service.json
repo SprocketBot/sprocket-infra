@@ -19,5 +19,5 @@
     "port": {{redis.port}},
     "host": "{{ redis.host }}",
     "prefix": "{{ redis.prefix }}"
-  },
+  }
 }
