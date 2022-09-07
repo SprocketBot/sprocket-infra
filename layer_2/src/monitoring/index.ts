@@ -1,8 +1,8 @@
 import * as docker from "@pulumi/docker";
 import * as pulumi from "@pulumi/pulumi";
 
-import {Postgres} from "global/services";
-import {Influx, Loki, Grafana, GrafanaArgs, Fluentd, Telegraf} from "global/services";
+import {Influx, Loki, Grafana, GrafanaArgs, Fluentd, Telegraf, Postgres} from "global/services";
+import {PostgresUser} from "global/helpers/datastore/PostgresUser"
 
 export type MonitoringArgs = {
     exposeInfluxUi: boolean,
@@ -19,7 +19,8 @@ export class Monitoring extends pulumi.ComponentResource {
     // Applications
     readonly grafana: Grafana
     readonly fluent: Fluentd;
-    readonly telegraf_replicated: Telegraf
+    readonly telegraf: Telegraf
+    readonly telegrafManager: Telegraf
 
     readonly network: docker.Network;
 
@@ -52,15 +53,40 @@ export class Monitoring extends pulumi.ComponentResource {
             configFilePath: `${__dirname}/config/fluentd.conf`
         }, { parent: this })
 
-        this.telegraf_replicated = new Telegraf("replicated-telegraf", {
+
+        const telegrafPgUser = new PostgresUser(`${name}-pg-user`, {
+            username: `${name}-telegraf`,
+            providers: { vault: providers.vault, postgres: providers.postgres}
+        }, { parent: this })
+
+
+        this.telegraf = new Telegraf("telegraf", {
+            additionalNetworkIds: [],
+            configFilePath: `${__dirname}/config/telegraf.global.conf`,
+            monitoringNetworkId: this.network.id,
+            additionalEnvironmentVariables: {},
+            influxToken: this.influx.credentials.password,
+            options: {
+                isGlobal: true,
+                mountDockerSocket: true
+            }
+        }, { parent: this })
+
+        this.telegrafManager = new Telegraf("manager-telegraf", {
             additionalNetworkIds: [
                 postgres.networkId,
             ],
-            postgresHost: postgres.hostname,
-            configFilePath: `${__dirname}/config/telegraf.conf`,
+            configFilePath: `${__dirname}/config/telegraf.docker-manager.conf`,
             monitoringNetworkId: this.network.id,
-            additionalEnvironmentVariables: {},
-            providers,
+            additionalEnvironmentVariables: {
+                POSTGRES_HOST: postgres.hostname,
+                POSTGRES_USER: telegrafPgUser.username,
+                POSTGRES_PASSWORD: telegrafPgUser.password,
+            },
+            options: {
+                managerOnly: true,
+                mountDockerSocket: true
+            },
             influxToken: this.influx.credentials.password
         }, { parent: this })
     }

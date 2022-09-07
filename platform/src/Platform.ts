@@ -35,6 +35,8 @@ export interface PlatformArgs {
     monitoringNetworkId: docker.Network["id"],
     postgresNetworkId: docker.Network["id"],
 
+    influxToken: string | pulumi.Output<string>
+
     configRoot: string
 }
 
@@ -96,7 +98,11 @@ export class Platform extends pulumi.ComponentResource {
             ingressNetworkId: args.ingressNetworkId,
             vaultProvider: args.vault.infrastructure,
             platformNetworkId: this.network.id,
-            configRoot: `${args.configRoot}/datastores`
+            configRoot: `${args.configRoot}/datastores`,
+            monitoring: {
+                influxToken: args.influxToken,
+                monitoringNetworkId: args.monitoringNetworkId,
+            }
         }, {parent: this})
 
         this.database = new PlatformDatabase(`${name}-database`, {

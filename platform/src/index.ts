@@ -48,4 +48,5 @@ export const platform = new Platform(pulumi.getStack(), {
 
     ingressNetworkId: LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>,
     monitoringNetworkId: LayerTwo.stack.requireOutput(LayerTwoExports.MonitoringNetworkId) as pulumi.Output<string>,
+    influxToken: LayerTwo.stack.requireOutput(LayerTwoExports.InfluxDbToken) as pulumi.Output<string>
 })

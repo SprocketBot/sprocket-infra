@@ -6,7 +6,7 @@ import * as postgres from '@pulumi/postgresql';
 import { Redis } from 'global/services';
 import { PostgresUser } from 'global/helpers/datastore/PostgresUser';
 import defaultLogDriver from 'global/helpers/docker/DefaultLogDriver';
-import {getImageSha} from 'global/helpers/docker/getImageSha';
+import { getImageSha } from 'global/helpers/docker/getImageSha';
 import { PlatformDatabase } from '../PlatformDatabase';
 import { PlatformMinio } from '../PlatformMinio';
 
@@ -34,13 +34,15 @@ export class LegacyPlatform extends pulumi.ComponentResource {
     super('SprocketBot:LegacyPlatform', name, {}, opts);
 
     this.dbCredentials = new PostgresUser(`${name}-db-user`, {
-      providers: { postgres: args.postgresProvider, vault: args.vaultProvider }, username: 'sprocket_dev_legacy', roleArgs: {
-        searchPaths: ["mledb"]
+      providers: { postgres: args.postgresProvider, vault: args.vaultProvider },
+      username: 'sprocket_dev_legacy',
+      roleArgs: {
+        searchPaths: ['mledb']
       }
     }, { parent: this });
     this.network = new docker.Network(`${name}-net`, {
-      driver: "overlay"
-    }, { parent: this })
+      driver: 'overlay'
+    }, { parent: this });
 
     this.buildPostgresGrants(name, args);
 
@@ -76,7 +78,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.minioUser.name,
             file_token_secret: args.minio.minioUser.secret,
-            SPROCKET: "yes"
+            SPROCKET: 'yes'
           }
         },
         networks: [
@@ -112,16 +114,16 @@ export class LegacyPlatform extends pulumi.ComponentResource {
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.minioUser.name,
             file_token_secret: args.minio.minioUser.secret,
-            SPROCKET: "yes"
+            SPROCKET: 'yes'
           }
         },
         logDriver: defaultLogDriver('legacy-worker', false),
         networks: [
           args.postgresNetworkId,
           this.network.id
-        ],
+        ]
       }
-    }, { parent: this })
+    }, { parent: this });
   }
 
   private buildPostgresGrants(name: string, args: LegacyPlatformArgs) {

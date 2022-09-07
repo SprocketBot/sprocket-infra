@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as vault from "@pulumi/vault"
 
-import {RabbitMq} from "global/services/rabbitmq/RabbitMq";
+import {RabbitMq, RabbitMqArgs} from "global/services/rabbitmq/RabbitMq";
 import {Redis} from "global/services/redis/Redis";
 import {buildHost} from "global/helpers/buildHost";
 import {HOSTNAME} from "global/constants";
@@ -13,7 +13,9 @@ interface PlatformDatastoresArgs {
     platformNetworkId: docker.Network["id"]
 
     environmentSubdomain: string
-    configRoot: string
+    configRoot: string,
+
+    monitoring?: RabbitMqArgs["monitoring"]
 }
 
 export class PlatformDatastore extends pulumi.ComponentResource {
@@ -27,7 +29,8 @@ export class PlatformDatastore extends pulumi.ComponentResource {
             configFilepath: `${args.configRoot}/rabbitmq.conf`,
             ingressNetworkId: args.ingressNetworkId,
             platformNetworkId: args.platformNetworkId,
-            url: buildHost("rabbitMq", args.environmentSubdomain, HOSTNAME)
+            url: buildHost("rabbitMq", args.environmentSubdomain, HOSTNAME),
+            monitoring: args.monitoring
         }, { parent: this })
 
         this.redis = new Redis(`${name}-redis`, {
@@ -35,8 +38,9 @@ export class PlatformDatastore extends pulumi.ComponentResource {
             vaultProvider: args.vaultProvider,
             ingressNetworkId: args.ingressNetworkId,
             platformNetworkId: args.platformNetworkId,
-            url: buildHost("redis", args.environmentSubdomain, HOSTNAME)
-        })
+            url: buildHost("redis", args.environmentSubdomain, HOSTNAME),
+            monitoring: args.monitoring
+        }, { parent: this })
     }
 
 }

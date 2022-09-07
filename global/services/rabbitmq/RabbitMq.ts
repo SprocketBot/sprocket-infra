@@ -1,16 +1,23 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
+import * as vault from "@pulumi/vault"
 
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
 import {ConfigFile} from "../../helpers/docker/ConfigFile"
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels"
+import { Telegraf } from '../telegraf';
 
 
 export interface RabbitMqArgs {
     configFilepath: string
-    ingressNetworkId: docker.Network["id"],
-    platformNetworkId: docker.Network["id"],
-    url: string;
+    ingressNetworkId: docker.Network["id"]
+    platformNetworkId: docker.Network["id"]
+    url: string
+
+    monitoring?: {
+        influxToken: string | pulumi.Output<string>,
+        monitoringNetworkId: docker.Network["id"],
+    }
 }
 
 export class RabbitMq extends pulumi.ComponentResource {
@@ -18,6 +25,8 @@ export class RabbitMq extends pulumi.ComponentResource {
 
     private readonly volume: docker.Volume
     private readonly service: docker.Service
+
+    private readonly telegraf?: Telegraf
 
     readonly hostname: docker.Service["name"]
 
@@ -36,6 +45,14 @@ export class RabbitMq extends pulumi.ComponentResource {
 
         this.volume = new docker.Volume(`${name}-data`, {}, {retainOnDelete: true, parent: this})
 
+        const networks = [
+            args.platformNetworkId,
+            args.ingressNetworkId,
+        ]
+        if (args.monitoring) {
+            networks.push(args.monitoring.monitoringNetworkId)
+        }
+
         this.service = new docker.Service(`${name}-service`, {
             taskSpec: {
                 containerSpec: {
@@ -52,10 +69,7 @@ export class RabbitMq extends pulumi.ComponentResource {
                         target: "/var/lib/rabbitmq"
                     }],
                 },
-                networks: [
-                    args.platformNetworkId,
-                    args.ingressNetworkId
-                ],
+                networks: networks,
                 logDriver: DefaultLogDriver("rabbitmq", true),
                 placement: {
                     constraints: [
@@ -77,6 +91,20 @@ export class RabbitMq extends pulumi.ComponentResource {
                         .complete
                 ] : []
         }, {parent: this})
+
+        if (args.monitoring) {
+            this.telegraf = new Telegraf(`${name}-telegraf-agent`, {
+                additionalEnvironmentVariables: {
+                    RMQ_USER: "guest",
+                    RMQ_PASS: "guest",
+                    RMQ_HOST: this.service.name
+                },
+                additionalNetworkIds: [],
+                monitoringNetworkId: args.monitoring.monitoringNetworkId,
+                configFilePath: `${__dirname}/telegraf.rmq.conf`,
+                influxToken: args.monitoring.influxToken,
+            }, { parent: this })
+        }
 
         this.hostname = this.service.name
     }

@@ -106,7 +106,11 @@ export type SprocketServiceArgs = {
     env?: EnvSpec
     additionalConfigs?: AdditionalConfigInput[]
     labels?: LabelSpec[],
-    instanceCount?: number
+    instanceCount?: number,
+    /**
+     * If true, will constrain to 1 per node maximum
+     */
+    spread?: boolean,
 }
 
 export class SprocketService extends pulumi.ComponentResource {
@@ -151,13 +155,23 @@ export class SprocketService extends pulumi.ComponentResource {
             )
         }
 
+
         this.service = new docker.Service(`${name}-service`, {
+            // mode: {
+            //     global: undefined,
+            //     replicated: {
+            //         replicas: args.instanceCount ?? 2
+            //     }
+            // },
             auth: {
                 username: config.require("docker-username"),
                 password: config.requireSecret("docker-access-token"),
                 serverAddress: "https://docker.io"
             },
             taskSpec: {
+                placement: {
+                    maxReplicas: args.spread ? 1 : undefined
+                },
                 containerSpec: {
                     image: getImageSha(args.image.namespace, args.image.repository, args.image.tag),
                     secrets: [
@@ -166,13 +180,11 @@ export class SprocketService extends pulumi.ComponentResource {
                     ],
                     env: {
                         NODE_ENV: "production",
+                        REAL_HOSTNAME: "{{.Node.Hostname}}",
                         ...environment,
                         ...(args.env ?? {})
                     },
                     configs
-                },
-                placement: {
-                    maxReplicas: args.instanceCount ?? 2
                 },
                 networks: [
                     args.platformNetworkId,

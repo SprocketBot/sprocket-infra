@@ -49,7 +49,11 @@ const sharedRedis = new Redis("layer2redis", {
     configFilepath: `${__dirname}/config/redis.conf`,
     ingressNetworkId: ingressNetworkId,
     vaultProvider: vaultProvider,
-    platformNetworkId: chatwootNetwork.id
+    platformNetworkId: chatwootNetwork.id,
+    monitoring: {
+        influxToken: monitoring.influx.credentials.password,
+        monitoringNetworkId: monitoring.network.id
+    }
 })
 
 export const chatwoot = new Chatwoot("chatwoot", {

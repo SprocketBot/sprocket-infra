@@ -6,6 +6,7 @@ import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
 import {ConfigFile} from "../../helpers/docker/ConfigFile"
 import {VaultCredentials} from "../../helpers/vault/VaultCredentials"
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels"
+import { Telegraf } from '../telegraf';
 
 
 export interface RedisArgs {
@@ -16,6 +17,11 @@ export interface RedisArgs {
     ingressNetworkId?: docker.Network["id"]
 
     url?: string;
+
+    monitoring?: {
+        influxToken: string | pulumi.Output<string>,
+        monitoringNetworkId: docker.Network["id"],
+    }
 }
 
 export class Redis extends pulumi.ComponentResource {
@@ -23,6 +29,9 @@ export class Redis extends pulumi.ComponentResource {
     readonly hostname: docker.Service["name"]
     readonly credentials: VaultCredentials
     readonly url?: string | pulumi.Output<string>
+
+    readonly telegraf?: Telegraf
+
     private readonly config: ConfigFile
     private readonly volume: docker.Volume
     private readonly service: docker.Service
@@ -48,6 +57,7 @@ export class Redis extends pulumi.ComponentResource {
         const networks: docker.Network["id"][] = []
         if (args.platformNetworkId) networks.push(args.platformNetworkId)
         if (args.ingressNetworkId) networks.push(args.ingressNetworkId)
+        if (args.monitoring) networks.push(args.monitoring.monitoringNetworkId)
 
         this.service = new docker.Service(`${name}-redis-primary`, {
             taskSpec: {
@@ -87,6 +97,20 @@ export class Redis extends pulumi.ComponentResource {
                 .complete : []
 
         }, {parent: this})
+
+        if (args.monitoring) {
+            this.telegraf = new Telegraf(`${name}-telegraf-agent`, {
+                additionalEnvironmentVariables: {
+                    REDIS_HOST: this.service.name,
+                    REDIS_PASSWORD: this.credentials.password
+                },
+                additionalNetworkIds: [],
+                configFilePath: `${__dirname}/telegraf.redis.conf`,
+                influxToken: args.monitoring.influxToken,
+                monitoringNetworkId: args.monitoring.monitoringNetworkId,
+            }, { parent: this })
+
+        }
 
         this.hostname = this.service.name
     }
