@@ -77,8 +77,11 @@ export type SprocketServiceConfigTemplateValues = {
     },
     api: {
         url: string | pulumi.Output<string>
+    },
+    chatwoot: {
+        url: string | pulumi.Output<string>
+        websiteToken: string | pulumi.Output<string>
     }
-
 }
 
 export type SprocketServiceArgs = {
@@ -102,7 +105,8 @@ export type SprocketServiceArgs = {
     secrets?: SecretSpec
     env?: EnvSpec
     additionalConfigs?: AdditionalConfigInput[]
-    labels?: LabelSpec[]
+    labels?: LabelSpec[],
+    instanceCount?: number
 }
 
 export class SprocketService extends pulumi.ComponentResource {
@@ -166,6 +170,9 @@ export class SprocketService extends pulumi.ComponentResource {
                         ...(args.env ?? {})
                     },
                     configs
+                },
+                placement: {
+                    maxReplicas: args.instanceCount ?? 2
                 },
                 networks: [
                     args.platformNetworkId,

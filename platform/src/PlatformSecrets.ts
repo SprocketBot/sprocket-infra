@@ -27,7 +27,6 @@ export class PlatformSecrets extends pulumi.ComponentResource {
     readonly s3SecretKey: docker.Secret
     readonly s3AccessKey: docker.Secret
 
-
     readonly redisPassword: docker.Secret
     readonly postgresPassword: docker.Secret
 
@@ -40,6 +39,8 @@ export class PlatformSecrets extends pulumi.ComponentResource {
     readonly discordClientId: docker.Secret
 
     readonly ballchasingApiToken: docker.Secret
+
+    readonly chatwootHmacKey: docker.Secret
 
     constructor(name: string, args: PlatformSecretsArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:Secrets", name, {}, opts)
@@ -97,6 +98,13 @@ export class PlatformSecrets extends pulumi.ComponentResource {
 
         this.ballchasingApiToken = new docker.Secret(`${name}-ballchasing-token`, {
             data: vault.generic.getSecretOutput({ path: "platform/ballchasing"}, {parent: this, provider: args.vault}).data.apply((d) => btoa(d.token))
+        }, { parent: this })
+
+        this.chatwootHmacKey = new docker.Secret(`${name}-chatwoot-hmac-key`, {
+            data: vault.generic.getSecretOutput(
+                { path: `platform/${args.environment}/chatwoot` },
+                { parent: this, provider: args.vault }
+            ).data.apply((d) => btoa(d.hmacKey))
         }, { parent: this })
     }
 }
