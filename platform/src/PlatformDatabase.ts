@@ -30,6 +30,10 @@ interface PlatformGrants {
             usage: postgresql.Grant,
             select: postgresql.Grant
         },
+        mledbBridge: {
+            usage: postgresql.Grant
+            select: postgresql.Grant
+        }
     }
     elo: {
         dataScience: postgresql.Grant
@@ -47,12 +51,14 @@ export class PlatformDatabase extends pulumi.ComponentResource {
     readonly mledbSchema: postgresql.Schema
     readonly sprocketSchema: postgresql.Schema
     readonly historySchema: postgresql.Schema
+    readonly mledbBridgeSchema: postgresql.Schema
 
     readonly grants: PlatformGrants = {
         dataScience: {
             mledb: {},
             sprocket: {},
-            history: {}
+            history: {},
+            mledbBridge: {}
         }
     } as PlatformGrants
 
@@ -66,6 +72,9 @@ export class PlatformDatabase extends pulumi.ComponentResource {
         const developerUsername = `sprocket_${args.environmentSubdomain}`
         this.credentials = new PostgresUser(`${name}-db-user`, {
             providers: {postgres: args.postgresProvider, vault: args.vaultProvider},
+            roleArgs: {
+                searchPaths: ['sprocket', 'history', 'public']
+            },
             keepers: { rotate: "1" },
             username: developerUsername
         })
@@ -73,6 +82,9 @@ export class PlatformDatabase extends pulumi.ComponentResource {
         const dsUsername = `sprocket_${args.environmentSubdomain}_data_science`;
         this.dataScienceCredentials = new PostgresUser(`${name}-db-ds-user`, {
             providers: {postgres: args.postgresProvider, vault: args.vaultProvider},
+            roleArgs: {
+                searchPaths: ['sprocket', 'public', 'history', 'data_science']
+            },
             keepers: { rotate: "1" },
             username: dsUsername
         })
@@ -105,6 +117,12 @@ export class PlatformDatabase extends pulumi.ComponentResource {
             name: "data_science",
             owner: this.dataScienceCredentials.username
         }, {parent: this, provider: args.postgresProvider})
+
+        this.mledbBridgeSchema = new postgresql.Schema(`${name}-mledb-bridge-schema`, {
+            database: this.database.name,
+            name: "mledb_bridge",
+            owner: this.credentials.username
+        }, { parent: this, provider: args.postgresProvider})
 
         // Grant select on everything
         this.grants.dataScience.mledb.usage = new postgresql.Grant(`${name}-data-science-mledb-grant-usage`, {
@@ -158,24 +176,21 @@ export class PlatformDatabase extends pulumi.ComponentResource {
             role: this.dataScienceCredentials.username
         }, {parent: this, provider: args.postgresProvider})
 
-        // // Revoke everything on elo data
-        // this.grants.elo.dataScience = new postgresql.Grant(`${name}-data-science-elo-revoke`, {
-        //     database: this.database.name,
-        //     objectType: "table",
-        //     objects: ["elo_data"],
-        //     schema: this.mledbSchema.name,
-        //     privileges: [],
-        //     role: this.dataScienceCredentials.username
-        // }, {parent: this, provider: args.postgresProvider})
-        //
-        // this.grants.elo.platform = new postgresql.Grant(`${name}-elo-revoke`, {
-        //     database: this.database.name,
-        //     objectType: "table",
-        //     objects: ["elo_data"],
-        //     schema: this.mledbSchema.name,
-        //     privileges: [],
-        //     role: this.credentials.username
-        // }, {parent: this, provider: args.postgresProvider})
+        this.grants.dataScience.mledbBridge.usage = new postgresql.Grant(`${name}-data-science-mledb-bridge-grant-usage`, {
+            database: this.database.name,
+            objectType: "schema",
+            schema: this.mledbBridgeSchema.name,
+            privileges: ["USAGE"],
+            role: this.dataScienceCredentials.username
+        }, {parent: this, provider: args.postgresProvider})
+
+        this.grants.dataScience.mledbBridge.select = new postgresql.Grant(`${name}-data-science-mledb-bridge-grant`, {
+            database: this.database.name,
+            objectType: "table",
+            schema: this.mledbBridgeSchema.name,
+            privileges: ["SELECT"],
+            role: this.dataScienceCredentials.username
+        }, {parent: this, provider: args.postgresProvider})
 
         this.vault = new PostgresVaultProvider(`${name}-vault`, {
             environment: args.environmentSubdomain,
