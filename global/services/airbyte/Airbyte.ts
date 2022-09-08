@@ -1,6 +1,5 @@
 import * as pulumi from "@pulumi/pulumi"
 import * as docker from "@pulumi/docker"
-import * as vault from "@pulumi/vault"
 import DefaultLogDriver from '../../helpers/docker/DefaultLogDriver';
 import {
   bootloaderEnv,
@@ -17,8 +16,6 @@ import { HOSTNAME } from '../../constants';
 
 
 export interface AirbyteArgs {
-  vaultToken: string | pulumi.Output<string>,
-  vaultHost: string | pulumi.Output<string>,
   ingressNetworkId: string | pulumi.Output<string>
 }
 
@@ -53,9 +50,10 @@ export class Airbyte extends pulumi.ComponentResource {
     }, { parent: this })
 
     this.volumes.db = new docker.Volume(`${name}-db-vol`, { }, { parent: this })
-    this.volumes.workspace = new docker.Volume(`${name}-db-workspace`, { }, { parent: this })
+    this.volumes.workspace = new docker.Volume(`${name}-workspace`, { name: "airbyte_workspace" }, { parent: this })
 
     this.services.init = new docker.Service(`${name}-init`, {
+      name: "airbyte-init",
       taskSpec: {
         containerSpec: {
           image: "airbyte/init:0.40.4",
@@ -81,6 +79,7 @@ export class Airbyte extends pulumi.ComponentResource {
     }, { parent: this })
 
     this.services.db = new docker.Service(`${name}-db`, {
+      name: "airbyte-db",
       taskSpec: {
         containerSpec: {
           image: "airbyte/db:0.40.4",
@@ -103,14 +102,13 @@ export class Airbyte extends pulumi.ComponentResource {
     }, { parent: this })
 
     this.services.worker = new docker.Service(`${name}-worker`, {
+      name: "airbyte-worker",
       taskSpec: {
         containerSpec: {
           image: "airbyte/worker:0.40.4",
           hostname: "airbyte-worker",
           env: {
             ...workerEnv,
-            VAULT_AUTH_TOKEN: args.vaultToken,
-            VAULT_ADDRESS: args.vaultHost
           },
           mounts: [{
             type: "bind",
@@ -139,6 +137,7 @@ export class Airbyte extends pulumi.ComponentResource {
 
 
     this.services.bootloader = new docker.Service(`${name}-bootloader`, {
+      name: "airbyte-bootloader",
       taskSpec: {
         containerSpec: {
           image: "airbyte/bootloader:0.40.4",
@@ -153,8 +152,9 @@ export class Airbyte extends pulumi.ComponentResource {
         },
         logDriver: DefaultLogDriver(`${name}-bootloader`, true),
       }
-    })
+    }, { parent: this })
     this.services.cron = new docker.Service(`${name}-cron`, {
+      name: "airbyte-cron",
       taskSpec: {
         containerSpec: {
           image: "airbyte/cron:0.40.4",
@@ -174,8 +174,9 @@ export class Airbyte extends pulumi.ComponentResource {
         },
         logDriver: DefaultLogDriver(`${name}-cron`, true),
       }
-    })
+    }, { parent: this })
     this.services.temporal = new docker.Service(`${name}-temporal`, {
+      name: "airbyte-temporal",
       taskSpec: {
         containerSpec: {
           image: "airbyte/temporal:0.40.4",
@@ -195,13 +196,14 @@ export class Airbyte extends pulumi.ComponentResource {
         },
         logDriver: DefaultLogDriver(`${name}-temporal`, true),
       }
-    })
+    }, { parent: this })
     this.services.webapp = new docker.Service(`${name}-webapp`, {
+      name: "airbyte-webapp",
       labels: new TraefikLabels("airbyte")
         .tls("lets-encrypt-tls")
         .rule(`Host(\`airbyte.${HOSTNAME}\`)`)
         .forwardAuthRule("SprocketAdmin")
-        .targetPort(8000)
+        .targetPort(80)
         .complete,
       taskSpec: {
         containerSpec: {
@@ -217,9 +219,10 @@ export class Airbyte extends pulumi.ComponentResource {
         },
         logDriver: DefaultLogDriver(`${name}-webapp`, true),
       }
-    })
+    }, { parent: this })
 
     this.services.server = new docker.Service(`${name}-server`, {
+      name: "airbyte-server",
       labels: new TraefikLabels("airbyte-server")
         .tls("lets-encrypt-tls")
         .rule(`Host(\`api.airbyte.${HOSTNAME}\`)`)
@@ -232,9 +235,12 @@ export class Airbyte extends pulumi.ComponentResource {
           hostname: "airbyte-server",
           env: {
             ...serverEnv,
-            VAULT_AUTH_TOKEN: args.vaultToken,
-            VAULT_ADDRESS: args.vaultHost
-          }
+          },
+          mounts: [{
+            type: "volume",
+            source: this.volumes.workspace.id,
+            target: workerEnv.WORKSPACE_ROOT
+          }]
         },
         networks: [this.network.id, args.ingressNetworkId],
         placement: {
@@ -244,6 +250,6 @@ export class Airbyte extends pulumi.ComponentResource {
         },
         logDriver: DefaultLogDriver(`${name}-server`, true),
       }
-    })
+    }, { parent: this })
   }
 }

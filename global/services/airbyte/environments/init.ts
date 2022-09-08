@@ -50,9 +50,7 @@ export const workerEnv = {
   MAX_DISCOVER_WORKERS: "5",
   MAX_SPEC_WORKERS: "5",
   MAX_SYNC_WORKERS: "5",
-  SECRET_PERSISTENCE: "VAULT",
-  VAULT_PREFIX: "/infra/airbyte",
-  VAULT_AUTH_METHOD: "token",
+  SECRET_PERSISTENCE: "NONE",
   SYNC_JOB_MAX_ATTEMPTS: "3",
   SYNC_JOB_MAX_TIMEOUT_DAYS: "3",
   TEMPORAL_HOST: TEMPORAL_HOST,
@@ -65,7 +63,7 @@ export const workerEnv = {
 }
 
 export const cronEnv = {
-  DB: "postgres",
+  DB: "postgresql",
   DB_PORT: "5432",
   LOG_LEVEL: "INFO",
   POSTGRES_PWD: DATABASE_PASSWORD,
@@ -75,7 +73,7 @@ export const cronEnv = {
 }
 
 export const temporalEnv = {
-  DB: "postgres",
+  DB: "postgresql",
   DB_PORT: "5432",
   DYNAMIC_CONFIG_FILE_PATH: "config/dynamicconfig/development.yaml",
   LOG_LEVEL: "INFO",
@@ -85,6 +83,7 @@ export const temporalEnv = {
 }
 
 export const webappEnv = {
+  TRACKING_STRATEGY: "segment",
   AIRBYTE_VERSION: AIRBYTE_VERSION,
   API_URL: "/api/v1/",
   INTERNAL_API_HOST: "airbyte-server:8001",
@@ -97,10 +96,9 @@ export const serverEnv = {
   DATABASE_URL: DATABASE_URL,
   DATABASE_USER: DATABASE_USER,
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001",
+  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.15.001",
   LOG_LEVEL: "INFO",
-  SECRET_PERSISTENCE: "VAULT",
-  VAULT_PREFIX: "/infra/airbyte",
-  VAULT_AUTH_METHOD: "token",
+  SECRET_PERSISTENCE: "NONE",
 
   TEMPORAL_HOST: TEMPORAL_HOST,
   JOB_ERROR_REPORTING_STRATEGY: "logging",
