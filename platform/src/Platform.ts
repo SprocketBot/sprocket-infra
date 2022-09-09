@@ -390,8 +390,8 @@ export class Platform extends pulumi.ComponentResource {
             }
         })
 
-        // Only include on dev.
-        if (pulumi.getStack() !== 'dev') return;
+        // Don't include a staging version
+        if (pulumi.getStack() === 'staging') return;
         new LegacyPlatform(`${name}-legacy`, {
             database: this.database,
             minio: this.objectStorage,
