@@ -1,7 +1,7 @@
 import {Config} from "@pulumi/pulumi"
 
 const c = new Config()
-const environment = c.require("subdomain")
+const environment = c.get("subdomain")
 
 
 export const buildHost = (...x: string[]) => {
