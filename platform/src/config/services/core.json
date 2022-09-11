@@ -27,6 +27,10 @@
     "database": "{{database.database}}",
     "enable_logs": false
   },
+  "web": {,
+    "url": "https://{{frontend.url}}",
+    "api_root": "https://{{api.url}}"
+  },
   "auth": {
     "discord": {
       "callbackUrl": "https://{{ api.url }}/login"
