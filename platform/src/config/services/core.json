@@ -27,7 +27,7 @@
     "database": "{{database.database}}",
     "enable_logs": false
   },
-  "web": {,
+  "web": {
     "url": "https://{{frontend.url}}",
     "api_root": "https://{{api.url}}"
   },
