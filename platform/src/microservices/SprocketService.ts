@@ -172,7 +172,10 @@ export class SprocketService extends pulumi.ComponentResource {
                     configs
                 },
                 placement: {
-                    maxReplicas: args.instanceCount ?? 2
+                    maxReplicas: args.instanceCount ?? 2,
+                    constraints: [
+                      "node.role!=manager"
+                    ]
                 },
                 networks: [
                     args.platformNetworkId,

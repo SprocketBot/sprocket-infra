@@ -13,6 +13,7 @@ path "platform/data-science/manual/*" {
 path "misc" {
   capabilities = ["list"]
 }
+
 path "misc/data-science/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }

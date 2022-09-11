@@ -18,6 +18,18 @@ path "database/creds/developer*" {
     capabilities = ["read", "list"]
 }
 
+path "database/creds/developer_main" {
+    capabilities = ["deny"]
+}
+
 path "database/roles" {
+    capabilities = ["read", "list"]
+}
+
+path "database/creds/data_science*" {
+    capabilities = ["read", "list"]
+}
+
+path "database/roles/data_science*" {
     capabilities = ["read", "list"]
 }
