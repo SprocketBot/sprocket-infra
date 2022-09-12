@@ -61,6 +61,7 @@ export class Platform extends pulumi.ComponentResource {
     readonly webUrl: string
     readonly chatwootUrl: string
     readonly igUrl: string
+    readonly dgraphUrl: string
 
     readonly key: random.RandomUuid
 
@@ -122,6 +123,7 @@ export class Platform extends pulumi.ComponentResource {
         this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
         this.chatwootUrl = buildHost(CHATWOOT_SUBDOMAIN, HOSTNAME)
         this.igUrl = buildHost("image-generation", this.environmentSubdomain, HOSTNAME)
+        this.dgraphUrl = buildHost("dgraph", this.environmentSubdomain, HOSTNAME)
 
         const coreLabels = new TraefikLabels(`sprocket-core-${this.environmentSubdomain}`)
             .tls("lets-encrypt-tls")
@@ -329,12 +331,23 @@ export class Platform extends pulumi.ComponentResource {
                 vault: args.vault.platform,
                 ...this.buildDefaultConfiguration("elo-service", args.configRoot),
                 env: {
-                    ENV: "production",
-                    REDIS_HOST: "",
-                    REDIS_PORT: "",
-                    REDIS_PASSWORD: "",
-                    REDIS_SERVER_NAME: "",
+                    REDIS_HOST: this.datastore.redis.hostname,
+                    REDIS_PORT: "6379",
+                    REDIX_PREFIX: this.environmentSubdomain,
+                    DGRAPH_DATABASE_URL: this.dgraphUrl,
                 },
+                secrets: [
+                    {
+                        secretId: this.secrets.redisPassword.id,
+                        secretName: this.secrets.redisPassword.name,
+                        fileName: "/app/secret/redis-password.txt"
+                    },
+                    {
+                        secretId: this.secrets.dgraphApiKey.id,
+                        secretName: this.secrets.dgraphApiKey.name,
+                        fileName: "/app/secret/dgraph-api-key.txt.txt"
+                    }
+                ],
                 ingressNetworkId: args.ingressNetworkId
             }, {parent: this}),
 

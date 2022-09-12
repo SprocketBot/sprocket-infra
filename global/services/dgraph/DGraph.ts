@@ -25,8 +25,12 @@ export class DGraph extends pulumi.ComponentResource {
 
     private readonly dgraphNet: docker.Network
 
+    readonly url: string;
+
     constructor(name: string, args: DGraphArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Neo4j", name, {}, opts)
+
+        this.url = `dgraph.${args.environment}.${HOSTNAME}`
 
         this.credentials = new VaultCredentials(`${name}-root-credentials`, {
             username: "dgraph",
@@ -105,10 +109,14 @@ export class DGraph extends pulumi.ComponentResource {
                     args.platformNetworkId,
                     args.ingressNetworkId,
                     this.dgraphNet.id
-                ] : [args.ingressNetworkId, this.dgraphNet.id]
+                ] : [args.ingressNetworkId, this.dgraphNet.id],
             },
+            labels: new TraefikLabels(name)
+                .tls("lets-encrypt-tls")
+                .rule(`Host(\`${this.url}\`)`)
+                .targetPort(8080)
+                .complete,
         })
-
 
         this.hostname = this.zero.name
     }
