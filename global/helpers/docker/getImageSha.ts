@@ -51,7 +51,10 @@ export function getImageSha(namespace: string, repository: string, tag: string):
             })
 
             const result = results.data.results.find(r => r.tags.some(t => t.tag === tag))
+
+
             if (!result) throw new Error(`Tag not found! ${namespace}/${repository}:${tag}`)
+            console.log(`${namespace}/${repository}@${result.digest} (${tag})`)
             return `${namespace}/${repository}@${result.digest}`
         })
 

@@ -21,8 +21,6 @@ const vaultProvider = new vault.Provider('VaultProvider', {
 });
 
 export const airbyte = new Airbyte('airbyte', {
-  vaultHost: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress) as pulumi.Output<string>,
-  vaultToken: policies.infraToken.clientToken,
   ingressNetworkId: ingressNetworkId,
 });
 
