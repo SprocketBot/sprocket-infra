@@ -54,7 +54,7 @@ export class Grafana extends pulumi.ComponentResource {
                     ]
                 },
                 containerSpec: {
-                    image: "grafana/grafana:8.4.4",
+                    image: "grafana/grafana:main",
                     env: vault.generic.getSecretOutput({ path: "infrastructure/smtp"}, {provider: args.providers.vault}).apply(s => ({
                         GF_SERVER_ROOT_URL: `https://grafana.${HOSTNAME}`,
                         GF_DATABASE_TYPE: "postgres",
@@ -67,7 +67,8 @@ export class Grafana extends pulumi.ComponentResource {
                         GF_FROM_ADDRESS: "noreply@sprocket.gg",
                         GF_FROM_NAME: "Sprocket Noreply",
                         GF_SMTP_PASSWORD: s.data['password'],
-                        GF_SMTP_USER: s.data['username']
+                        GF_SMTP_USER: s.data['username'],
+                        GF_INSTALL_PLUGINS: "grafana-github-datasource,ryantxu-annolist-panel,neocat-cal-heatmap-panel,grafana-polystat-panel,fifemon-graphql-datasource,redis-datasource,marcusolsson-treemap-panel,digiapulssi-breadcrumb-panel"
                     })),
                 },
                 logDriver: DefaultLogDriver(name, true),
