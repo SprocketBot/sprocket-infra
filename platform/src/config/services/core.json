@@ -18,7 +18,8 @@
   "redis": {
     "port": {{redis.port}},
     "host": "{{ redis.host }}",
-    "prefix": "{{ redis.prefix }}"
+    "prefix": "{{ redis.prefix }}",
+    "secure": false
   },
   "db": {
     "host": "{{database.host}}",
