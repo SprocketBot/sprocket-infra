@@ -91,14 +91,12 @@ export class DGraph extends pulumi.ComponentResource {
                         target: "/dgraph",
                         source: this.dataVolume.id
                     }],
-                    commands: pulumi.all([this.credentials.password]).apply(([pwd]) => [
+                    commands: [
                         "dgraph",
                         "alpha",
                         `--my=${name}-alpha:${this.alphaPort}`,
                         `--zero=${name}-zero:5080`,
-                        `--security`,
-                        `token=${pwd}`
-                    ]),
+                    ],
                 },
                 logDriver: DefaultLogDriver(`${name}-alpha`, true),
                 placement: {
