@@ -32,7 +32,7 @@ export class EloService extends pulumi.ComponentResource {
         ...args,
         env:{
           ...args.env,
-          DGRAPH_DATABASE_URL: this.dgraph.hostname
+          DGRAPH_DATABASE_URL: this.dgraph.hostname.apply(h => `${h}:${this.dgraph.alphaPort}`)
         },
         secrets: [
           ...(args.secrets ?? []),

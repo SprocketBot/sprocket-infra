@@ -17,6 +17,7 @@ export interface DGraphArgs {
 export class DGraph extends pulumi.ComponentResource {
     readonly credentials: VaultCredentials
     readonly hostname: docker.Service["name"]
+    readonly alphaPort: number
 
     private readonly dataVolume: docker.Volume
     // private readonly pluginVolume: docker.Volume
@@ -77,6 +78,8 @@ export class DGraph extends pulumi.ComponentResource {
             },
         }, {parent: this})
 
+        this.alphaPort = 7080
+
         this.alpha = new docker.Service(`${name}-alpha`, {
             name: `${name}-alpha`,
             taskSpec: {
@@ -91,7 +94,7 @@ export class DGraph extends pulumi.ComponentResource {
                     commands: pulumi.all([this.credentials.password]).apply(([pwd]) => [
                         "dgraph",
                         "alpha",
-                        `--my=${name}-alpha:7080`,
+                        `--my=${name}-alpha:${this.alphaPort}`,
                         `--zero=${name}-zero:5080`,
                         `--security`,
                         `token=${pwd}`
