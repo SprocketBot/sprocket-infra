@@ -120,6 +120,6 @@ export class DGraph extends pulumi.ComponentResource {
                 .complete,
         })
 
-        this.hostname = this.zero.name
+        this.hostname = this.alpha.name
     }
 }
