@@ -27,7 +27,22 @@ export class EloService extends pulumi.ComponentResource {
       data: this.dgraph.credentials.password.apply(v => btoa(v))
     }, { parent: this });
 
-    this.service = new SprocketService(`${name}-sprocketservice`, args, { parent: this });
+    this.service = new SprocketService(`${name}-sprocketservice`,
+      {
+        ...args,
+        env:{
+          ...args.env,
+          DGRAPH_DATABASE_URL: this.dgraph.hostname
+        },
+        secrets: [
+          ...(args.secrets ?? []),
+          {
+            secretId: this.dgraphSecret.id,
+            secretName: this.dgraphSecret.name,
+            fileName: "/app/secret/dgraph-api-key.txt"
+          }]
+      },
+      { parent: this });
   }
 
 }

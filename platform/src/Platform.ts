@@ -61,7 +61,6 @@ export class Platform extends pulumi.ComponentResource {
     readonly webUrl: string
     readonly chatwootUrl: string
     readonly igUrl: string
-    readonly dgraphUrl: string
 
     readonly key: random.RandomUuid
 
@@ -123,7 +122,6 @@ export class Platform extends pulumi.ComponentResource {
         this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
         this.chatwootUrl = buildHost(CHATWOOT_SUBDOMAIN, HOSTNAME)
         this.igUrl = buildHost("image-generation", this.environmentSubdomain, HOSTNAME)
-        this.dgraphUrl = buildHost("dgraph", this.environmentSubdomain, HOSTNAME)
 
         const coreLabels = new TraefikLabels(`sprocket-core-${this.environmentSubdomain}`)
             .tls("lets-encrypt-tls")
@@ -333,19 +331,13 @@ export class Platform extends pulumi.ComponentResource {
                 env: {
                     REDIS_HOST: this.datastore.redis.hostname,
                     REDIS_PORT: "6379",
-                    REDIX_PREFIX: this.environmentSubdomain,
-                    DGRAPH_DATABASE_URL: this.dgraphUrl,
+                    REDIS_PREFIX: this.environmentSubdomain,
                 },
                 secrets: [
                     {
                         secretId: this.secrets.redisPassword.id,
                         secretName: this.secrets.redisPassword.name,
                         fileName: "/app/secret/redis-password.txt"
-                    },
-                    {
-                        secretId: this.secrets.dgraphApiKey.id,
-                        secretName: this.secrets.dgraphApiKey.name,
-                        fileName: "/app/secret/dgraph-api-key.txt.txt"
                     }
                 ],
                 ingressNetworkId: args.ingressNetworkId

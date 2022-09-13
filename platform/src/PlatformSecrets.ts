@@ -42,8 +42,6 @@ export class PlatformSecrets extends pulumi.ComponentResource {
 
     readonly chatwootHmacKey: docker.Secret
 
-    readonly dgraphApiKey: docker.Secret
-
     constructor(name: string, args: PlatformSecretsArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform:Secrets", name, {}, opts)
 
@@ -108,12 +106,5 @@ export class PlatformSecrets extends pulumi.ComponentResource {
                 { parent: this, provider: args.vault }
             ).data.apply((d) => btoa(d.hmacKey))
         }, { parent: this })
-
-        this.dgraphApiKey = new docker.Secret(`${name}-dgraph-api-key`, {
-            data: vault.generic.getSecretOutput(
-                {path: `platform/elo/${args.environment}/dgraph`},
-                { parent: this, provider: args.vault }
-            ).data.apply((d) => btoa(d.apiKey))
-        }, {parent: this})
     }
 }

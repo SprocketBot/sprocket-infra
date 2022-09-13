@@ -4,7 +4,7 @@ import * as vault from "@pulumi/vault"
 import {VaultCredentials} from "../../helpers/vault/VaultCredentials";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
-import {HOSTNAME} from "../../constants";
+import {UTIL_HOSTNAME} from "../../constants";
 import {buildHost} from "../../helpers/buildHost";
 
 export interface DGraphArgs {
@@ -30,7 +30,7 @@ export class DGraph extends pulumi.ComponentResource {
     constructor(name: string, args: DGraphArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Neo4j", name, {}, opts)
 
-        this.url = `dgraph.${args.environment}.${HOSTNAME}`
+        this.url = buildHost("dgraph", args.environment, UTIL_HOSTNAME)
 
         this.credentials = new VaultCredentials(`${name}-root-credentials`, {
             username: "dgraph",
@@ -38,10 +38,6 @@ export class DGraph extends pulumi.ComponentResource {
                 path: `platform/elo/${args.environment}/dgraph`,
                 provider: args.vaultProvider
             },
-            additionalVaultData: {
-                connectionUrl: `${buildHost("bolt", "neo4j", args.environment, HOSTNAME)}:80`,
-                webUrl: `https://${buildHost("neo4j", args.environment, HOSTNAME)}`
-            }
         }, {parent: this})
 
         this.dgraphNet = new docker.Network(`${name}-net`, {
@@ -92,12 +88,14 @@ export class DGraph extends pulumi.ComponentResource {
                         target: "/dgraph",
                         source: this.dataVolume.id
                     }],
-                    commands: [
+                    commands: pulumi.all([this.credentials.password]).apply(([pwd]) => [
                         "dgraph",
                         "alpha",
                         `--my=${name}-alpha:7080`,
-                        `--zero=${name}-zero:5080`
-                    ],
+                        `--zero=${name}-zero:5080`,
+                        `--security`,
+                        `token=${pwd}`
+                    ]),
                 },
                 logDriver: DefaultLogDriver(`${name}-alpha`, true),
                 placement: {
@@ -115,6 +113,7 @@ export class DGraph extends pulumi.ComponentResource {
                 .tls("lets-encrypt-tls")
                 .rule(`Host(\`${this.url}\`)`)
                 .targetPort(8080)
+                .forwardAuthRule("EloTeam")
                 .complete,
         })
 
