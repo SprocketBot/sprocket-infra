@@ -10,7 +10,7 @@ import {PlatformDatastore} from "./PlatformDatastore";
 
 import {TraefikLabels} from "global/helpers/docker/TraefikLabels";
 import {buildHost} from "global/helpers/buildHost";
-import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME} from "global/constants"
+import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME, PRODUCTION_CHATWOOT_WEBSITE_TOKEN} from "global/constants"
 import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
 import {PlatformVault} from "./PlatformVault";
@@ -479,8 +479,7 @@ export class Platform extends pulumi.ComponentResource {
             },
             chatwoot: {
                 url: this.chatwootUrl,
-                // TODO determine correct dev/staging/prod token
-                websiteToken: DEV_CHATWOOT_WEBSITE_TOKEN,
+                websiteToken: pulumi.getStack() === 'main' ? PRODUCTION_CHATWOOT_WEBSITE_TOKEN : DEV_CHATWOOT_WEBSITE_TOKEN,
             },
         }
     })
