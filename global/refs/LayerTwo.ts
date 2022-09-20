@@ -11,7 +11,9 @@ export enum LayerTwoExports {
     PlatformVaultToken = "PlatformVaultToken",
     InfluxDbToken = "InfluxDbToken",
     MinioHostname = "MinioHostname",
-    MinioUrl = "MinioUrl"
+    MinioUrl = "MinioUrl",
+
+    N8nNetwork = "N8nNetworkId"
 }
 
 export default new SprocketStackDefinition("layer_2", `${__dirname}/../../layer_2`);

@@ -1,5 +1,5 @@
 // Handles self
-import { Airbyte, Chatwoot, Minio, Postgres, Redis, VaultPolicies } from 'global/services';
+import { Airbyte, Chatwoot, Minio, N8n, Postgres, Redis, VaultPolicies } from 'global/services';
 import { Monitoring } from './monitoring';
 import * as pulumi from '@pulumi/pulumi';
 import * as vault from '@pulumi/vault';
@@ -37,6 +37,17 @@ const postgresProvider = new SprocketPostgresProvider({
   postgresCredentials: pg.credentials,
   postgresHostname: pg.url
 }, {}) as postgres.Provider;
+
+
+export const n8n = new N8n('n8n', {
+  ingressNetworkId: ingressNetworkId,
+  postgresHostname: pg.hostname,
+  postgresNetworkId: pg.networkId,
+  providers: {
+    postgres: postgresProvider,
+    vault: vaultProvider
+  }
+})
 
 export const monitoring = new Monitoring('monitoring', {
   postgres: pg,
