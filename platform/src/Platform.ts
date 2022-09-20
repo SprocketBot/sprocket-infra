@@ -10,7 +10,7 @@ import {PlatformDatastore} from "./PlatformDatastore";
 
 import {TraefikLabels} from "global/helpers/docker/TraefikLabels";
 import {buildHost} from "global/helpers/buildHost";
-import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME} from "global/constants"
+import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME, PRODUCTION_CHATWOOT_WEBSITE_TOKEN} from "global/constants"
 import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
 import {PlatformVault} from "./PlatformVault";
@@ -329,12 +329,17 @@ export class Platform extends pulumi.ComponentResource {
                 vault: args.vault.platform,
                 ...this.buildDefaultConfiguration("elo-service", args.configRoot),
                 env: {
-                    ENV: "production",
-                    REDIS_HOST: "",
-                    REDIS_PORT: "",
-                    REDIS_PASSWORD: "",
-                    REDIS_SERVER_NAME: "",
+                    REDIS_HOST: this.datastore.redis.hostname,
+                    REDIS_PORT: "6379",
+                    REDIS_PREFIX: this.environmentSubdomain,
                 },
+                secrets: [
+                    {
+                        secretId: this.secrets.redisPassword.id,
+                        secretName: this.secrets.redisPassword.name,
+                        fileName: "/app/secret/redis-password.txt"
+                    }
+                ],
                 ingressNetworkId: args.ingressNetworkId
             }, {parent: this}),
 
@@ -474,8 +479,7 @@ export class Platform extends pulumi.ComponentResource {
             },
             chatwoot: {
                 url: this.chatwootUrl,
-                // TODO determine correct dev/staging/prod token
-                websiteToken: DEV_CHATWOOT_WEBSITE_TOKEN,
+                websiteToken: pulumi.getStack() === 'main' ? PRODUCTION_CHATWOOT_WEBSITE_TOKEN : DEV_CHATWOOT_WEBSITE_TOKEN,
             },
         }
     })

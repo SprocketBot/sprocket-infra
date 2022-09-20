@@ -5,6 +5,8 @@ const config = new pulumi.Config()
 
 export const HOSTNAME = config.get("hostname") ?? "spr.ocket.cloud";
 
+export const UTIL_HOSTNAME = config.get("util-hostname") ?? "spr.ocket.cloud";
+
 export const CHATWOOT_SUBDOMAIN = "chatwoot";
 
 export const DEV_CHATWOOT_WEBSITE_TOKEN = "2fADAgL8W9JVvwAAp7u9mqGC";

@@ -1,10 +1,9 @@
 {
   "db": {
-    "host": "mlesports.dev",
-    "port": "56497",
-    "username": "root",
-    "database": "MLEDB_DEV",
-    "enable_logs": false
+    "host": "{{database.host}}",
+    "port": {{database.port}},
+    "username": "{{database.username}}",
+    "database": "{{database.database}}"
   },
   "transport": {{{transport}}},
   "logger": {
