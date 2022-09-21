@@ -46,8 +46,9 @@ export const n8n = new N8n('n8n', {
   providers: {
     postgres: postgresProvider,
     vault: vaultProvider
-  }
+  },
 })
+
 
 export const monitoring = new Monitoring('monitoring', {
   postgres: pg,
@@ -60,12 +61,16 @@ export const monitoring = new Monitoring('monitoring', {
   }
 }, { dependsOn: [pg] });
 
-const sharedRedis = new Redis('layer2redis', {
+const sharedRedis = new Redis("layer2redis", {
   configFilepath: `${__dirname}/config/redis.conf`,
   ingressNetworkId: ingressNetworkId,
   vaultProvider: vaultProvider,
-  platformNetworkId: chatwootNetwork.id
-});
+  platformNetworkId: chatwootNetwork.id,
+  monitoring: {
+    influxToken: monitoring.influx.credentials.password,
+    monitoringNetworkId: monitoring.network.id
+  }
+})
 
 export const chatwoot = new Chatwoot('chatwoot', {
   ingressNetworkId: ingressNetworkId,

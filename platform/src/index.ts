@@ -10,7 +10,6 @@ import {SprocketMinioProvider} from "global/providers/SprocketMinioProvider"
 
 import {Platform} from "./Platform";
 
-
 const infrastructureVaultProvider = new vault.Provider("InfrastructureVaultProvider", {
     address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
     token: LayerTwo.stack.requireOutput(LayerTwoExports.InfrastructureVaultToken)
@@ -32,6 +31,7 @@ const minioProvider = new SprocketMinioProvider({
 })
 
 const postgresNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.PostgresNetworkId) as pulumi.Output<string>
+const n8nNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.N8nNetwork) as pulumi.Output<string>
 
 export const platform = new Platform(pulumi.getStack(), {
     vault: {
@@ -40,6 +40,7 @@ export const platform = new Platform(pulumi.getStack(), {
     },
     postgresProvider: postgresProvider as postgres.Provider,
     postgresNetworkId,
+    n8nNetworkId,
     postgresHostname: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresHostname) as pulumi.Output<string>,
 
     minioProvider: minioProvider as minio.Provider,
