@@ -34,6 +34,7 @@ export interface PlatformArgs {
     ingressNetworkId: docker.Network["id"],
     monitoringNetworkId: docker.Network["id"],
     postgresNetworkId: docker.Network["id"],
+    n8nNetworkId: docker.Network["id"],
 
     configRoot: string
 }
@@ -340,7 +341,8 @@ export class Platform extends pulumi.ComponentResource {
                         fileName: "/app/secret/redis-password.txt"
                     }
                 ],
-                ingressNetworkId: args.ingressNetworkId
+                ingressNetworkId: args.ingressNetworkId,
+                n8nNetworkId: args.n8nNetworkId
             }, {parent: this}),
 
             submissions: new SprocketService(`${name}-submission-service`, {
