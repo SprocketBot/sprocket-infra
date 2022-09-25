@@ -10,5 +10,6 @@ module.exports = {
     [LayerTwoExports.PlatformVaultToken]: src.policies.platformToken.clientToken,
     [LayerTwoExports.InfluxDbToken]: src.monitoring.influx.credentials.password,
     [LayerTwoExports.MinioHostname]: src.minio.hostname,
-    [LayerTwoExports.MinioUrl]: src.minio.url
+    [LayerTwoExports.MinioUrl]: src.minio.url,
+    [LayerTwoExports.N8nNetwork]: src.n8n.network.id
 }

@@ -34,6 +34,7 @@ export interface PlatformArgs {
     ingressNetworkId: docker.Network["id"],
     monitoringNetworkId: docker.Network["id"],
     postgresNetworkId: docker.Network["id"],
+    n8nNetworkId: docker.Network["id"],
 
     configRoot: string
 }
@@ -329,13 +330,19 @@ export class Platform extends pulumi.ComponentResource {
                 vault: args.vault.platform,
                 ...this.buildDefaultConfiguration("elo-service", args.configRoot),
                 env: {
-                    ENV: "production",
-                    REDIS_HOST: "",
-                    REDIS_PORT: "",
-                    REDIS_PASSWORD: "",
-                    REDIS_SERVER_NAME: "",
+                    REDIS_HOST: this.datastore.redis.hostname,
+                    REDIS_PORT: "6379",
+                    REDIS_PREFIX: this.environmentSubdomain,
                 },
-                ingressNetworkId: args.ingressNetworkId
+                secrets: [
+                    {
+                        secretId: this.secrets.redisPassword.id,
+                        secretName: this.secrets.redisPassword.name,
+                        fileName: "/app/secret/redis-password.txt"
+                    }
+                ],
+                ingressNetworkId: args.ingressNetworkId,
+                n8nNetworkId: args.n8nNetworkId
             }, {parent: this}),
 
             submissions: new SprocketService(`${name}-submission-service`, {

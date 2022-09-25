@@ -3,13 +3,13 @@ config:
   platform:discord-bot-token:
     secure: v1:dK4s7ZWIhozbgNV0:WGEegO5WXxVnbcvra7z0l8p2ZXDko/gYB0jssZmk911Jq9CQQtZpBpVHPFcou87owT1V5uKsJo1Oop93wgYLmJK/OM8V7jkO0hfGHh+J4AfOTJJ01uDgEQ==
   platform:docker-access-token:
-    secure: v1:4ni5JYdDYCz3Q7dX:1d/IZdhF3U2feCGGtPmZJnyIPwjYxFJGktEk2MbFIt+dB5azwpKkcRZ2R02ZR/ly1PiT2g==
+    secure: v1:vgs40pq1JtHQ2rU2:8ql1WVQw5+QUYOeOwPsOL+Lt13ab2oFJ4uL5QSoFQVHoawIhsqhdz/GWunTO83eEsAEMWg==
   platform:docker-username: actualsovietshark
   platform:hostname: app.sprocket.gg
   platform:image-tag: main
   platform:legacy-bot-token-emilia:
-    secure: v1:0KadImSEXT3AKvYl:NYYSD1LkyAMmyHgnNmGKHBsXeoBf8s5BEbb8dH3W2x5+KDb7IBXRkBf2qLBDCNwdZZmhjG0bOtWGxozDNj+LD33aYXmHGsvZHNmcBEenyyawpTVjDX7PDg==
+    secure: v1:ckC2DtkQWnGHZxtz:8FEmjOaUBHQC5z7qargKpojdvRtIDqXVRiqDKwA8HRg4k66KrvAZ2cuP1EH5M6UJuagWHCDyuQIMrKis57r0lLbGy+C+XxN3VRvr
   platform:legacy-bot-token-emilio:
-    secure: v1:RSrGqssi3UK4BzzU:z3dWaMfVmxyWhNh+IvXbuiSMi+mMBizPJkLq4alA1UJhQyUXL3eP+TXq0tEXh2OzbZvFxsGySmdprIkfTh2MzbcQVPzVBjQk/YJ9oDjUzNFdyYMvs75kLw==
+    secure: v1:R2hcZxmBH2T7SnGg:+L3four4Ihtlo/TlNMlEwuEmGHm2VZulbK6/8nescSkWu90zQLLFKbJUIH6VdIZ2TSiDTiJ+Qcw8jMXtIXrgqHHkBi9VO7ZHGt0L
   platform:split-legacy: "true"
   platform:subdomain: main

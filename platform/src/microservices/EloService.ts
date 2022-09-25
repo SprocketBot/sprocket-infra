@@ -3,14 +3,14 @@ import * as vault from '@pulumi/vault';
 import * as docker from '@pulumi/docker';
 import { SprocketService, SprocketServiceArgs } from './SprocketService';
 import { DGraph } from 'global/services';
+import { buildHost } from 'global/helpers/buildHost';
 
-type EloServiceArgs = SprocketServiceArgs & { vault: vault.Provider, ingressNetworkId: docker.Network['id'] }
+type EloServiceArgs = SprocketServiceArgs & { vault: vault.Provider, ingressNetworkId: docker.Network['id'], n8nNetworkId: docker.Network["id"] }
 
 export class EloService extends pulumi.ComponentResource {
   readonly dgraph: DGraph;
   readonly service: SprocketService;
   private readonly dgraphSecret: docker.Secret;
-
 
   constructor(name: string, args: EloServiceArgs, opts?: pulumi.ComponentResourceOptions) {
     super('SprocketBot:Application:Microservice:Elo', name, {});
@@ -27,13 +27,25 @@ export class EloService extends pulumi.ComponentResource {
       data: this.dgraph.credentials.password.apply(v => btoa(v))
     }, { parent: this });
 
-    args.env = {
-      ...args.env,
-      DGRAPH_DATABASE_URL: "",
-      DGRAPH_API_KEY: "",
-    }
-
-      this.service = new SprocketService(`${name}-sprocketservice`, args, { parent: this });
+    this.service = new SprocketService(`${name}-sprocketservice`,
+      {
+        ...args,
+        env:{
+          ...args.env,
+          DGRAPH_DATABASE_URL: this.dgraph.hostname.apply(h => `${h}:9080`)
+        },
+        secrets: [
+          ...(args.secrets ?? []),
+          {
+            secretId: this.dgraphSecret.id,
+            secretName: this.dgraphSecret.name,
+            fileName: "/app/secret/dgraph-api-key.txt"
+          }],
+        networks: [
+          args.n8nNetworkId
+        ]
+      },
+      { parent: this });
   }
 
 }
