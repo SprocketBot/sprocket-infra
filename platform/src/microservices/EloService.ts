@@ -19,7 +19,8 @@ export class EloService extends pulumi.ComponentResource {
       vaultProvider: args.vault,
       platformNetworkId: args.platformNetworkId,
       ingressNetworkId: args.ingressNetworkId,
-      environment: pulumi.getStack()
+      environment: pulumi.getStack(),
+      additionalNetworks: [args.n8nNetworkId]
     }, { parent: this });
 
     this.dgraphSecret = new docker.Secret(`${name}-secret`, {
