@@ -82,6 +82,7 @@ export type SprocketServiceConfigTemplateValues = {
         url: string | pulumi.Output<string>
         websiteToken: string | pulumi.Output<string>
     }
+    stack: string
 }
 
 export type SprocketServiceArgs = {

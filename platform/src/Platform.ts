@@ -203,7 +203,6 @@ export class Platform extends pulumi.ComponentResource {
                 env: {
                     ENV: "production",
                     NODE_ENV: "production",
-                    VITE_STACK: pulumi.getStack(),
                 },
                 networks: [
                     args.ingressNetworkId
@@ -484,6 +483,7 @@ export class Platform extends pulumi.ComponentResource {
                 url: this.chatwootUrl,
                 websiteToken: pulumi.getStack() === 'main' ? PRODUCTION_CHATWOOT_WEBSITE_TOKEN : DEV_CHATWOOT_WEBSITE_TOKEN,
             },
+            stack: pulumi.getStack(),
         }
     })
 }
