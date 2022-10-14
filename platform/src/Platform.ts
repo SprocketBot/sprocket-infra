@@ -203,6 +203,7 @@ export class Platform extends pulumi.ComponentResource {
                 env: {
                     ENV: "production",
                     NODE_ENV: "production",
+                    VITE_STACK: pulumi.getStack(),
                 },
                 networks: [
                     args.ingressNetworkId
