@@ -43,7 +43,8 @@
       "callbackUrl": "https://{{ api.url }}/authentication/epic/login"
     },
     "steam": {
-      "callbackUrl": "https://{{ api.url }}/authentication/steam/login"
+      "callbackUrl": "https://{{ api.url }}/authentication/steam/login",
+      "realm": "https://{{ api.url }}"
     },
     "jwt_expiry": 12000,
     "access_expiry": "6h",
