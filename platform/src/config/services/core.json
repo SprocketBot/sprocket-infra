@@ -40,6 +40,8 @@
       "callbackUrl": "https://{{ api.url }}/google/redirect"
     },
     "jwt_expiry": 12000,
+    "access_expiry": "6h",
+    "refresh_expiry": "7d",
     "frontend_callback": "https://{{ frontend.url }}/auth/callback"
   },
   "defaultOrganizationId": 2
