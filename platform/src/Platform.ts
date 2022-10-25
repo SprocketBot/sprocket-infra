@@ -483,6 +483,7 @@ export class Platform extends pulumi.ComponentResource {
                 url: this.chatwootUrl,
                 websiteToken: pulumi.getStack() === 'main' ? PRODUCTION_CHATWOOT_WEBSITE_TOKEN : DEV_CHATWOOT_WEBSITE_TOKEN,
             },
+            stack: pulumi.getStack(),
         }
     })
 }
