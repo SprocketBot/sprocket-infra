@@ -1,8 +1,8 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as docker from '@pulumi/docker';
-import * as postgres from "@pulumi/postgresql";
-import * as vault from "@pulumi/vault";
-import * as random from "@pulumi/random";
+import * as postgres from '@pulumi/postgresql';
+import * as vault from '@pulumi/vault';
+import * as random from '@pulumi/random';
 import { PostgresUser } from '../../helpers/datastore/PostgresUser';
 import defaultLogDriver from '../../helpers/docker/DefaultLogDriver';
 import { TraefikLabels } from '../../helpers/docker/TraefikLabels';
@@ -16,7 +16,7 @@ export interface N8nArgs {
   },
   postgresHostname: pulumi.Output<string> | string,
   ingressNetworkId: pulumi.Output<string> | string,
-  postgresNetworkId: docker.Network["id"],
+  postgresNetworkId: docker.Network['id'],
 }
 
 export class N8n extends pulumi.ComponentResource {
@@ -26,70 +26,79 @@ export class N8n extends pulumi.ComponentResource {
   readonly network: docker.Network;
   readonly service: docker.Service;
 
-  private readonly encryptionKey: random.RandomPassword
+  private readonly encryptionKey: random.RandomPassword;
 
   constructor(name: string, args: N8nArgs, opts?: pulumi.ComponentResourceOptions) {
     super('SprocketBot:Services:N8n', name, {}, opts);
 
     this.dbUser = new PostgresUser(`${name}-user`, {
       providers: args.providers,
-      username: `${name}-user`,
-    }, { parent: this})
+      username: `${name}-user`
+    }, { parent: this });
 
     this.database = new postgres.Database(`${name}-db`, {
-        name: `${name}-db`,
-        owner: this.dbUser.username
-      }, {parent: this, provider: args.providers.postgres})
+      name: `${name}-db`,
+      owner: this.dbUser.username
+    }, { parent: this, provider: args.providers.postgres });
 
     this.encryptionKey = new random.RandomPassword(`${name}-encryption-key`, {
       length: 128
-    }, { parent: this })
+    }, { parent: this });
 
 
     this.network = new docker.Network(`${name}-net`, { driver: 'overlay' }, { parent: this });
 
-    const hostname = buildHost("n8n", UTIL_HOSTNAME)
+    const hostname = buildHost('n8n', UTIL_HOSTNAME);
 
     this.service = new docker.Service(`${name}-service`, {
       taskSpec: {
         containerSpec: {
-          image: "n8nio/n8n",
+          image: 'n8nio/n8n',
           env: {
             DB_TYPE: 'postgresdb',
             DB_POSTGRESDB_DATABASE: this.database.name,
             DB_POSTGRESDB_HOST: args.postgresHostname,
-            DB_POSTGRESDB_PORT: "5432",
+            DB_POSTGRESDB_PORT: '5432',
             DB_POSTGRESDB_USER: this.dbUser.username,
-            DB_POSTGRESDB_SCHEMA: "public",
+            DB_POSTGRESDB_SCHEMA: 'public',
             DB_POSTGRESDB_PASSWORD: this.dbUser.password,
-            N8N_BASIC_AUTH_ACTIVE: "false",
+            N8N_BASIC_AUTH_ACTIVE: 'false',
             WEBHOOK_URL: hostname,
             N8N_HOST: hostname,
-            N8N_PORT: "5678",
+            N8N_PORT: '5678',
 
             N8N_ENCRYPTION_KEY: this.encryptionKey.result,
 
-            N8N_USER_MANAGEMENT_DISABLED: "true",
+            N8N_USER_MANAGEMENT_DISABLED: 'true'
           }
         },
         placement: {
           constraints: [
-            "node.labels.role!=ingress",
+            'node.labels.role!=ingress'
           ]
         },
         networks: [
           args.postgresNetworkId,
           args.ingressNetworkId,
-          this.network.id,
+          this.network.id
         ],
         logDriver: defaultLogDriver(name, true)
       },
-      labels: new TraefikLabels("n8n", "http")
-        .tls("lets-encrypt-tls")
-        .rule(`Host(\`${hostname}\`)`)
-        .targetPort(5678)
-        .forwardAuthRule("EloTeam")
-        .complete
+      labels: [
+        ...new TraefikLabels('n8n', 'http')
+          .tls('lets-encrypt-tls')
+          .rule(`Host(\`${hostname}\`)`)
+          .targetPort(5678)
+          .service('n8n')
+          .forwardAuthRule('EloTeam')
+          .complete,
+        ...new TraefikLabels('n8n-webhooks', 'http')
+          .tls('lets-encrypt-tls')
+          .rule(`Host(\`${hostname}\`) && PathPrefix(\`/webhook\`)`)
+          .service('n8n-webhooks')
+          .targetPort(5678)
+          .complete
+      ]
     }, {
       parent: this
     });
