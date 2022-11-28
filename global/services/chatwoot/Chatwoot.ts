@@ -92,7 +92,7 @@ export class Chatwoot extends pulumi.ComponentResource {
         this.url = `${CHATWOOT_SUBDOMAIN}.${HOSTNAME}`
 
         const containerSpec = {
-            image: "chatwoot/chatwoot:latest",
+            image: "chatwoot/chatwoot:latest-ce",
 
             // https://www.chatwoot.com/docs/self-hosted/configuration/environment-variables
             env: {
