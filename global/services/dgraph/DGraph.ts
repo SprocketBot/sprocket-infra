@@ -12,6 +12,7 @@ export interface DGraphArgs {
     platformNetworkId?: docker.Network["id"]
     ingressNetworkId: docker.Network["id"]
     environment: string
+    additionalNetworks?: docker.Network["id"][]
 }
 
 export class DGraph extends pulumi.ComponentResource {
@@ -20,6 +21,7 @@ export class DGraph extends pulumi.ComponentResource {
     readonly alphaPort: number
 
     private readonly dataVolume: docker.Volume
+    private readonly zeroVolume: docker.Volume
     // private readonly pluginVolume: docker.Volume
     private readonly zero: docker.Service
     private readonly alpha: docker.Service
@@ -51,6 +53,11 @@ export class DGraph extends pulumi.ComponentResource {
             parent: this,
             retainOnDelete: true
         })
+        this.zeroVolume = new docker.Volume(`${name}-zero-vol`, {name: `${name}-zero-data`}, {
+            parent: this,
+            retainOnDelete: true
+        })
+
 
         this.zero = new docker.Service(`${name}-service`, {
             name: `${name}-zero`,
@@ -63,6 +70,11 @@ export class DGraph extends pulumi.ComponentResource {
                       "zero",
                       `--my=${name}-zero:5080`
                     ],
+                    mounts: [{
+                        type: "volume",
+                        target: "/dgraph",
+                        source: this.zeroVolume.id
+                    }],
                 },
                 logDriver: DefaultLogDriver(`${name}-zero`, true),
                 placement: {
@@ -107,7 +119,8 @@ export class DGraph extends pulumi.ComponentResource {
                 networks: args.platformNetworkId ? [
                     args.platformNetworkId,
                     args.ingressNetworkId,
-                    this.dgraphNet.id
+                    this.dgraphNet.id,
+                    ...(args.additionalNetworks ?? []),
                 ] : [args.ingressNetworkId, this.dgraphNet.id],
             },
             labels: new TraefikLabels(name)
