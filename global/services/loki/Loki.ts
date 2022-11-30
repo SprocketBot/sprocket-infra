@@ -24,7 +24,7 @@ export class Loki extends pulumi.ComponentResource {
                     mounts: [{
                         type: "volume",
                         source: this.volume.id,
-                        target: "/data"
+                        target: "/loki"
                     }]
                 },
                 logDriver: DefaultLogDriver("loki", true),
