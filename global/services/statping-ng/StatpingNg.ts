@@ -5,6 +5,7 @@ import * as vault from "@pulumi/vault";
 import { HOSTNAME } from "../../constants";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 import { VaultCredentials } from "../../helpers/vault/VaultCredentials";
+import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 
 export interface StatpingNgArgs {
     vaultProvider: vault.Provider
@@ -43,6 +44,7 @@ export class StatpingNg extends pulumi.ComponentResource {
                         "node.labels.role==ingress"
                     ]
                 },
+                logDriver: DefaultLogDriver(name, true),
                 containerSpec: {
                     image: "adamboutcher/statping-ng:v0.90.78",
 
@@ -52,7 +54,7 @@ export class StatpingNg extends pulumi.ComponentResource {
                         DESCRIPTION: "Monitor the status of Sprocket services",
                         SAMPLE_DATA: "false",
                         USE_ASSETS: "true",
-                        LOGS_MAX_COUNT: "1",
+                        DISABLE_LOGS: "true",
                         ADMIN_USER: this.credentials.username,
                         ADMIN_PASSWORD: this.credentials.password,
                         SQL_FILE: "db/statping.db",
