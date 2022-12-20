@@ -55,6 +55,7 @@ export class StatpingNg extends pulumi.ComponentResource {
                         NAME: "Sprocket Internal Status",
                         DESCRIPTION: "Monitor the status of Sprocket services",
                         SAMPLE_DATA: "false",
+                        USE_ASSETS: "true",
                         DISABLE_LOGS: "true",
                         ADMIN_USER: this.credentials.username,
                         ADMIN_PASSWORD: this.credentials.password,
