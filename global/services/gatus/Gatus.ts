@@ -58,7 +58,7 @@ export class Gatus extends pulumi.ComponentResource {
                         "node.labels.role==ingress"
                     ]
                 },
-                logDriver: DefaultLogDriver("minio", true),
+                logDriver: DefaultLogDriver(name, true),
             },
             labels: traefikLabels,
         });
