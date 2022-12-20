@@ -38,6 +38,11 @@ export class PlatformSecrets extends pulumi.ComponentResource {
     readonly discordClientSecret: docker.Secret
     readonly discordClientId: docker.Secret
 
+    readonly epicClientId: docker.Secret;
+    readonly epicClientSecret: docker.Secret;
+
+    readonly steamApiKey: docker.Secret;
+
     readonly ballchasingApiToken: docker.Secret
 
     readonly chatwootHmacKey: docker.Secret
@@ -76,13 +81,45 @@ export class PlatformSecrets extends pulumi.ComponentResource {
             }).result.apply(btoa)
         }, { parent: this })
 
+        // Google
+
+        const googleSecret = vault.generic.getSecretOutput({
+            path: `platform/${args.environment}/manual/oauth/google`
+        }, { parent: this, provider: args.vault })
+
         this.googleClientId = new docker.Secret(`${name}-google-client-id`, {
-            data: btoa("blah")
+            data: googleSecret.data.apply(d => btoa(d.clientId))
         }, { parent: this })
 
         this.googleClientSecret = new docker.Secret(`${name}-google-secret`, {
-            data: btoa("blah")
+            data: googleSecret.data.apply(d => btoa(d.clientSecret))
         }, { parent: this })
+
+        // Epic
+
+        const epicSecret = vault.generic.getSecretOutput({
+            path: `platform/${args.environment}/manual/oauth/epic`
+        }, { parent: this, provider: args.vault })
+
+        this.epicClientId = new docker.Secret(`${name}-epic-client-id`, {
+            data: epicSecret.data.apply(d => btoa(d.clientId))
+        }, { parent: this })
+
+        this.epicClientSecret = new docker.Secret(`${name}-epic-secret`, {
+            data: epicSecret.data.apply(d => btoa(d.clientSecret))
+        }, { parent: this })
+
+        // Steam
+
+        const steamSecret = vault.generic.getSecretOutput({
+            path: `platform/${args.environment}/manual/oauth/steam`
+        }, { parent: this, provider: args.vault })
+
+        this.steamApiKey = new docker.Secret(`${name}-steam-api-key`, {
+            data: steamSecret.data.apply(d => btoa(d.apiKey))
+        }, { parent: this })
+
+        // Discord
 
         const discordSecret = vault.generic.getSecretOutput({
             path: `platform/${args.environment}/manual/oauth/discord`
