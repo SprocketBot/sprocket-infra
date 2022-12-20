@@ -97,8 +97,4 @@ export const chatwoot = new Chatwoot('chatwoot', {
   }
 });
 
-export const statpingNg = new StatpingNg('statping', {
-  vaultProvider,
-  ingressNetworkId,
-  servicesYmlFilePath: `${__dirname}/config/statping-ng/services.yml`,
-});
+export const statpingNg = new StatpingNg('statping', { vaultProvider, ingressNetworkId });
