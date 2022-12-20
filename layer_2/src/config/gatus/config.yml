@@ -1,42 +1,106 @@
+x-http-common: &http-common
+  interval: 1m
+  conditions:
+    - "[STATUS] == 200"
+  alerts:
+    - type: discord
+
+x-icmp-common: &icmp-common
+  interval: 1m
+  conditions:
+    - "[CONNECTED] == true"
+  alerts:
+    - type: discord
+
+
+###
+
+
+ui:
+  title: Sprocket Internal Status
+  header: Sprocket Internal Status
+  description: Monitor the status of Sprocket internal services
+  logo: "https://app.sprocket.gg/img/logo-only.svg"
+
+endpoints:
+  - name: Sprocket Production App
+    group: Web Services
+    url: "https://app.sprocket.gg"
+    <<: *http-common
+
+  - name: Sprocket Staging App
+    group: Web Services
+    url: "https://staging.app.sprocket.gg"
+    <<: *http-common
+
+  # TODO how to get past forwardauth?
+  # - name: Sprocket Dev App
+  #   group: Web Services
+  #   url: "https://dev.spr.ocket.cloud"
+
+  - name: sprocket.gg DNS
+    group: DNS
+    url: "1.1.1.1"
+    interval: 10m
+    dns:
+      query-type: "A"
+      query-name: "sprocket.gg"
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 178.128.133.209"
+
+    
+  - name: ocket.cloud DNS
+    group: DNS
+    url: "1.1.1.1"
+    interval: 10m
+    dns:
+      query-type: "A"
+      query-name: "ocket.cloud"
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 178.128.133.209"
+
+  - name: sprocket-do-0
+    group: Nodes
+    url: "icmp://100.79.221.61"
+    <<: *icmp-common
+
+  - name: sprocket-do-1
+    group: Nodes
+    url: "icmp://100.118.64.64"
+    <<: *icmp-common
+
+  - name: sprocket-hyper-w-0
+    group: Nodes
+    url: "icmp://100.99.125.106"
+    <<: *icmp-common
+
+  - name: sprocket-shuckle-m-0
+    group: Nodes
+    url: "icmp://100.98.161.63"
+    <<: *icmp-common
+
+  - name: sprocket-zach-w-0
+    group: Nodes
+    url: "icmp://100.98.116.14"
+    <<: *icmp-common
+
+  - name: sprocket-zach-w-1
+    group: Nodes
+    url: "icmp://100.126.144.3"
+    <<: *icmp-common
+
 storage:
   type: sqlite
   path: /data/data.db
 
-endpoints:
-  - name: back-end
-    group: core
-    url: "https://example.org/"
-    interval: 5m
-    conditions:
-      - "[STATUS] == 200"
-      - "[CERTIFICATE_EXPIRATION] > 48h"
-
-  - name: monitoring
-    group: internal
-    url: "https://example.org/"
-    interval: 5m
-    conditions:
-      - "[STATUS] == 200"
-
-  - name: nas
-    group: internal
-    url: "https://example.org/"
-    interval: 5m
-    conditions:
-      - "[STATUS] == 200"
-
-  - name: example-dns-query
-    url: "8.8.8.8" # Address of the DNS server to use
-    interval: 5m
-    dns:
-      query-name: "example.com"
-      query-type: "A"
-    conditions:
-      - "[BODY] == 93.184.216.34"
-      - "[DNS_RCODE] == NOERROR"
-
-  - name: icmp-ping
-    url: "icmp://example.org"
-    interval: 1m
-    conditions:
-      - "[CONNECTED] == true"
+alerting:
+  discord:
+    # TODO should this be dynamically populated?
+    # TODO this doesn't ping a role :(
+    webhook-url: https://discord.com/api/webhooks/940711205637595146/bYPdx--ec91wYz5RKGZ0F17vk_N2UGVoXAuDTTfD2p-k5e42QmFPWTS5keJPLXmrYcLY
+    default-alert:
+      send-on-resolved: true
+      failure-threshold: 3
+      success-threshold: 5
