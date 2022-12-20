@@ -1,5 +1,5 @@
 // Handles self
-import { Airbyte, Chatwoot, Minio, N8n, Postgres, Redis, StatpingNg, VaultPolicies } from 'global/services';
+import { Airbyte, Chatwoot, Minio, N8n, Postgres, Redis, VaultPolicies } from 'global/services';
 import { Monitoring } from './monitoring';
 import * as pulumi from '@pulumi/pulumi';
 import * as vault from '@pulumi/vault';
@@ -62,7 +62,7 @@ export const monitoring = new Monitoring('monitoring', {
 }, { dependsOn: [pg] });
 
 const sharedRedis = new Redis("layer2redis", {
-  configFilepath: `${__dirname}/config/redis/redis.conf`,
+  configFilepath: `${__dirname}/config/redis.conf`,
   ingressNetworkId: ingressNetworkId,
   vaultProvider: vaultProvider,
   platformNetworkId: chatwootNetwork.id,
@@ -95,10 +95,4 @@ export const chatwoot = new Chatwoot('chatwoot', {
     host: sharedRedis.hostname,
     password: sharedRedis.credentials.password
   }
-});
-
-export const statpingNg = new StatpingNg('statping', {
-  vaultProvider,
-  ingressNetworkId,
-  servicesYmlFilePath: `${__dirname}/config/statping-ng/services.yml`,
 });
