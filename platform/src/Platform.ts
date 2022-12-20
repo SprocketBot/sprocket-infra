@@ -62,6 +62,7 @@ export class Platform extends pulumi.ComponentResource {
     readonly webUrl: string
     readonly chatwootUrl: string
     readonly igUrl: string
+    readonly rootUrl: string
 
     readonly key: random.RandomUuid
 

@@ -2,8 +2,15 @@ import { SprocketStackDefinition } from './types';
 
 export enum PlatformExports {
   WEB_SERVICE_NAME = "WebServiceName",
-  STACK_ROOT_DNS = "Dns",
+  WEB_HOSTNAME = "WebHostname",
+
   CORE_SERVICE_NAME = "CoreServiceName",
+  CORE_HOSTNAME = "CoreHostname",
+
+  REDIS_SERVICE_NAME = "RedisServiceName",
+  RMQ_SERVICE_NAME = "RmqServiceName",
+
+  STACK_ROOT_HOSTNAME = "StackRootHostname",
 }
 
 export enum PlatformStacks {
