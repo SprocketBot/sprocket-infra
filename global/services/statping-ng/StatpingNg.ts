@@ -58,7 +58,6 @@ export class StatpingNg extends pulumi.ComponentResource {
                         DISABLE_LOGS: "true",
                         ADMIN_USER: this.credentials.username,
                         ADMIN_PASSWORD: this.credentials.password,
-                        DB_CONN: 'sqlite',
                         SQL_FILE: "db/statping.db",
                     },
 
