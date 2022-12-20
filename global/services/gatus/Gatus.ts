@@ -8,7 +8,6 @@ import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 
 export interface GatusArgs {
-    vaultProvider: vault.Provider;
     ingressNetworkId: docker.Network["id"];
     configFilePath: string;
 }
