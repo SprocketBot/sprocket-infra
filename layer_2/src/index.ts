@@ -62,7 +62,7 @@ export const monitoring = new Monitoring('monitoring', {
 }, { dependsOn: [pg] });
 
 const sharedRedis = new Redis("layer2redis", {
-  configFilepath: `${__dirname}/config/redis.conf`,
+  configFilepath: `${__dirname}/config/redis/redis.conf`,
   ingressNetworkId: ingressNetworkId,
   vaultProvider: vaultProvider,
   platformNetworkId: chatwootNetwork.id,
