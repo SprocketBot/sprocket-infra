@@ -180,6 +180,18 @@ export class Platform extends pulumi.ComponentResource {
                 secretId: this.secrets.redisPassword.id,
                 secretName: this.secrets.redisPassword.name,
                 fileName: "/app/secret/redis-password.txt"
+            }, {
+                secretId: this.secrets.epicClientId.id,
+                secretName: this.secrets.epicClientId.name,
+                fileName: "/app/secret/epic-client.txt"
+            }, {
+                secretId: this.secrets.epicClientSecret.id,
+                secretName: this.secrets.epicClientSecret.name,
+                fileName: "/app/secret/epic-secret.txt"
+            }, {
+                secretId: this.secrets.steamApiKey.id,
+                secretName: this.secrets.steamApiKey.name,
+                fileName: "/app/secret/steam-key.txt"
             }],
             networks: [
                 args.ingressNetworkId

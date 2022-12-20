@@ -34,10 +34,17 @@
   },
   "auth": {
     "discord": {
-      "callbackUrl": "https://{{ api.url }}/login"
+      "callbackUrl": "https://{{ api.url }}/authentication/discord/login"
     },
     "google": {
-      "callbackUrl": "https://{{ api.url }}/google/redirect"
+      "callbackUrl": "https://{{ api.url }}/authentication/google/login"
+    },
+    "epic": {
+      "callbackUrl": "https://{{ api.url }}/authentication/epic/login"
+    },
+    "steam": {
+      "callbackUrl": "https://{{ api.url }}/authentication/steam/login",
+      "realm": "https://{{ api.url }}"
     },
     "jwt_expiry": 12000,
     "access_expiry": "6h",
