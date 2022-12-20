@@ -97,4 +97,4 @@ export const chatwoot = new Chatwoot('chatwoot', {
   }
 });
 
-export const statpingNg = new StatpingNg('statping', { vaultProvider, ingressNetworkId });
+export const statpingNg = new StatpingNg('statping', { vaultProvider });

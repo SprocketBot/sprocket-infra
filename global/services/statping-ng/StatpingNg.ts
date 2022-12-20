@@ -8,8 +8,7 @@ import { VaultCredentials } from "../../helpers/vault/VaultCredentials";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 
 export interface StatpingNgArgs {
-    ingressNetworkId: docker.Network["id"];
-    vaultProvider: vault.Provider;
+    vaultProvider: vault.Provider
 }
 
 export class StatpingNg extends pulumi.ComponentResource {
@@ -46,7 +45,6 @@ export class StatpingNg extends pulumi.ComponentResource {
                     ]
                 },
                 logDriver: DefaultLogDriver(name, true),
-                networks: [args.ingressNetworkId],
                 containerSpec: {
                     image: "adamboutcher/statping-ng:v0.90.78",
 
@@ -66,10 +64,12 @@ export class StatpingNg extends pulumi.ComponentResource {
                         type: "volume",
                         source: this.dbVolume.id,
                         target: "/app/db",
-                    }],
+                    }]
                 },
             },
             labels: traefikLabels,
         });
     }
+
+
 }
