@@ -1,15 +1,15 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import * as vault from "@pulumi/vault";
 
 import { HOSTNAME } from "../../constants";
-import { ConfigFile } from "../../helpers/docker/ConfigFile";
+import { ConfigFile, ConfigFileArgs } from "../../helpers/docker/ConfigFile";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 
 export interface GatusArgs {
     ingressNetworkId: docker.Network["id"];
     configFilePath: string;
+    configFileTransformation?: ConfigFileArgs["transformation"]
 }
 
 export class Gatus extends pulumi.ComponentResource {
@@ -30,7 +30,7 @@ export class Gatus extends pulumi.ComponentResource {
             filepath: args.configFilePath,
         }, { parent: this });
 
-        const traefikLabels = new TraefikLabels(name)
+        const traefikLabels = new TraefikLabels(`gatus-${name}`)
             .rule(`Host(\`${this.url}\`)`)
             .tls("lets-encrypt-tls")
             .targetPort(8080)
