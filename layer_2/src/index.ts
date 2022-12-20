@@ -1,5 +1,5 @@
 // Handles self
-import { Airbyte, Chatwoot, Minio, N8n, Postgres, Redis, StatpingNg, VaultPolicies } from 'global/services';
+import { Airbyte, Chatwoot, Gatus, Minio, N8n, Postgres, Redis, VaultPolicies } from 'global/services';
 import { Monitoring } from './monitoring';
 import * as pulumi from '@pulumi/pulumi';
 import * as vault from '@pulumi/vault';
@@ -97,4 +97,7 @@ export const chatwoot = new Chatwoot('chatwoot', {
   }
 });
 
-export const statpingNg = new StatpingNg('statping', { vaultProvider });
+export const GatusInternal = new Gatus("gatus-internal", {
+  ingressNetworkId,
+  configFilePath: `${__dirname}/config/gatus/config.yml`,
+})
