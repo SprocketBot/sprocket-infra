@@ -6,15 +6,18 @@ import { HOSTNAME } from "../../constants";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 import { VaultCredentials } from "../../helpers/vault/VaultCredentials";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
+import { ConfigFile } from "../../helpers/docker/ConfigFile";
 
 export interface StatpingNgArgs {
     ingressNetworkId: docker.Network["id"];
     vaultProvider: vault.Provider;
+    servicesYmlFilePath: string;
 }
 
 export class StatpingNg extends pulumi.ComponentResource {
-    private readonly dbVolume: docker.Volume;
     private readonly service: docker.Service;
+    private readonly dbVolume: docker.Volume;
+    private readonly servicesConfig: ConfigFile;
 
     private readonly credentials: VaultCredentials;
     
@@ -30,6 +33,10 @@ export class StatpingNg extends pulumi.ComponentResource {
         }, { parent: this })
 
         this.dbVolume = new docker.Volume(`${name}-db`, {}, { parent: this });
+
+        this.servicesConfig = new ConfigFile(`${name}-config`, {
+            filepath: args.servicesYmlFilePath,
+        }, { parent: this });
 
         const traefikLabels = new TraefikLabels(name)
             .rule(`Host(\`status.${HOSTNAME}\`)`)
@@ -66,6 +73,12 @@ export class StatpingNg extends pulumi.ComponentResource {
                         source: this.dbVolume.id,
                         target: "/app/db",
                     }],
+
+                    configs: [{
+                        configName: this.servicesConfig.name,
+                        configId: this.servicesConfig.id,
+                        fileName: "/app/services.yml",
+                    }]
                 },
             },
             labels: traefikLabels,
