@@ -4,6 +4,8 @@ import {
   LayerOne, LayerOneExports,
   LayerTwo, LayerTwoExports
 } from "global/refs"
+import {HOSTNAME, UTIL_HOSTNAME} from "global/constants"
+
 import * as pulumi from "@pulumi/pulumi"
 import * as vault from "@pulumi/vault"
 import { GrafanaBootstrap } from './grafana/GrafanaBootstrap';
@@ -14,18 +16,26 @@ const monitoringNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.Monitor
 
 const vaultProvider = new vault.Provider('VaultProvider', {
   address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
-  token: LayerOne.stack.requireOutput(LayerTwoExports.InfrastructureVaultToken)
+  token: LayerTwo.stack.requireOutput(LayerTwoExports.InfrastructureVaultToken)
 });
 
 // TODO: Config File w/ Templating
-export const publicGatus = new Gatus("public", {ingressNetworkId, configFilePath: `${__dirname}/config/gatus/public.yml`})
-export const internalGatus = new Gatus("internal", {ingressNetworkId, configFilePath: `${__dirname}/config/gatus/public.yml`})
+export const publicGatus = new Gatus("gatus-public", {
+  ingressNetworkId,
+  configFilePath: `${__dirname}/config/gatus/public.yml`,
+  hostname: HOSTNAME
+})
+export const internalGatus = new Gatus("gatus-internal", {
+  ingressNetworkId,
+  configFilePath: `${__dirname}/config/gatus/public.yml`,
+  hostname: UTIL_HOSTNAME
+})
 
 // TODO: Build dashboards
-export const grafanaBootstrap = new GrafanaBootstrap("default", {})
+export const grafanaBootstrap = new GrafanaBootstrap("grafana-content", {})
 
 // Telegraf for platform redis & rmq
-export const platformTelegraf = new Telegraf("platform", {
+export const platformTelegraf = new Telegraf("platform-monitoring", {
   additionalEnvironmentVariables: { },
   additionalNetworkIds: [],
   configFilePath: `${__dirname}/config/telegraf/telegraf.conf`,

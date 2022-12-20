@@ -9,7 +9,8 @@ import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 export interface GatusArgs {
     ingressNetworkId: docker.Network["id"];
     configFilePath: string;
-    configFileTransformation?: ConfigFileArgs["transformation"]
+    configFileTransformation?: ConfigFileArgs["transformation"];
+    hostname?: string
 }
 
 export class Gatus extends pulumi.ComponentResource {
@@ -22,7 +23,7 @@ export class Gatus extends pulumi.ComponentResource {
     constructor(name: string, args: GatusArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Gatus", name, {}, opts);
 
-        this.url = `status.${HOSTNAME}`;
+        this.url = `status.${args.hostname ?? HOSTNAME}`;
 
         this.dbVolume = new docker.Volume(`${name}-data`, {}, { parent: this });
 
@@ -30,7 +31,7 @@ export class Gatus extends pulumi.ComponentResource {
             filepath: args.configFilePath,
         }, { parent: this });
 
-        const traefikLabels = new TraefikLabels(`gatus-${name}`)
+        const traefikLabels = new TraefikLabels(name)
             .rule(`Host(\`${this.url}\`)`)
             .tls("lets-encrypt-tls")
             .targetPort(8080)
@@ -60,6 +61,6 @@ export class Gatus extends pulumi.ComponentResource {
                 logDriver: DefaultLogDriver(name, true),
             },
             labels: traefikLabels,
-        });
+        }, { parent: this });
     }
 }

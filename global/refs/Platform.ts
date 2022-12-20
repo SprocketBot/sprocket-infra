@@ -8,6 +8,7 @@ export enum PlatformExports {
   CORE_HOSTNAME = "CoreHostname",
 
   REDIS_SERVICE_NAME = "RedisServiceName",
+  REDIS_PASSWORD = "RedisPassword",
   RMQ_SERVICE_NAME = "RmqServiceName",
 
   STACK_ROOT_HOSTNAME = "StackRootHostname",

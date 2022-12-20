@@ -4,3 +4,4 @@ global/node_modules/
 *.iml
 
 scripts/db-sync/.env
+node_modules
