@@ -1,0 +1,54 @@
+x-interval-common: &interval-common
+  check_interval: 60
+  timeout: 5
+  allow_notifications: true
+  notify_after: 2
+  notify_all_changes: false
+
+x-http-common: &http-common
+  type: http
+  redirect: true
+  public: true
+  <<: *interval-common
+
+x-icmp-common: &icmp-common
+  type: icmp
+  public: true
+  <<: *interval-common
+
+services:
+  - name: Sprocket App
+    domain: https://app.sprocket.gg
+    <<: *http-common
+
+  - name: sprocket-do-0
+    domain: 100.79.221.61
+    <<: *icmp-common
+  
+  - name: sprocket-do-1        
+    domain: 100.118.64.64
+    <<: *icmp-common
+
+  - name: sprocket-hyper-w-0   
+    domain: 100.99.125.106
+    <<: *icmp-common
+
+  - name: sprocket-ml-hub      
+    domain: 100.76.97.63
+    <<: *icmp-common
+
+  - name: sprocket-shuckle-backups
+    domain: 100.97.76.76
+    <<: *icmp-common
+
+  - name: sprocket-shuckle-m-0 
+    domain: 100.98.161.63
+    <<: *icmp-common
+
+  - name: sprocket-zach-w-0    
+    domain: 100.98.116.14
+    <<: *icmp-common
+
+  - name: sprocket-zach-w-1
+    domain: 100.126.144.3
+    <<: *icmp-common
