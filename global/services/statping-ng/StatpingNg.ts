@@ -37,7 +37,6 @@ export class StatpingNg extends pulumi.ComponentResource {
             .targetPort(8080)
             .complete;
 
-        // TODO how to get logs from log files?
         this.service = new docker.Service(name, {
             taskSpec: {
                 placement: {
