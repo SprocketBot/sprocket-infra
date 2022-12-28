@@ -11,7 +11,8 @@ const e: Record<PlatformExports, string | pulumi.Output<string>> = {
   RmqServiceName: resources.platform.datastore.rabbitmq.hostname,
   StackRootHostname: resources.platform.webUrl,
   WebHostname: resources.platform.webUrl,
-  WebServiceName: resources.platform.clients.web.hostname
+  WebServiceName: resources.platform.clients.web.hostname,
+  StackPlatformNetworkId: resources.platform.network.id
 }
 
 module.exports = e

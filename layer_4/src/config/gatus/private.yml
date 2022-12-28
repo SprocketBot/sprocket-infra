@@ -1,5 +1,85 @@
+x-http-common: &http-common
+  interval: 1m
+  conditions:
+    - "[STATUS] == 200"
+  alerts:
+    - type: discord
+
+x-icmp-common: &icmp-common
+  interval: 1m
+  conditions:
+    - "[CONNECTED] == true"
+  alerts:
+    - type: discord
+
+ui:
+  title: Sprocket Internal Status
+  header: Sprocket Internal Status
+  description: Monitor the status of Sprocket internal services
+  logo: "p.ocket.cloud/sprocket/Logo Only.png"
+
+# TODO: Postgres, Vault, etc
+# TODO: Vault should check to ensure it is not sealed
+
+endpoints:
 {{#each platform}}
+  - name: "Sprocket {{stack}} DNS"
+    group: "Sprocket {{stack}}"
+    url: "1.1.1.1"
+    interval: 10m
+    dns:
+      query-type: "A"
+      query-name: {{StackRootHostname}}
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 178.128.133.209"
 
 
+  - name: "Sprocket {{stack}} Web (Public)"
+    group: "Sprocket {{stack}}"
+    url: https://{{WebHostname}}
+    <<: *http-common
+  - name: "Sprocket {{stack}} Web (Private)"
+    group: "Sprocket {{stack}}"
+    url: http://{{WebServiceName}}:3000
+    <<: *http-common
+  - name: "Sprocket {{stack}} Core (Public)"
+    group: "Sprocket {{stack}}"
+    url: https://{{CoreHostname}}/graphql
+    <<: *http-common
+  - name: "Sprocket {{stack}} Core (Private)"
+    group: "Sprocket {{stack}}"
+    url: http://{{CoreServiceName}}:3001/graphql
+    <<: *http-common
 
+  - name: "Sprocket {{stack}} Redis"
+    group: "Sprocket {{stack}}"
+    interval: 1m
+    url: "tcp://{{RedisServiceName}}:6379"
+    conditions:
+      - "[CONNECTED] == true"
+
+  - name: "Sprocket {{stack}} RabbitMQ"
+    group: "Sprocket {{stack}}"
+    interval: 1m
+    url: "tcp://{{RMQ_SERVICE_NAME}}:5672"
+    conditions:
+      - "[CONNECTED] == true"
 {{/each}}
+
+{{#each nodes}}
+  - name: {{hostname}}
+    group: Nodes
+    url: "icmp://{{ip}}"
+    <<: *icmp-common
+{{/each}}
+
+alerting:
+  discord:
+    # TODO should this be dynamically populated?
+    # TODO this doesn't ping a role :(
+    webhook-url: https://discord.com/api/webhooks/940711205637595146/bYPdx--ec91wYz5RKGZ0F17vk_N2UGVoXAuDTTfD2p-k5e42QmFPWTS5keJPLXmrYcLY
+    default-alert:
+      send-on-resolved: true
+      failure-threshold: 3
+      success-threshold: 5

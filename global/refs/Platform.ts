@@ -12,6 +12,7 @@ export enum PlatformExports {
   RMQ_SERVICE_NAME = "RmqServiceName",
 
   STACK_ROOT_HOSTNAME = "StackRootHostname",
+  STACK_PLATFORM_NETWORK_ID = "StackPlatformNetworkId"
 }
 
 export enum PlatformStacks {

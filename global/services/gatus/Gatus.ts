@@ -29,6 +29,7 @@ export class Gatus extends pulumi.ComponentResource {
 
         this.config = new ConfigFile(`${name}-config`, {
             filepath: args.configFilePath,
+            transformation: args.configFileTransformation
         }, { parent: this });
 
         const traefikLabels = new TraefikLabels(name)

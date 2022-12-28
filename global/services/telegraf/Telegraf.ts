@@ -32,7 +32,8 @@ export class Telegraf extends pulumi.ComponentResource {
 
 
         this.config = new ConfigFile(`${name}-config`, {
-            filepath: args.configFilePath
+            filepath: args.configFilePath,
+            transformation: args.configFileTransformation
         }, { parent: this })
 
 
