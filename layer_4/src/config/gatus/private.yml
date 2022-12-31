@@ -5,6 +5,13 @@ x-http-common: &http-common
   alerts:
     - type: discord
 
+x-http-expect-bad-request: &http-expect-bad-request
+  interval: 1m
+  conditions:
+    - "[STATUS] == 700"
+  alerts:
+    - type: discord
+
 x-icmp-common: &icmp-common
   interval: 1m
   conditions:
@@ -46,11 +53,11 @@ endpoints:
   - name: "Sprocket {{stack}} Core (Public)"
     group: "Sprocket {{stack}}"
     url: https://{{CoreHostname}}/graphql
-    <<: *http-common
+    <<: *http-expect-bad-request
   - name: "Sprocket {{stack}} Core (Private)"
     group: "Sprocket {{stack}}"
     url: http://{{CoreServiceName}}:3001/graphql
-    <<: *http-common
+    <<: *http-expect-bad-request
 
   - name: "Sprocket {{stack}} Redis"
     group: "Sprocket {{stack}}"
