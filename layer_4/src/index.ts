@@ -10,11 +10,12 @@ import * as pulumi from "@pulumi/pulumi"
 import * as vault from "@pulumi/vault"
 import { GrafanaBootstrap } from './grafana/GrafanaBootstrap';
 import { PlatformTelegraf } from './PlatformTelegraf';
+import {InfrastructureTelegraf} from "./InfrastructureTelegraf";
 
 
 const influxToken = LayerTwo.stack.requireOutput(LayerTwoExports.InfluxDbToken) as pulumi.Output<string>
 const monitoringNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.MonitoringNetworkId) as pulumi.Output<string>
-const postgresHostname = LayerTwo.stack.requireOutput(LayerTwoExports.PostgresUrl) as pulumi.Output<string>
+const postgresHostname = LayerTwo.stack.requireOutput(LayerTwoExports.PostgresHostname) as pulumi.Output<string>
 const postgresNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.PostgresNetworkId) as pulumi.Output<string>
 const ingressNetworkdId = LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>
 
@@ -36,8 +37,9 @@ export * from "./GatusPages"
 export const grafanaBootstrap = new GrafanaBootstrap("grafana-content", {})
 
 // Telegraf for platform redis & rmq
-console.log(monitoringNetworkId)
 export const platformTelegraf = PlatformTelegraf(vaultProvider, influxToken, monitoringNetworkId)
+// Telegraf for infrastructure monitoring
+export const infrastructureTelegraf = InfrastructureTelegraf(vaultProvider, influxToken, monitoringNetworkId)
 
 export const tooljet = new Tooljet(`tooljet`, {
   providers: {

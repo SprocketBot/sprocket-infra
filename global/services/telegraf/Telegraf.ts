@@ -9,7 +9,8 @@ import { ConfigFile, ConfigFileArgs } from '../../helpers/docker/ConfigFile';
 export interface TelegrafArgs {
     configFilePath: string,
     configFileTransformation?: ConfigFileArgs["transformation"]
-
+    global?: boolean
+    additionalMounts?: docker.ContainerArgs["mounts"]
     monitoringNetworkId: docker.Network["id"],
     additionalNetworkIds: docker.Network["id"][],
     additionalEnvironmentVariables: Record<string, string | pulumi.Output<string>>,
@@ -29,7 +30,6 @@ export class Telegraf extends pulumi.ComponentResource {
 
     constructor(name: string, args: TelegrafArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Telegraf", name, {}, opts);
-
 
         this.config = new ConfigFile(`${name}-config`, {
             filepath: args.configFilePath,
@@ -60,8 +60,14 @@ export class Telegraf extends pulumi.ComponentResource {
         }
 
         this.service = new docker.Service(`${name}-service`, {
+            mode: {
+                global: args.global
+            },
             taskSpec: {
                 containerSpec: {
+                    user: "telegraf",
+                    groups: ["998"],
+                    mounts: args.additionalMounts,
                     image: "telegraf:1.22-alpine",
                     env,
                     configs: [{

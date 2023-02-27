@@ -20,7 +20,7 @@ export const PlatformTelegraf = (vaultProvider: vault.Provider,
   new Telegraf('platform', {
     additionalEnvironmentVariables: {},
     additionalNetworkIds: AllPlatformExports.map(exports => exports.apply(e => e[PlatformExports.STACK_PLATFORM_NETWORK_ID]) as pulumi.Output<string>),
-    configFilePath: `${__dirname}/config/telegraf/telegraf.conf`,
+    configFilePath: `${__dirname}/config/telegraf/platform.conf`,
     configFileTransformation: applyConfiguration,
     influxToken,
     monitoringNetworkId,

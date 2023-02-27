@@ -6,7 +6,7 @@ import * as random from "@pulumi/random";
 
 import { PostgresUser } from '../../helpers/datastore/PostgresUser';
 import { buildHost } from '../../helpers/buildHost';
-import { UTIL_HOSTNAME } from '../../constants';
+import { PlacementRules, UTIL_HOSTNAME } from '../../constants';
 import { TraefikLabels } from '../../helpers/docker/TraefikLabels';
 export interface TooljetArgs {
   providers: {
@@ -50,7 +50,7 @@ export class Tooljet extends pulumi.ComponentResource {
     this.database = new postgres.Database(`${name}-db`, {
       name: `${name}-db`,
       owner: this.dbUser.username
-    }, { parent: this })
+    }, { parent: this, provider: args.providers.postgres })
     this.lockboxMasterKey = new random.RandomPassword(`${name}-lockbox-master-key`, {
       length: 128
     }, { parent: this })
@@ -63,14 +63,15 @@ export class Tooljet extends pulumi.ComponentResource {
     this.service = new docker.Service(`${name}-service`, {
       taskSpec: {
         containerSpec: {
-          image: "tooljet/tooljet-ce:latest",
+          image: "tooljet/tooljet-ce:v1.31.1",
           env: {
             SERVE_CLIENT: "true",
             PORT: "80",
-            TOOLJET_HOST: hostname,
+            TOOLJET_HOST: `https://${hostname}`,
             LOCKBOX_MASTER_KEY: this.lockboxMasterKey.result,
             SECRET_KEY_BASE: this.secretKeyBase.result,
             ORM_LOGGING: "all",
+            DISABLE_SIGNUPS: "true",
             PG_DB: this.database.name,
             PG_USER: this.dbUser.username,
             PG_HOST: args.postgresHostname,
@@ -84,24 +85,28 @@ export class Tooljet extends pulumi.ComponentResource {
             SMTP_DOMAIN: args.smtp.host,
             SMTP_PORT: args.smtp.port.toString(),
           },
-          commands: [
-            "npm", "run", "start:prod"
+          commands: ["npm"],
+          args: [
+            "run", "start:prod"
           ],
-          labels: [
-            ...new TraefikLabels(`tooljet`)
-              .tls('lets-encrypt-tls')
-              .rule(`Host(\`${hostname}\`)`)
-              .targetPort(80)
-              .forwardAuthRule('SprocketStaff')
-              .complete
-          ]
         },
         networks: [
           args.postgresNetworkId,
           args.ingressNetworkId,
           ...(args.additionalNetworkIds ?? [])
         ],
-      }
+        placement: {
+          constraints: [PlacementRules.NOT_INGRESS]
+        }
+      },
+      labels: [
+        ...new TraefikLabels(`tooljet`)
+          .tls('lets-encrypt-tls')
+          .rule(`Host(\`${hostname}\`)`)
+          .targetPort(80)
+          .forwardAuthRule('SprocketStaff')
+          .complete
+      ]
     }, { parent: this })
   }
 }
