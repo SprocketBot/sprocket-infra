@@ -73,6 +73,22 @@ rules:
       - "856290331292991489"
       # Elo Team
       - "930203170636976178"
+  - key: "ImageGeneration"
+    type: "roles"
+    guildId: "856290331279884288"
+    roleIds:
+      # Maintainer
+      - "856290331292991490"
+      # Administrator
+      - "856290331292991489"
+      # Developer
+      - "856291576014569502"
+      # Data Team
+      - "923396697600704532"
+      # Design
+      - "895054913212665898"
+      # MLE Staff
+      - "892975231847764028"
 
 defaultRule:
   key: "DefaultRule"

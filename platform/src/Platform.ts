@@ -136,6 +136,7 @@ export class Platform extends pulumi.ComponentResource {
           .tls("lets-encrypt-tls")
           .rule(`Host(\`${this.igUrl}\`)`)
           .targetPort(3000)
+          .forwardAuthRule("ImageGeneration")
 
         if (config.getBoolean("alpha-restrictions")) {
             webLabels.forwardAuthRule("AlphaTesters")
