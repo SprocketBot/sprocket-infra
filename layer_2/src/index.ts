@@ -97,7 +97,7 @@ export const chatwoot = new Chatwoot('chatwoot', {
   }
 });
 
-export const GatusInternal = new Gatus("gatus-internal", {
-  ingressNetworkId,
-  configFilePath: `${__dirname}/config/gatus/config.yml`,
-})
+// export const GatusInternal = new Gatus("gatus-internal", {
+//   ingressNetworkId,
+//   configFilePath: `${__dirname}/config/gatus/config.yml`,
+// })

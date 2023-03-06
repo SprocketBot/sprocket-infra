@@ -1,5 +1,5 @@
-name: layer_2
+name: layer_4
+description: Contains resources that live after the platform is initialized
 runtime: nodejs
-description: A minimal TypeScript Pulumi program
 backend:
   url: s3://sprocket/pulumi?endpoint=https://us-southeast-1.linodeobjects.com

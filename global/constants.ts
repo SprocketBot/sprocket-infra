@@ -14,3 +14,7 @@ export const DEV_CHATWOOT_WEBSITE_TOKEN = "2fADAgL8W9JVvwAAp7u9mqGC";
 export const STAGING_CHATWOOT_WEBSITE_TOKEN = DEV_CHATWOOT_WEBSITE_TOKEN;
 
 export const PRODUCTION_CHATWOOT_WEBSITE_TOKEN = "gv7YSGqACQkEfPdJ7Bt39Fi8";
+
+export enum PlacementRules {
+  NOT_INGRESS = "node.labels.role!=ingress"
+}

@@ -60,13 +60,13 @@ export class Postgres extends pulumi.ComponentResource {
                         type: "volume",
                         target: "/var/lib/postgresql/data",
                         source: this.volume.id
-                    }, {
+                    }, /* {
                         type: "tmpfs",
                         target: "/dev/shm",
                         tmpfsOptions: {
                             sizeBytes: 1024 * 1024 * 1024 * 2
                         }
-                    }],
+                    } */],
                     env: {
                         POSTGRES_USER: this.credentials.username,
                         POSTGRES_PASSWORD: this.credentials.password

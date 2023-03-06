@@ -54,7 +54,7 @@ export class Grafana extends pulumi.ComponentResource {
                     ]
                 },
                 containerSpec: {
-                    image: "grafana/grafana:main",
+                    image: "grafana/grafana:latest",
                     env: vault.generic.getSecretOutput({ path: "infrastructure/smtp"}, {provider: args.providers.vault}).apply(s => ({
                         GF_SERVER_ROOT_URL: `https://grafana.${HOSTNAME}`,
                         GF_DATABASE_TYPE: "postgres",

@@ -16,3 +16,5 @@ export * from "./dgraph"
 export * from "./airbyte"
 export * from "./n8n"
 export * from "./gatus"
+
+export * from "./tooljet"
