@@ -34,7 +34,7 @@
   },
   "auth": {
     "discord": {
-      "callbackUrl": "https://{{ api.url }}/login"
+      "callbackUrl": "https://{{ api.url }}/authentication/discord/login"
     },
     "google": {
       "callbackUrl": "https://{{ api.url }}/authentication/google/login"
