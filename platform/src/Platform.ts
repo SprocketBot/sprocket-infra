@@ -191,6 +191,14 @@ export class Platform extends pulumi.ComponentResource {
                 secretId: this.secrets.steamApiKey.id,
                 secretName: this.secrets.steamApiKey.name,
                 fileName: "/app/secret/steam-key.txt"
+            }, {
+                secretId: this.secrets.microsoftClientId.id,
+                secretName: this.secrets.microsoftClientId.name,
+                fileName: "/app/secret/microsoft-client-id.txt"
+            },  {
+                secretId: this.secrets.microsoftClientSecret.id,
+                secretName: this.secrets.microsoftClientSecret.name,
+                fileName: "/app/secret/microsoft-secret.txt"
             }],
             networks: [
                 args.ingressNetworkId
@@ -203,18 +211,10 @@ export class Platform extends pulumi.ComponentResource {
                 labels: [
                     ...webLabels.complete
                 ],
-                configFile: {
-                    destFilePath: "/app/config/production.json",
-                    sourceFilePath: `${args.configRoot}/services/web.json`,
-                },
-                secrets: [{
-                    secretId: this.secrets.chatwootHmacKey.id,
-                    secretName: this.secrets.chatwootHmacKey.name,
-                    fileName: "/app/secret/chatwoot-hmac-key.txt"
-                }],
                 env: {
                     ENV: "production",
                     NODE_ENV: "production",
+                    PUBLIC_GQL_API: `https://${this.apiUrl}/graphql`
                 },
                 networks: [
                     args.ingressNetworkId

@@ -38,6 +38,9 @@ export class PlatformSecrets extends pulumi.ComponentResource {
     readonly discordClientSecret: docker.Secret
     readonly discordClientId: docker.Secret
 
+    readonly microsoftClientSecret: docker.Secret
+    readonly microsoftClientId: docker.Secret
+
     readonly epicClientId: docker.Secret;
     readonly epicClientSecret: docker.Secret;
 
@@ -119,6 +122,19 @@ export class PlatformSecrets extends pulumi.ComponentResource {
             data: steamSecret.data.apply(d => btoa(d.apiKey))
         }, { parent: this })
 
+        // Microsoft / Xbox
+        const microsoftSecret = vault.generic.getSecretOutput({
+            path: `platform/${args.environment}/manual/oauth/microsoft`
+        }, { parent: this, provider: args.vault })
+
+        this.microsoftClientSecret = new docker.Secret(`${name}-microsoft-secret`, {
+            data: microsoftSecret.data.apply(d => btoa(d.client_secret))
+        }, { parent: this })
+
+        this.microsoftClientId = new docker.Secret(`${name}-microsoft-client-id`, {
+            data: microsoftSecret.data.apply(d => btoa(d.client_id))
+        }, { parent: this })
+
         // Discord
 
         const discordSecret = vault.generic.getSecretOutput({
@@ -132,6 +148,8 @@ export class PlatformSecrets extends pulumi.ComponentResource {
         this.discordClientId = new docker.Secret(`${name}-discord-client-id`, {
             data: discordSecret.data.apply(d => btoa(d.client_id))
         }, { parent: this })
+
+        // Ballchasing / Chatwoot
 
         this.ballchasingApiToken = new docker.Secret(`${name}-ballchasing-token`, {
             data: vault.generic.getSecretOutput({ path: "platform/ballchasing"}, {parent: this, provider: args.vault}).data.apply((d) => btoa(d.token))
