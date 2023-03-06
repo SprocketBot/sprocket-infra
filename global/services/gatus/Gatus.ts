@@ -1,15 +1,16 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import * as vault from "@pulumi/vault";
 
 import { HOSTNAME } from "../../constants";
-import { ConfigFile } from "../../helpers/docker/ConfigFile";
+import { ConfigFile, ConfigFileArgs } from "../../helpers/docker/ConfigFile";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 
 export interface GatusArgs {
     ingressNetworkId: docker.Network["id"];
     configFilePath: string;
+    configFileTransformation?: ConfigFileArgs["transformation"];
+    hostname?: string
 }
 
 export class Gatus extends pulumi.ComponentResource {
@@ -22,12 +23,13 @@ export class Gatus extends pulumi.ComponentResource {
     constructor(name: string, args: GatusArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Gatus", name, {}, opts);
 
-        this.url = `status.${HOSTNAME}`;
+        this.url = `status.${args.hostname ?? HOSTNAME}`;
 
         this.dbVolume = new docker.Volume(`${name}-data`, {}, { parent: this });
 
         this.config = new ConfigFile(`${name}-config`, {
             filepath: args.configFilePath,
+            transformation: args.configFileTransformation
         }, { parent: this });
 
         const traefikLabels = new TraefikLabels(name)
@@ -60,6 +62,6 @@ export class Gatus extends pulumi.ComponentResource {
                 logDriver: DefaultLogDriver(name, true),
             },
             labels: traefikLabels,
-        });
+        }, { parent: this });
     }
 }
