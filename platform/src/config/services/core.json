@@ -46,6 +46,12 @@
       "callbackUrl": "https://{{ api.url }}/authentication/steam/login",
       "realm": "https://{{ api.url }}"
     },
+    "microsoft": {
+      "callbackUrl": "https://{{ api.url }}/authentication/microsoft/login"
+    },
+    "xbox": {
+      "callbackUrl": "https://{{ api.url }}/authentication/xbox/login"
+    },
     "jwt_expiry": 12000,
     "access_expiry": "6h",
     "refresh_expiry": "7d",

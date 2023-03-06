@@ -214,7 +214,7 @@ export class Platform extends pulumi.ComponentResource {
                 env: {
                     ENV: "production",
                     NODE_ENV: "production",
-                    PUBLIC_GQL_API: `https://${this.apiUrl}/graphql`
+                    PUBLIC_GQL_URL: `https://${this.apiUrl}`
                 },
                 networks: [
                     args.ingressNetworkId
