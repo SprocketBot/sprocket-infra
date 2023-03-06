@@ -5,3 +5,7 @@ global/node_modules/
 
 scripts/db-sync/.env
 node_modules
+
+layer_4/node_modules/
+
+.idea/
