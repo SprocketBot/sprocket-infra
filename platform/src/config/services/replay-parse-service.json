@@ -13,7 +13,7 @@
     "secure": true
   },
   "ballchasing": {
-    "maxRetries": 4,
+    "maxRetries": 7,
     "backoffFactor": 4
   },
   "tempDir": "/tmp",
