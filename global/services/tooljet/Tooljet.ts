@@ -63,7 +63,7 @@ export class Tooljet extends pulumi.ComponentResource {
     this.service = new docker.Service(`${name}-service`, {
       taskSpec: {
         containerSpec: {
-          image: "tooljet/tooljet-ce:v1.31.1",
+          image: "tooljet/tooljet-ce:v2.5.0",
           env: {
             SERVE_CLIENT: "true",
             PORT: "80",
