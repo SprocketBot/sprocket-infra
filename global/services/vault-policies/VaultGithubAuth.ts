@@ -14,6 +14,7 @@ export class VaultGithubAuth extends pulumi.ComponentResource {
     readonly adminTeam: VaultGithubTeam
     readonly dataScienceTeam: VaultGithubTeam
     readonly eloTeam: VaultGithubTeam
+		readonly dbTeam: VaultGithubTeam
 
     readonly vaultProvider: vault.Provider
 
@@ -51,6 +52,13 @@ export class VaultGithubAuth extends pulumi.ComponentResource {
             team: "elo",
             name: "elo-team",
             policyContent: readFileSync(`${__dirname}/policies/github-elo.hcl`).toString(),
+            vaultProvider: this.vaultProvider
+        }, { parent: this })
+
+        this.dbTeam = new VaultGithubTeam(`${name}-database-team`, {
+            team: "database",
+            name: "database-team",
+            policyContent: readFileSync(`${__dirname}/policies/github-db.hcl`).toString(),
             vaultProvider: this.vaultProvider
         }, { parent: this })
 
