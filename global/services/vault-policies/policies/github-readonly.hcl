@@ -19,7 +19,7 @@ path "database/creds/developer*" {
 }
 
 path "database/creds/developer_main" {
-    capabilities = ["deny"]
+    capabilities = []
 }
 
 path "database/roles" {
