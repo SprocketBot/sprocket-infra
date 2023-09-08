@@ -11,5 +11,9 @@ path "platform/elo*" {
 }
 
 path "database/*" {
+ capabilities = ["create", "read", "update", "delete", "list"]
+} 
+
+path "database/creds/developer_main" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
