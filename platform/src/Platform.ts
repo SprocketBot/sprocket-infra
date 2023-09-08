@@ -1,8 +1,8 @@
-import * as docker from "@pulumi/docker"
-import * as postgresql from "@pulumi/postgresql"
-import * as pulumi from "@pulumi/pulumi"
-import * as vault from "@pulumi/vault"
-import * as minio from "@pulumi/minio"
+import * as docker from "@pulumi/docker";
+import * as postgresql from "@pulumi/postgresql";
+import * as pulumi from "@pulumi/pulumi";
+import * as vault from "@pulumi/vault";
+import * as minio from "@pulumi/minio";
 import * as random from "@pulumi/random";
 
 import {SprocketService, SprocketServiceArgs} from "./microservices/SprocketService";

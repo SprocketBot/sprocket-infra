@@ -66,10 +66,6 @@ const sharedRedis = new Redis("layer2redis", {
   ingressNetworkId: ingressNetworkId,
   vaultProvider: vaultProvider,
   platformNetworkId: chatwootNetwork.id,
-  // monitoring: {
-  //   influxToken: monitoring.influx.credentials.password,
-  //   monitoringNetworkId: monitoring.network.id
-  // }
 })
 
 export const chatwoot = new Chatwoot('chatwoot', {
@@ -97,7 +93,7 @@ export const chatwoot = new Chatwoot('chatwoot', {
   }
 });
 
-export const GatusInternal = new Gatus("gatus-internal", {
-  ingressNetworkId,
-  configFilePath: `${__dirname}/config/gatus/config.yml`,
-})
+// export const GatusInternal = new Gatus("gatus-internal", {
+//   ingressNetworkId,
+//   configFilePath: `${__dirname}/config/gatus/config.yml`,
+// })
