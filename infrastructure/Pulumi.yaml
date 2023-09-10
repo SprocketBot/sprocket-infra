@@ -1,0 +1,3 @@
+name: SprocketInfrastructure
+runtime: nodejs
+description: Contains prerequisite infrastructure for the hosted Sprocket Platform.
