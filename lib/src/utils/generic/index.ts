@@ -1,1 +1,1 @@
-export * from "./UserPassCredential"
+export * from "./UserPassCredential";

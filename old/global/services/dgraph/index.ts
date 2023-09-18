@@ -1,1 +1,1 @@
-export * from "./DGraph"
+export * from "./DGraph";

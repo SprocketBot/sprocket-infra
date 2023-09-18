@@ -1,1 +1,1 @@
-export * from "./Loki"
+export * from "./Loki";

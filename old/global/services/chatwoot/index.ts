@@ -1,1 +1,1 @@
-export * from "./Chatwoot"
+export * from "./Chatwoot";

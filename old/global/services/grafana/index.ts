@@ -1,1 +1,1 @@
-export * from "./Grafana"
+export * from "./Grafana";

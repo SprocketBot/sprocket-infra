@@ -4,54 +4,60 @@ import * as pulumi from "@pulumi/pulumi";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 
 export class SocketProxy extends pulumi.ComponentResource {
-    private readonly service: docker.Service
-    private readonly network: docker.Network
+  private readonly service: docker.Service;
+  private readonly network: docker.Network;
 
-    readonly networkId: docker.Network["id"]
-    readonly serviceName: docker.Service["name"]
+  readonly networkId: docker.Network["id"];
+  readonly serviceName: docker.Service["name"];
 
-    constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
-        super("SprocketBot:Utilities:SocketProxy", `${name}-sock-proxy`, {} , opts)
+  constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
+    super("SprocketBot:Utilities:SocketProxy", `${name}-sock-proxy`, {}, opts);
 
-        this.network = new docker.Network(`${name}-proxy-network`, {driver: "overlay"}, {parent: this})
+    this.network = new docker.Network(
+      `${name}-proxy-network`,
+      { driver: "overlay" },
+      { parent: this },
+    );
 
-        this.service = new docker.Service(`${name}-proxy-service`, {
-            name: `${name}-sock-proxy`,
-            taskSpec: {
-                containerSpec: {
-                    image: "tecnativa/docker-socket-proxy:latest",
-                    env: {
-                        CONTAINERS: "1",
-                        SERVICES: "1",
-                        SWARM: "1",
-                        NETWORKS: "1",
-                        TASKS: "1",
-                    },
-                    mounts: [{
-                        type: "bind",
-                        readOnly: true,
-                        source: "/var/run/docker.sock",
-                        target: "/var/run/docker.sock"
-                    }],
-                },
-                logDriver: DefaultLogDriver("socketProxy", true),
-                networks: [
-                    this.network.id
-                ],
-                placement: {
-                    constraints: [
-                        "node.role==manager"
-                    ]
-                }
-            }
-        }, { parent: this })
+    this.service = new docker.Service(
+      `${name}-proxy-service`,
+      {
+        name: `${name}-sock-proxy`,
+        taskSpec: {
+          containerSpec: {
+            image: "tecnativa/docker-socket-proxy:latest",
+            env: {
+              CONTAINERS: "1",
+              SERVICES: "1",
+              SWARM: "1",
+              NETWORKS: "1",
+              TASKS: "1",
+            },
+            mounts: [
+              {
+                type: "bind",
+                readOnly: true,
+                source: "/var/run/docker.sock",
+                target: "/var/run/docker.sock",
+              },
+            ],
+          },
+          logDriver: DefaultLogDriver("socketProxy", true),
+          networks: [this.network.id],
+          placement: {
+            constraints: ["node.role==manager"],
+          },
+        },
+      },
+      { parent: this },
+    );
 
-        this.networkId = this.network.id
-        this.serviceName = this.service.name
+    this.networkId = this.network.id;
+    this.serviceName = this.service.name;
 
-        this.registerOutputs({
-            networkId: this.networkId,
-            serviceName: this.service.name
-        })
-    }
+    this.registerOutputs({
+      networkId: this.networkId,
+      serviceName: this.service.name,
+    });
+  }
 }

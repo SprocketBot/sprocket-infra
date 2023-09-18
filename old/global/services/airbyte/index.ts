@@ -1,1 +1,1 @@
-export * from './Airbyte'
+export * from "./Airbyte";

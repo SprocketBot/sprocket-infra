@@ -1,15 +1,15 @@
-import * as docker from '@pulumi/docker';
-import { HOSTNAME } from '../../../constants';
-const DATABASE_HOST = "airbyte-db"
+import * as docker from "@pulumi/docker";
+import { HOSTNAME } from "../../../constants";
+const DATABASE_HOST = "airbyte-db";
 const WORKER_ENVIRONMENT = "docker";
-const DATABASE_USER = "docker"
-const DATABASE_PASSWORD = "docker"
-const DATABASE_URL = `jdbc:postgresql://${DATABASE_HOST}:5432/airbyte`
-export const AIRBYTE_VERSION = '0.40.4'
+const DATABASE_USER = "docker";
+const DATABASE_PASSWORD = "docker";
+const DATABASE_URL = `jdbc:postgresql://${DATABASE_HOST}:5432/airbyte`;
+export const AIRBYTE_VERSION = "0.40.4";
 
 export const initEnv = {
-  LOCAL_ROOT: '/tmp/airbyte_local',
-  HACK_LOCAL_ROOT_PARENT: '/tmp'
+  LOCAL_ROOT: "/tmp/airbyte_local",
+  HACK_LOCAL_ROOT_PARENT: "/tmp",
 };
 
 export const dbEnv = {
@@ -18,17 +18,16 @@ export const dbEnv = {
   DATABASE_USER: DATABASE_USER,
   POSTGRES_PASSWORD: DATABASE_PASSWORD,
   POSTGRES_USER: DATABASE_USER,
-}
+};
 
 export const bootloaderEnv = {
   AIRBYTE_VERSION: AIRBYTE_VERSION,
-  LOG_LEVEL: 'INFO',
-  RUN_DATABASE_MIGRATION_ON_STARTUP: '',
+  LOG_LEVEL: "INFO",
+  RUN_DATABASE_MIGRATION_ON_STARTUP: "",
   DATABASE_PASSWORD: DATABASE_PASSWORD,
   DATABASE_URL: DATABASE_URL,
   DATABASE_USER: DATABASE_USER,
-}
-
+};
 
 const TEMPORAL_HOST = "airbyte-temporal:7233";
 const WEBAPP_URL = `https://airbyte.${HOSTNAME}:443`;
@@ -60,7 +59,7 @@ export const workerEnv = {
   WORKSPACE_ROOT: WORKSPACE_ROOT,
   JOB_ERROR_REPORTING_STRATEGY: "logging",
   USE_STREAM_CAPABLE_STATE: "true",
-}
+};
 
 export const cronEnv = {
   DB: "postgresql",
@@ -70,7 +69,7 @@ export const cronEnv = {
   POSTGRES_SEEDS: DATABASE_HOST,
   POSTGRES_USER: DATABASE_USER,
   WORKSPACE_ROOT: WORKSPACE_ROOT,
-}
+};
 
 export const temporalEnv = {
   DB: "postgresql",
@@ -80,14 +79,14 @@ export const temporalEnv = {
   POSTGRES_PWD: DATABASE_PASSWORD,
   POSTGRES_SEEDS: DATABASE_HOST,
   POSTGRES_USER: DATABASE_USER,
-}
+};
 
 export const webappEnv = {
   TRACKING_STRATEGY: "segment",
   AIRBYTE_VERSION: AIRBYTE_VERSION,
   API_URL: "/api/v1/",
   INTERNAL_API_HOST: "airbyte-server:8001",
-}
+};
 
 export const serverEnv = {
   AIRBYTE_VERSION: AIRBYTE_VERSION,
@@ -105,4 +104,4 @@ export const serverEnv = {
   WEBAPP_URL: WEBAPP_URL,
   WORKER_ENVIRONMENT: WORKER_ENVIRONMENT,
   WORKSPACE_ROOT: WORKSPACE_ROOT,
-}
+};

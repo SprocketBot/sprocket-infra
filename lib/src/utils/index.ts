@@ -1,2 +1,2 @@
-export * from "./docker"
-export * from "./generic"
+export * from "./docker";
+export * from "./generic";

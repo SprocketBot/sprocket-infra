@@ -1,1 +1,1 @@
-export * from "./Traefik"
+export * from "./Traefik";

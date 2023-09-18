@@ -1,1 +1,1 @@
-export * from "./VaultPolicies"
+export * from "./VaultPolicies";

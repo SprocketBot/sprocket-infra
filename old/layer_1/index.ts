@@ -1,8 +1,8 @@
 import * as src from "./src";
-import {LayerOneExports} from "global/refs"
+import { LayerOneExports } from "global/refs";
 
 module.exports = {
-    [LayerOneExports.IngressNetwork]: src.ingress.networkId,
-    [LayerOneExports.VaultNetwork]: src.vault.networkId,
-    [LayerOneExports.VaultAddress]: src.vault.address
-}
+  [LayerOneExports.IngressNetwork]: src.ingress.networkId,
+  [LayerOneExports.VaultNetwork]: src.vault.networkId,
+  [LayerOneExports.VaultAddress]: src.vault.address,
+};

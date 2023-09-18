@@ -1,11 +1,14 @@
-import {Config} from "@pulumi/pulumi"
+import { Config } from "@pulumi/pulumi";
 
-const c = new Config()
-const environment = c.get("subdomain")
-
+const c = new Config();
+const environment = c.get("subdomain");
 
 export const buildHost = (...x: string[]) => {
   if (environment === "main") {
-    return x.filter(Boolean).filter(t => t !== environment).join('.');
-  } return x.filter(Boolean).join('.');
-}
+    return x
+      .filter(Boolean)
+      .filter((t) => t !== environment)
+      .join(".");
+  }
+  return x.filter(Boolean).join(".");
+};
