@@ -62,7 +62,6 @@ export class Vault extends pulumi.ComponentResource {
             vaultEndpoint: this.endpoint
         }, {parent: this})
 
-
         const internalProvider = new vault.Provider("root-provider", {
             token: vaultInitializer.rootToken,
             address: vaultInitializer.vaultHealthy.apply(($endpoint: string) => $endpoint)

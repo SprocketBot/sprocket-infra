@@ -2,3 +2,4 @@
 
 scripts/db-sync/.env
 node_modules
+.idea

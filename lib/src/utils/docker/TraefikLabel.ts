@@ -56,9 +56,9 @@ abstract class TraefikLabel {
 }
 
 export class TraefikHttpLabel extends TraefikLabel {
-    readonly routerPrefix = `traefik.http.routers.${this.name}`
-    readonly servicePrefix = `traefik.http.services.${this.name}`
-    readonly middlewarePrefix = `traefik.http.middlewares.${this.name}`
+    protected readonly routerPrefix = `traefik.http.routers.${this.name}`
+    protected readonly servicePrefix = `traefik.http.services.${this.name}`
+    protected readonly middlewarePrefix = `traefik.http.middlewares.${this.name}`
 
 
     forwardAuthRule(ruleName: string) {
@@ -67,7 +67,7 @@ export class TraefikHttpLabel extends TraefikLabel {
 }
 
 export class TraefikTcpLabel extends TraefikLabel {
-    readonly routerPrefix = `traefik.tcp.routers.${this.name}`
-    readonly servicePrefix = `traefik.tcp.services.${this.name}`
-    readonly middlewarePrefix = `traefik.tcp.middlewares.${this.name}`
+    protected readonly routerPrefix = `traefik.tcp.routers.${this.name}`
+    protected readonly servicePrefix = `traefik.tcp.services.${this.name}`
+    protected readonly middlewarePrefix = `traefik.tcp.middlewares.${this.name}`
 }

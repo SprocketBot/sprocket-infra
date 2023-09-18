@@ -11,6 +11,9 @@ importers:
       '@types/node':
         specifier: ^14.18.3
         version: 14.18.58
+      prettier:
+        specifier: ^3.0.3
+        version: 3.0.3
 
   infrastructure:
     dependencies:
@@ -36,9 +39,15 @@ importers:
       '@pulumi/docker':
         specifier: ^4.4.0
         version: 4.4.0
+      '@pulumi/postgresql':
+        specifier: ^3.9.0
+        version: 3.9.0
       '@pulumi/pulumi':
         specifier: ^3.0.0
         version: 3.81.0
+      '@pulumi/random':
+        specifier: ^4.13.2
+        version: 4.13.2
       '@pulumi/vault':
         specifier: ^5.15.0
         version: 5.15.0
@@ -1566,6 +1575,12 @@ packages:
       safe-buffer: 5.2.1
       stream-length: 1.0.2
       uuid: 8.3.2
+    dev: false
+
+  /prettier@3.0.3:
+    resolution: {integrity: sha512-L/4pUDMxcNa8R/EthV08Zt42WBO4h1rarVtK0K+QJG0X187OLo7l699jWw0GKuwzkPQ//jMFA/8Xm6Fh3J/DAg==}
+    engines: {node: '>=14'}
+    hasBin: true
     dev: false
 
   /protobufjs@7.2.5:

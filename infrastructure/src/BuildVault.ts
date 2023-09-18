@@ -1,5 +1,6 @@
-import * as docker from "@pulumi/docker";
-import {config, ConfigFile, Traefik, Vault, VaultDiscordOidc} from "@sprocketbot/infra-lib";
+import * as pulumi from "@pulumi/pulumi";
+
+import {buildUrn, config, ConfigFile, Traefik, URN_TYPE, Vault} from "@sprocketbot/infra-lib";
 
 
 interface BuildVaultArgs {
@@ -9,9 +10,14 @@ interface BuildVaultArgs {
 
 interface BuildVaultResult {
     endpoint: string
+    provider: Vault["provider"]
 }
 
 export function BuildVault({traefik, configFilepath}: BuildVaultArgs): BuildVaultResult {
+    // Wrap everything into a component resource so it can be depended on
+    const output = new pulumi.ComponentResource(buildUrn(URN_TYPE.LogicalGroup, "deployed-vault"), "deployed-vault", {}, { dependsOn: [traefik]})
+
+
     const vaultConfig = new ConfigFile("infra-vault-config", {
         filepath: configFilepath, vars: {
             accessKey: config.requireSecret<string>("vault-s3-access-key"),
@@ -19,13 +25,13 @@ export function BuildVault({traefik, configFilepath}: BuildVaultArgs): BuildVaul
             bucket: config.require("vault-s3-bucket"),
             endpoint: config.require("vault-s3-endpoint")
         }
-    })
+    }, { parent: output })
 
     const vault = new Vault("infra-vault", {
         traefikNetId: traefik.network.id,
         config: vaultConfig
-    }, {dependsOn: [traefik]})
+    }, {parent: output })
 
-    return {endpoint: vault.endpoint}
+    return {endpoint: vault.endpoint, provider: vault.provider}
 }
 

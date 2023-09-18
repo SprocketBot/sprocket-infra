@@ -34,6 +34,7 @@ export class VaultInitializer extends pulumi.ComponentResource {
             ignoreChanges: ["image"],
             deletedWith: args.vaultService,
             additionalSecretOutputs: ["containerLogs"],
+            protect: true
         })
 
         // Vault should be initialized
@@ -64,7 +65,7 @@ export class VaultInitializer extends pulumi.ComponentResource {
                     logs: true,
                     mustRun: false,
                     rm: true
-                }, {parent: this, ignoreChanges: ["image"]})
+                }, {parent: this, ignoreChanges: ["image"], protect: true })
             )
         }
 

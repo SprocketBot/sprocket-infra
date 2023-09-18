@@ -27,19 +27,19 @@ export class VaultPulumiAuth extends pulumi.ComponentResource {
         const pulumiPolicy = new vault.Policy("pulumi-policy", {
             policy: `
 # Full access to kv and database secret engines
-path "kv/*" { capabilities = ["create", "read", "update", "delete", "list"] }
+path "kv2/*" { capabilities = ["create", "read", "update", "delete", "list"] }
 path "auth/*" { capabilities = ["create", "read", "update", "delete", "list"] }
 path "database/*" { capabilities = ["create", "read", "update", "delete", "list"] }
 path "pulumi/*" { capabilities = ["create", "read", "update", "delete", "list"] }
 
 # Create and Manage kv and database secret engines
 path "sys/mounts" { capabilities = ["read", "list"] }
-path "sys/mounts/kv" { capabilities = ["create", "read", "update", "delete", "list"] }
-path "sys/mounts/kv/*" { capabilities = ["create", "read", "update", "delete", "list"] }
+path "sys/mounts/kv2" { capabilities = ["create", "read", "update", "delete", "list"] }
+path "sys/mounts/kv2/*" { capabilities = ["create", "read", "update", "delete", "list"] }
 path "sys/mounts/database" { capabilities = ["create", "read", "update", "delete", "list"] }
 path "sys/mounts/database/*" { capabilities = ["create", "read", "update", "delete", "list"] }
 
-path "sys/remount" {capabilities = ["create", "update"]}
+path "sys/remount" {capabilities = ["create", "update", "read", "delete", "list"]}
 
 # Create Discord Auth Method
 path "sys/auth/discord" { capabilities = [ "create", "read", "update", "delete", "sudo" ] }
