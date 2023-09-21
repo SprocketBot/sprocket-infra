@@ -1,13 +1,13 @@
 import * as grafana from "@lbrlabs/pulumi-grafana";
 import * as pulumi from "@pulumi/pulumi";
 import * as vault from "@pulumi/vault";
+
 import {
   buildUrn,
   InfrastructureStackOutputs,
   InfrastructureStackRef,
   URN_TYPE,
   VaultConstants,
-  VaultUtils,
 } from "@sprocketbot/infra-lib";
 
 export const BuildGrafanaDatasources = (
@@ -62,19 +62,27 @@ export const BuildGrafanaDatasources = (
     { parent: GrafanaDatasources, deleteBeforeReplace: true },
   );
 
-  const githubAccessToken = vault.kv.getSecretV2Output({
-    name: "maintainer/manual/github-pat",
-    mount: VaultConstants.Backend.kv2
-  }, { provider: vaultProvider}).apply($data => $data.data.accessToken as string);
-  
+  const githubAccessToken = vault.kv
+    .getSecretV2Output(
+      {
+        name: "maintainer/manual/github-pat",
+        mount: VaultConstants.Backend.kv2,
+      },
+      { provider: vaultProvider },
+    )
+    .apply(($data) => $data.data.accessToken as string);
+
   const github = new grafana.DataSource(
     "github-ds",
     {
       name: "GitHub",
       type: "grafana-github-datasource",
-      secureJsonDataEncoded: githubAccessToken.apply($pat => JSON.stringify({accessToken: $pat})),
+      secureJsonDataEncoded: githubAccessToken.apply(($pat) =>
+        JSON.stringify({ accessToken: $pat }),
+      ),
     },
     { parent: GrafanaDatasources, deleteBeforeReplace: true },
   );
-};
 
+  return { loki, influx, github };
+};

@@ -56,6 +56,8 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
 
     this.name = db.name;
 
+    // TODO: Create Extension?
+
     const restrictedRole = new TimescaleRole(
       "restricted-role",
       {

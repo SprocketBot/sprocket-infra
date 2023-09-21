@@ -34,7 +34,11 @@ export class InfluxDb extends pulumi.ComponentResource {
   ) {
     super(buildUrn(URN_TYPE.Service, "InfluxDb", name), name, {}, opts);
 
-  const credentials = new UserPassCredential("creds", { path: { name: "maintainer/generated/influxdb/admin"}}, { parent: this })
+    const credentials = new UserPassCredential(
+      "creds",
+      { path: { name: "maintainer/generated/influxdb/admin" } },
+      { parent: this },
+    );
     const initialToken = new random.RandomPassword(
       "token",
       {

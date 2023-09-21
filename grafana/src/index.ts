@@ -11,7 +11,8 @@ import {
   smtpSecret,
 } from "./grafana.secrets";
 import { BuildGrafanaDatasources } from "./grafana.datasources";
-
+import { GrafanaAlerting } from "./alerts/grafana.alerting";
+import { GrafanaDashboards } from "./dashboards/grafana.dashboards";
 if (InfrastructureStackRef === null)
   throw new Error(
     "Infrastructure Stack Reference is null! This should never happen.",
@@ -51,4 +52,33 @@ const grafanaInstance = new Grafana(
   },
 );
 
-BuildGrafanaDatasources(grafanaInstance.provider, getVaultProvider());
+const datasources = BuildGrafanaDatasources(
+  grafanaInstance.provider,
+  getVaultProvider(),
+);
+
+new GrafanaAlerting(
+  "alerts",
+  {},
+  {
+    providers: [
+      getVaultProvider(),
+      getPostgresProvider(),
+      grafanaInstance.provider,
+    ],
+  },
+);
+
+new GrafanaDashboards(
+  "dashboards",
+  {
+    datasources: datasources,
+  },
+  {
+    providers: [
+      getVaultProvider(),
+      getPostgresProvider(),
+      grafanaInstance.provider,
+    ],
+  },
+);
