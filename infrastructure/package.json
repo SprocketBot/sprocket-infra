@@ -1,13 +1,17 @@
 {
-  "name": "@sprocketbot/infre-core",
+  "name": "@sprocketbot/infra-core",
   "main": "index.ts",
   "devDependencies": {
-    "@types/node": "^14.18.3"
+    "@types/node": "^14.18.3",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "@pulumi/docker": "^4.4.0",
     "@pulumi/pulumi": "^3.0.0",
     "@sprocketbot/infra-lib": "workspace:^",
     "node-vault": "^0.10.2"
+  },
+  "scripts": {
+    "check": "tsc -p ./tsconfig.json --noEmit"
   }
 }

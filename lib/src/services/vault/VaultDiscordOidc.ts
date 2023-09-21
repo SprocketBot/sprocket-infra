@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as vault from "@pulumi/vault";
 import * as docker from "@pulumi/docker";
 import { buildUrn, URN_TYPE } from "../../constants/pulumi";
+import { Outputable } from "../../types";
 
 /*
 

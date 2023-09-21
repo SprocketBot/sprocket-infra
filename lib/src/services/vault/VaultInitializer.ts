@@ -1,9 +1,8 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import { buildUrn, config, URN_TYPE } from "../../constants/pulumi";
-import * as https from "https";
-import * as fs from "fs";
-import fetch from "node-fetch";
+import { buildUrn, URN_TYPE } from "../../constants";
+import { Outputable } from "../../types";
+import { UrlAvailable } from "../../utils";
 
 export type VaultInitializerArgs = {
   vaultImage: string;
@@ -105,36 +104,9 @@ export class VaultInitializer extends pulumi.ComponentResource {
     }
 
     // Wait for the vault unsealers to finish?? (Hooking onto logs _might_ do this)
-    this.vaultHealthy = pulumi
-      .all(vaultUnsealers.map((vs) => vs.containerLogs))
-      .apply(async () => {
-        // Import the ca certificate if needed
-        const agent = new https.Agent({
-          ca: config.get("traefik-trust-ca")
-            ? fs.readFileSync(config.require("traefik-trust-ca"))
-            : undefined,
-        });
-        // 20 attempts, w/ backoff
-        for (let i = 0; i < 20; i++) {
-          // Fetch health endpoint
-          const v: { sealed: boolean } = await fetch(
-            args.vaultEndpoint + "/v1/sys/health",
-            { agent },
-          )
-            .then((r) => r.json())
-            .catch((e: Error) => {
-              console.warn(e.message);
-              // If we error out, that's okay for now.
-              return false;
-            });
-          // vault is unsealed, we are cleared to proceed, return the endpoint for a stupid hack.
-          if (v && v?.sealed === false) return args.vaultEndpoint;
-          // Wait before we go around again
-          await new Promise((r) => setTimeout(r, 1000 * i));
-        }
-        // We ran out of retries.
-        throw new Error("Vault did not become healthy in time.");
-      });
+    this.vaultHealthy = UrlAvailable(args.vaultEndpoint + "/v1/sys/health", [
+      (r) => r.json().then((js: { sealed: boolean }) => !js?.sealed),
+    ]).apply(() => args.vaultEndpoint);
 
     this.rootToken = credentials.rootToken;
     this.unsealKeys = credentials.unsealKeys;

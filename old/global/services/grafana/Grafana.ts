@@ -104,3 +104,7 @@ export class Grafana extends pulumi.ComponentResource {
     );
   }
 }
+
+
+//          /sudo/timescaledb/infra-timescale-root
+// /kv2/data/sudo/timescaledb/infra-timescale-root

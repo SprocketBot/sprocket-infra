@@ -3,13 +3,14 @@ import * as pulumi from "@pulumi/pulumi";
 import {
   buildUrn,
   ConfigFile,
-  TimescaleDatabase,
   TimescaleDbArgs,
   Traefik,
   URN_TYPE,
   UserPassCredential,
   Vault,
   TimescaleDb,
+  Outputable,
+  TimescaleVault,
 } from "@sprocketbot/infra-lib";
 
 interface BuildTimescaleArgs {
@@ -19,8 +20,13 @@ interface BuildTimescaleArgs {
 }
 
 interface BuildTimescaleResult {
-  hostname: pulumi.Output<string>;
-  port: pulumi.Output<number> | number;
+  hostname: Outputable<string>;
+  port: Outputable<number>;
+  provider: TimescaleDb["provider"];
+  networkId: TimescaleDb["networkId"];
+  serviceName: TimescaleDb["service"]["name"];
+  vaultConnectionName: TimescaleVault["connection"]["name"];
+  vaultRolePath: TimescaleDb["rootAcct"]["path"];
   buildConnectionString: (c: UserPassCredential) => pulumi.Output<string>;
 }
 
@@ -76,6 +82,11 @@ export function BuildTimescale({
   return {
     hostname: timescale.hostname,
     port: timescale.port,
+    provider: timescale.provider,
+    networkId: timescale.networkId,
+    serviceName: timescale.service.name,
+    vaultConnectionName: timescale.vault.connection.name,
+    vaultRolePath: timescale.rootAcct.pathName,
     buildConnectionString: () => {
       throw new Error("not implemented");
     },

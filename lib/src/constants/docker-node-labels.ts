@@ -15,8 +15,8 @@ export enum Role {
   INGRESS = "ingress",
 }
 
-export const RoleRestriction = (role: Role) => {
+export const RoleRestriction = (role: Role, invert: boolean = false) => {
   if (config.get<string>("disabled-role-restrictions")?.includes(role))
     return "";
-  return `node.labels.role==${role}`;
+  return `node.labels.${role}${invert ? "!" : "="}=true`;
 };

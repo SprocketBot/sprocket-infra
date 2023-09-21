@@ -38,25 +38,30 @@ export class Traefik extends pulumi.ComponentResource {
     super(buildUrn(URN_TYPE.Service, "Traefik"), name, {}, opts);
     this.socketProxy = new SocketProxy(`socket-proxy`, { parent: this });
 
+    this.network = new docker.Network(
+      `traefik-network`,
+      {
+        driver: "overlay",
+        attachable: true,
+      },
+      { parent: this },
+    );
+
     this.staticConfig = new ConfigFile(
       `traefik-static-config`,
       {
         filepath: args.staticConfigPath,
         vars: pulumi
-          .all([this.socketProxy.serviceName, config.get("traefik-ca-server")])
-          .apply(([$serviceName, $caServer]) => ({
+          .all([
+            this.socketProxy.serviceName,
+            config.get("traefik-ca-server"),
+            this.network.name,
+          ])
+          .apply(([$serviceName, $caServer, $netName]) => ({
             socketProxyHostname: $serviceName,
             caServer: $caServer,
+            traefik_network_name: $netName,
           })),
-      },
-      { parent: this },
-    );
-
-    this.network = new docker.Network(
-      `network`,
-      {
-        driver: "overlay",
-        attachable: true,
       },
       { parent: this },
     );
@@ -120,7 +125,7 @@ export class Traefik extends pulumi.ComponentResource {
           },
           logDriver: LogDriver("traefik", ServiceCategory.INFRASTRUCTURE),
           placement: {
-            constraints: [RoleRestriction(Role.INGRESS)].filter(Boolean),
+            constraints: [RoleRestriction(Role.INGRESS)],
             platforms: [{ architecture: "amd64", os: "linux" }],
           },
           networksAdvanceds: [

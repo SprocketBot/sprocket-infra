@@ -1,12 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as vault from "@pulumi/vault";
-import {
-  BASE_HOSTNAME,
-  buildUrn,
-  config,
-  URN_TYPE,
-} from "../../constants/pulumi";
+import { BASE_HOSTNAME, buildUrn, URN_TYPE } from "../../constants/pulumi";
 import { TraefikHttpLabel, LogDriver, ServiceCategory } from "../../utils";
 import { EntryPoint } from "../../constants/traefik";
 import { ConfigFile } from "../../utils";
@@ -24,7 +19,7 @@ const vaultImage =
 
 export class Vault extends pulumi.ComponentResource {
   private readonly service: docker.Service;
-  readonly endpoint: string;
+  readonly endpoint: pulumi.Output<string>;
   readonly provider: vault.Provider;
   readonly approleCreds: {
     secretId: pulumi.Output<string>;
@@ -39,10 +34,10 @@ export class Vault extends pulumi.ComponentResource {
     super(buildUrn(URN_TYPE.Service, "Vault"), name, {}, opts);
 
     const hostname = `vault.${BASE_HOSTNAME}`;
-    this.endpoint = `https://${hostname}`;
+    const endpoint = `https://${hostname}`;
 
     this.service = new docker.Service(
-      `service`,
+      `vault-service`,
       {
         labels: [
           ...new TraefikHttpLabel(name)
@@ -81,7 +76,7 @@ export class Vault extends pulumi.ComponentResource {
         vaultService: this.service,
         vaultImage: vaultImage,
         traefikNetId: args.traefikNetId,
-        vaultEndpoint: this.endpoint,
+        vaultEndpoint: endpoint,
       },
       { parent: this },
     );
@@ -118,5 +113,8 @@ export class Vault extends pulumi.ComponentResource {
 
     this.provider = auth.provider;
     this.approleCreds = auth.approleCreds;
+    this.endpoint = vaultInitializer.vaultHealthy.apply(
+      ($endpoint: string) => $endpoint,
+    );
   }
 }

@@ -4,6 +4,7 @@ import {
   buildUrn,
   config,
   ConfigFile,
+  setVaultProvider,
   Traefik,
   URN_TYPE,
   Vault,
@@ -15,8 +16,9 @@ interface BuildVaultArgs {
 }
 
 interface BuildVaultResult {
-  endpoint: string;
+  endpoint: Vault["endpoint"];
   provider: Vault["provider"];
+  approle: Vault["approleCreds"];
 }
 
 export function BuildVault({
@@ -54,5 +56,11 @@ export function BuildVault({
     { parent: output },
   );
 
-  return { endpoint: vault.endpoint, provider: vault.provider };
+  setVaultProvider(vault.provider);
+
+  return {
+    endpoint: vault.endpoint,
+    provider: vault.provider,
+    approle: vault.approleCreds,
+  };
 }

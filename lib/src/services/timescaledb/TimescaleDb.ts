@@ -1,17 +1,18 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as postgres from "@pulumi/postgresql";
-import { BASE_HOSTNAME, buildUrn, URN_TYPE } from "../../constants/pulumi";
+import { BASE_HOSTNAME, buildUrn, EntryPoint, URN_TYPE } from "../../constants";
 import {
   ConfigFile,
   LogDriver,
   ServiceCategory,
   TraefikTcpLabel,
   UserPassCredential,
+  VaultUtils,
 } from "../../utils";
 import { Role, RoleRestriction } from "../../constants/docker-node-labels";
-import { EntryPoint } from "../../constants/traefik";
 import { TimescaleVault } from "./TimescaleVault";
+import { Outputable } from "../../types";
 
 export type TimescaleDbArgs = {
   ingressNetId: Outputable<string>;
@@ -22,15 +23,16 @@ export type TimescaleDbArgs = {
 };
 
 export class TimescaleDb extends pulumi.ComponentResource {
-  private readonly service: docker.Service;
+  readonly service: docker.Service;
   private readonly network: docker.Network;
   private readonly volume: docker.Volume;
-  private readonly rootAcct: UserPassCredential;
+  readonly rootAcct: UserPassCredential;
 
   readonly hostname: Outputable<string>;
   readonly port = 443;
   readonly vault: TimescaleVault;
   readonly provider: postgres.Provider;
+  readonly networkId: docker.Network["id"];
 
   constructor(
     name: string,
@@ -48,7 +50,9 @@ export class TimescaleDb extends pulumi.ComponentResource {
     this.rootAcct = new UserPassCredential(
       "root-acct",
       {
-        path: { name: "sudo/timescaledb/root" },
+        path: {
+          name: `sudo/generated/timescaledb/${name}-root`,
+        },
         freeze: true,
         passwordArgs: {
           special: false,
@@ -92,6 +96,8 @@ export class TimescaleDb extends pulumi.ComponentResource {
             // Postgres User
             user: "70",
             groups: ["70"],
+            // It's unclear if the postgres configuration files are
+            //  actually being used.
             // commands: [
             //     "postgres",
             //     "-c",
@@ -160,5 +166,7 @@ export class TimescaleDb extends pulumi.ComponentResource {
       },
       { parent: this },
     );
+
+    this.networkId = this.network["id"];
   }
 }

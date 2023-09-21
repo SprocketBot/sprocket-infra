@@ -28,13 +28,14 @@ providers:
   swarm:
     watch: true
     exposedByDefault: false
-    network: traefik-ingress
+    network: {{ traefik_network_name }}
     endpoint: "tcp://{{socketProxyHostname}}:2375"
 
-# TODO: Uncomment this
-#metrics:
-#  influxDB:
-#    address: telegraf:8081
-#    protocol: http
 log:
   level: debug
+  format: json
+
+metrics:
+  influxDB2:
+    token: ""
+    address: ""

@@ -1,11 +1,15 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as random from "@pulumi/random";
 import * as vault from "@pulumi/vault";
-import { buildUrn, URN_TYPE } from "../../constants/pulumi";
-import { Backend, getBackend } from "../../services/vault/backends";
+import { VaultConstants, buildUrn, URN_TYPE } from "../../constants";
+import { Outputable } from "../../types";
+import { VaultUtils } from "..";
 
 export type UserPassCredentialArgs = {
-  path: { name: Outputable<string>; mount?: Outputable<string> };
+  path: {
+    name: Outputable<string>;
+    mount?: Outputable<string>;
+  };
   username?: Outputable<string>;
   passwordArgs?: Partial<random.RandomPasswordArgs>;
   vaultData?: Outputable<Record<string, string | number | boolean>>;
@@ -25,6 +29,7 @@ export class UserPassCredential extends pulumi.ComponentResource {
   readonly password: Outputable<string>;
   readonly username: Outputable<string>;
   readonly path: Outputable<string>;
+  readonly pathName: Outputable<string>;
 
   constructor(
     name: string,
@@ -53,11 +58,24 @@ export class UserPassCredential extends pulumi.ComponentResource {
         { parent: this },
       );
 
+    const mount = pulumi
+      .output(
+        args.path.mount ??
+          VaultUtils.getBackend(VaultConstants.Backend.kv2)?.path,
+      )
+      .apply(($mount) => {
+        if (!$mount)
+          throw new Error(
+            "Unable to determine which secrets store to use; please specify one manually",
+          );
+        return $mount;
+      });
+
     this.secret = new vault.kv.SecretV2(
       `${name}-vs`,
       {
-        mount: args.path.mount ?? getBackend(Backend.kv2).path,
         name: args.path.name,
+        mount: mount,
         dataJson: pulumi
           .all([
             this.passwordResource.result,
@@ -72,7 +90,6 @@ export class UserPassCredential extends pulumi.ComponentResource {
               password: $password,
             }),
           ),
-        // If frozen; ignore changes to the username and password values.
       },
       {
         parent: this,
@@ -83,5 +100,6 @@ export class UserPassCredential extends pulumi.ComponentResource {
     this.password = this.passwordResource.result;
     this.username = this.usernameResource?.id ?? args.username!;
     this.path = this.secret.path;
+    this.pathName = args.path.name;
   }
 }

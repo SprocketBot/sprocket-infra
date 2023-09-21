@@ -1,8 +1,7 @@
 config:
   SprocketInfrastructure:base-hostname: sprocket-testing-1.h.hl1.io
-  SprocketInfrastructure:disabled-role-restrictions: ingress
   SprocketInfrastructure:traefik-ca-server: https://stepca.i.hl1.io/acme/acme/directory
-  SprocketInfrastructure:traefik-trust-ca: ./certs/stepca-root.crt
+  SprocketInfrastructure:traefik-trust-ca: ../certs/stepca-root.crt
   SprocketInfrastructure:vault-s3-access-key:
     secure: AAABAEgVUIYHKrsiVlcp/c3A/mhGJ7oMxU8K1ysn/tsclQRIbVN68q2yRN2xseWEBnePOw==
   SprocketInfrastructure:vault-s3-bucket: vault

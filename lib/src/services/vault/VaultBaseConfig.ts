@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as vault from "@pulumi/vault";
-import { buildUrn, URN_TYPE } from "../../constants/pulumi";
-import { Backend, setBackend } from "./backends";
+import { buildUrn, URN_TYPE, VaultConstants } from "../../constants";
+import { VaultUtils } from "../../utils";
 
 export type VaultBaseConfigArgs = {
   unsealKeys: pulumi.Output<string[]>;
@@ -19,7 +19,7 @@ export class VaultBaseConfig extends pulumi.ComponentResource {
       "kv",
       {
         type: "kv",
-        path: `/${Backend.kv2}`,
+        path: `/${VaultConstants.Backend.kv2}`,
         description: "Generic KeyValue store.",
         options: {
           version: "2",
@@ -28,23 +28,23 @@ export class VaultBaseConfig extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    setBackend(Backend.kv2, kvStore);
+    VaultUtils.setBackend(VaultConstants.Backend.kv2, kvStore);
 
     const dbStore = new vault.database.SecretsMount(
       "db",
       {
-        path: Backend.db,
+        path: VaultConstants.Backend.db,
       },
       { parent: this },
     );
 
-    setBackend(Backend.db, dbStore);
+    VaultUtils.setBackend(VaultConstants.Backend.db, dbStore);
 
     const unsealKeysSecret = new vault.kv.SecretV2(
       "unseal-keys-secret",
       {
-        mount: kvStore.path,
         name: "sudo/vault/unseal-keys",
+        mount: `/${VaultConstants.Backend.kv2}`,
         dataJson: args.unsealKeys.apply(($keys: string[]) =>
           JSON.stringify(
             $keys.reduce(

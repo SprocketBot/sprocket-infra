@@ -14,8 +14,14 @@ export enum URN_TYPE {
   Invalid = "%%",
 }
 
-export const buildUrn = (type: URN_TYPE, name: string) =>
-  `${URN_PREFIX}:${type}:${name}`;
+export const buildUrn = (
+  type: URN_TYPE,
+  ComponentName: string,
+  ResourceName?: string,
+) =>
+  `${URN_PREFIX}:${type}:${ComponentName}${
+    ResourceName ? `:${ResourceName}` : ""
+  }`;
 
 export const config = new pulumi.Config();
 

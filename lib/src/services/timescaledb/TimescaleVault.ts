@@ -1,7 +1,8 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as vault from "@pulumi/vault";
-import { buildUrn, URN_TYPE } from "../../constants/pulumi";
-import { Backend, getBackend, setBackend } from "../vault/backends";
+import { VaultConstants, buildUrn, URN_TYPE } from "../../constants";
+import { Outputable } from "../../types";
+import { VaultUtils } from "../../utils";
 
 export type TimescaleVaultArgs = {
   host: Outputable<string>;
@@ -27,19 +28,23 @@ export class TimescaleVault extends pulumi.ComponentResource {
         if ($sslmode) out += `sslmode=${$sslmode}`;
         return out;
       });
-    connString.apply(console.log);
 
     // TODO: Can we auto-rotate after creation?
     this.connection = new vault.database.SecretBackendConnection(
       "connection",
       {
-        backend: Backend.db,
+        backend: VaultConstants.Backend.db,
         name: "Sprocket-Timescale",
+        allowedRoles: ["*"],
         postgresql: {
           connectionUrl: connString,
           usernameTemplate:
-            '{{ .DisplayName }}__{{ .RoleName }}__{{ .Timestamp "2006-January-02-15-23" }}',
+            '{{ .DisplayName }}__{{ .RoleName }}__{{ timestamp "2006-January-02-15-04" }}__{{random 5}}',
         },
+        // This has a hack to force a dependency on the backend. Because it is only an output, we have to use it here and cannot use dependsOn
+        verifyConnection: pulumi
+          .output(VaultUtils.getBackend(VaultConstants.Backend.db))
+          .apply(() => false),
       },
       { parent: this },
     );

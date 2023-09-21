@@ -1,0 +1,388 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      },
+      {
+        "annotation": {
+          "datasource": "GitHub",
+          "field": "url",
+          "options": {
+            "query": "type:pr is:merged base:$environment",
+            "timeField": 2
+          },
+          "owner": "SprocketBot",
+          "queryType": "Pull_Requests",
+          "refId": "",
+          "repository": "sprocket",
+          "timeField": "merged_at"
+        },
+        "datasource": {
+          "type": "grafana-github-datasource",
+          "uid": "OnWDPCZVk"
+        },
+        "datasourceId": 6,
+        "enable": true,
+        "iconColor": "#bfd8ff82",
+        "name": "Merged PRs"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 2,
+  "id": 8,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "7sRT61RVz"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "scrims"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 19,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "interval": "30m",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "7sRT61RVz"
+          },
+          "query": "from(bucket: \"sprocket_${environment}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"scrimCreated\")\r\n  |> filter(fn: (r) => if \"${userId}\" == \"all\" then true else r[\"playerId\"] == \"${userId}\")\r\n  |> group()\r\n  |> aggregateWindow(every: v.windowPeriod, fn: count, createEmpty: true)\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scrims Created",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "7sRT61RVz"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Scrims Created"
+          }
+        ]
+      },
+      "pluginVersion": "10.1.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "7sRT61RVz"
+          },
+          "query": "from(bucket: \"sprocket_${environment}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"scrimCreated\")\r\n  |> filter(fn: (r) => if \"${userId}\" == \"all\" then true else r[\"playerId\"] == \"${userId}\")\r\n  |> group(columns: [\"playerId\"])\r\n  |> count()\r\n  |> group()\r\n  |> keep(columns: [\"playerId\", \"_value\"])\r\n  // Hack to re-order columns\r\n  // https://github.com/influxdata/influxdb/issues/15957#issuecomment-787774514\r\n  |> map(fn: (r) => ({ \"1\": r.playerId, \"2\": r._value }))\r\n  |> rename(columns: { \"1\": \"User ID\", \"2\": \"Scrims Created\" })\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scrims Created by Player",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "7sRT61RVz"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "scrims"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 19,
+        "x": 0,
+        "y": 10
+      },
+      "id": 5,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "7sRT61RVz"
+          },
+          "query": "from(bucket: \"sprocket_${environment}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"scrimCreated\")\r\n  |> filter(fn: (r) => if \"${userId}\" == \"all\" then true else r[\"playerId\"] == \"${userId}\")\r\n  |> group()\r\n  |> aggregateWindow(every: v.windowPeriod, fn: count, createEmpty: true)\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scrims Created",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "main",
+          "value": "main"
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "7sRT61RVz"
+        },
+        "definition": "buckets()\r\n|> filter(fn: (r) => r.name =~ /sprocket_.+$/)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [],
+        "query": "buckets()\r\n|> filter(fn: (r) => r.name =~ /sprocket_.+$/)",
+        "refresh": 1,
+        "regex": "sprocket_(.+)",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "allValue": "all",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "7sRT61RVz"
+        },
+        "definition": "import \"strings\"\r\n\r\nfrom(bucket: \"sprocket_${environment}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => strings.containsStr(substr: \"scrim\", v: r[\"_measurement\"]) and exists r[\"playerId\"] and r[\"playerId\"] != \"undefined\")\r\n  |> keep(columns: [\"playerId\"])\r\n  |> unique(column: \"playerId\")\r\n  |> group()\r\n",
+        "hide": 0,
+        "includeAll": true,
+        "label": "User ID",
+        "multi": true,
+        "name": "userId",
+        "options": [],
+        "query": "import \"strings\"\r\n\r\nfrom(bucket: \"sprocket_${environment}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => strings.containsStr(substr: \"scrim\", v: r[\"_measurement\"]) and exists r[\"playerId\"] and r[\"playerId\"] != \"undefined\")\r\n  |> keep(columns: [\"playerId\"])\r\n  |> unique(column: \"playerId\")\r\n  |> group()\r\n",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 3,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Scrim Overview",
+  "uid": "jRHf-zn4z",
+  "version": 13,
+  "weekStart": ""
+}

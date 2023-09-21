@@ -1,0 +1,3 @@
+name: SprocketGrafana
+runtime: nodejs
+description: Contains Grafana Docker Service & Grafana Dashboards, Alerts, etc

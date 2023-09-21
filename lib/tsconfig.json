@@ -15,6 +15,5 @@
     "downlevelIteration": true,
     "typeRoots": ["./src/types", "node_modules/@types"]
   },
-  "files": ["index.ts"],
-  "include": ["./src/types/*.d.ts", "./src/**/*.ts"]
+  "files": ["index.ts"]
 }

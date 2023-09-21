@@ -1,21 +1,25 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as postgres from "@pulumi/postgresql";
-import * as vault from "@pulumi/vault";
+import * as random from "@pulumi/random";
 import { buildUrn, URN_TYPE } from "../../constants/pulumi";
-import { UserPassCredential } from "../../utils";
-import { Backend } from "../vault/backends";
 import { TimescaleRole } from "./TimescaleRole";
+import { Outputable } from "../../types";
 
 export type TimescaleDatabaseArgs = {
-  dbname: Outputable<string>;
+  name: Outputable<string>;
   schemas: Record<string, { restrictedPerms: "" | "r" | "rw" }>;
   restrictedRoleAlias?: Outputable<string>;
-  vault: {
-    connection: vault.database.SecretBackendConnection;
-  };
+  vaultConnName: Outputable<string>;
 };
 
 export class TimescaleDatabase extends pulumi.ComponentResource {
+  readonly name: postgres.Database["name"];
+
+  readonly root: {
+    username: postgres.Role["name"];
+    password: postgres.Role["password"];
+  };
+
   constructor(
     name: string,
     args: TimescaleDatabaseArgs,
@@ -26,16 +30,23 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
     const rootRole = new postgres.Role(
       "admin-role",
       {
-        name: pulumi.output(args.dbname).apply(($dbname) => `${$dbname}-admin`),
+        name: pulumi.output(args.name).apply(($dbname) => `${$dbname}-admin`),
+        password: new random.RandomPassword(
+          "admin-pw",
+          { length: 32 },
+          { parent: this },
+        ).result,
         login: true,
       },
       { parent: this },
     );
 
+    this.root = { username: rootRole.name, password: rootRole.password };
+
     const db = new postgres.Database(
       "db",
       {
-        name: args.dbname,
+        name: args.name,
         allowConnections: true,
         isTemplate: false,
         owner: rootRole.name,
@@ -43,13 +54,14 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
       { parent: this },
     );
 
+    this.name = db.name;
+
     const restrictedRole = new TimescaleRole(
       "restricted-role",
       {
-        dbName: db.name,
-        vaultConnName: args.vault.connection.name,
+        vaultConnName: args.vaultConnName,
         name: pulumi
-          .all([args.dbname, args.restrictedRoleAlias ?? ""])
+          .all([args.name, args.restrictedRoleAlias ?? "ro"])
           .apply(
             ([$dbname, $restrictedRoleAlias]) =>
               `${$dbname}-${$restrictedRoleAlias ?? "ro"}`,
@@ -61,25 +73,25 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
     const writeRole = new TimescaleRole(
       "write-role",
       {
-        dbName: db.name,
-        vaultConnName: args.vault.connection.name,
-        name: pulumi
-          .all([args.dbname])
-          .apply(([$dbname]) => `${$dbname}-writer`),
+        vaultConnName: args.vaultConnName,
+        name: pulumi.all([args.name]).apply(([$dbname]) => `${$dbname}-writer`),
       },
       { parent: this },
     );
 
     for (const schemaName in args.schemas) {
-      const schema = new postgres.Schema(
-        `${schemaName}-schema`,
-        {
-          database: db.name,
-          name: schemaName,
-          owner: rootRole.name,
-        },
-        { parent: this },
-      );
+      if (schemaName !== "public") {
+        // Create the schema
+        new postgres.Schema(
+          `${schemaName}-schema`,
+          {
+            database: db.name,
+            name: schemaName,
+            owner: rootRole.name,
+          },
+          { parent: this },
+        );
+      }
 
       const { restrictedPerms } = args.schemas[schemaName];
 
@@ -88,19 +100,19 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           `${schemaName}-restricted-grant-usage`,
           {
             database: db.name,
-            schema: schema.name,
+            schema: schemaName,
             role: restrictedRole.pgRole.name,
-            privileges: ["usage"],
+            privileges: ["USAGE"],
             objectType: "schema",
           },
           { parent: this },
         );
 
         const tableGrant = new postgres.Grant(
-          `${schemaName}-restricted-grant-usage`,
+          `${schemaName}-restricted-grant-tables`,
           {
             database: db.name,
-            schema: schema.name,
+            schema: schemaName,
             role: restrictedRole.pgRole.name,
             privileges: restrictedPerms.includes("w")
               ? ["SELECT", "INSERT", "UPDATE", "DELETE"]
@@ -117,19 +129,19 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         `${schemaName}-write-grant-usage`,
         {
           database: db.name,
-          schema: schema.name,
+          schema: schemaName,
           role: writeRole.pgRole.name,
-          privileges: ["usage", "create"],
+          privileges: ["USAGE"],
           objectType: "schema",
         },
         { parent: this },
       );
 
       const tableGrant = new postgres.Grant(
-        `${schemaName}-write-grant-usage`,
+        `${schemaName}-write-grant-tables`,
         {
           database: db.name,
-          schema: schema.name,
+          schema: schemaName,
           role: writeRole.pgRole.name,
           privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
           objectType: "table",

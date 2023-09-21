@@ -1,11 +1,11 @@
 import * as vault from "@pulumi/vault";
 import * as pulumi from "@pulumi/pulumi";
 import * as postgres from "@pulumi/postgresql";
-import { buildUrn, URN_TYPE } from "../../constants/pulumi";
-import { Backend } from "../vault/backends";
+import { VaultConstants, buildUrn, URN_TYPE } from "../../constants";
+import { Outputable } from "../../types";
+import { VaultUtils } from "../../utils";
 
 export type TimescaleRoleArgs = {
-  dbName: Outputable<string>;
   name: Outputable<string>;
   vaultConnName: Outputable<string>;
   static?: boolean;
@@ -39,12 +39,24 @@ export class TimescaleRole extends pulumi.ComponentResource {
       { parent: this },
     );
 
+    // TODO: Add handling VaultUtils.Paths.db static support
     if (args.static) {
+      this.vaultRole = new vault.database.SecretBackendStaticRole(
+        "vault-static-role",
+        {
+          dbName: args.vaultConnName,
+          backend: VaultConstants.Backend.db,
+          username: this.pgRole.name,
+          rotationPeriod: 0, // disable credential rotation
+        },
+        { parent: this },
+      );
+    } else {
       this.vaultRole = new vault.database.SecretBackendRole(
         "vault-role",
         {
           dbName: args.vaultConnName,
-          backend: Backend.db,
+          backend: VaultConstants.Backend.db,
           creationStatements: [
             `CREATE ROLE "{{name}}" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';`,
             this.pgRole.name.apply(($name) => `GRANT ${$name} TO "{{name}}";`),
@@ -53,17 +65,6 @@ export class TimescaleRole extends pulumi.ComponentResource {
           renewStatements: [
             `ALTER USER "{{name}}" VALID UNTIL '{{expiration}}';`,
           ],
-        },
-        { parent: this },
-      );
-    } else {
-      this.vaultRole = new vault.database.SecretBackendStaticRole(
-        "vault-static-role",
-        {
-          dbName: args.vaultConnName,
-          backend: Backend.db,
-          username: this.pgRole.name,
-          rotationPeriod: 0, // disable credential rotation
         },
         { parent: this },
       );
