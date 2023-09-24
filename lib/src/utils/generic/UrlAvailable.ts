@@ -17,9 +17,11 @@ export const UrlAvailable = (
         : undefined,
     });
 
+    let i = 1;
     function check(): Promise<boolean> {
       return fetch($url, { agent })
         .then(async (r) => {
+          console.log(`Checking ${$url} (Attempt ${i++})... `);
           if (additionalChecks) {
             for (const additionalCheck of additionalChecks) {
               if (!(await additionalCheck(r))) return false;
