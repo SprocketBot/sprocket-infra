@@ -75,6 +75,7 @@ export type GrafanaArgs = {
 export class Grafana extends pulumi.ComponentResource {
   readonly hostname: Outputable<string>;
   readonly provider: grafana.Provider;
+  readonly adminCreds: UserPassCredential;
 
   constructor(
     name: string,
@@ -101,7 +102,7 @@ export class Grafana extends pulumi.ComponentResource {
     const hostname = `grafana.${BASE_HOSTNAME}`;
     this.hostname = hostname;
 
-    const adminCreds = new UserPassCredential(
+    this.adminCreds = new UserPassCredential(
       "admin-creds",
       {
         path: {
@@ -121,8 +122,8 @@ export class Grafana extends pulumi.ComponentResource {
           name: uid.id.apply(($id) => `Sprocket Grafana (${$id})`),
           hostname: hostname,
           admin: {
-            username: adminCreds.username,
-            password: adminCreds.password,
+            username: this.adminCreds.username,
+            password: this.adminCreds.password,
           },
           db: {
             host: args.pg.hostname,
@@ -176,7 +177,7 @@ export class Grafana extends pulumi.ComponentResource {
       {
         url: UrlAvailable(`https://${hostname}`),
         auth: pulumi
-          .all([adminCreds.username, adminCreds.password])
+          .all([this.adminCreds.username, this.adminCreds.password])
           .apply(([$user, $pass]) => `${$user}:${$pass}`),
       },
       { parent: this },

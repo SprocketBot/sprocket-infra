@@ -1,3 +1,5 @@
+import * as pulumi from "@pulumi/pulumi";
+
 import {
   getPostgresProvider,
   getVaultProvider,
@@ -82,3 +84,8 @@ new GrafanaDashboards(
     ],
   },
 );
+
+export const AdminCredsPath = grafanaInstance.adminCreds.path;
+export const GrafanaUrl = pulumi
+  .output(grafanaInstance.hostname)
+  .apply(($hostname) => `https://${$hostname}`);
