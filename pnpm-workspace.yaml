@@ -1,3 +1,5 @@
 package:
-  - "infrastructure"
-  - "lib"
+    - "infrastructure"
+    - "lib"
+    - "platform"
+    - "data_team"
