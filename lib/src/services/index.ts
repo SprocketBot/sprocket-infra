@@ -5,3 +5,4 @@ export * from "./influxdb";
 export * from "./fluentd";
 export * from "./loki";
 export * from "./grafana";
+export * from "./prefect";
