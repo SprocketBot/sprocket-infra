@@ -16,16 +16,20 @@ export const getGrafanaProvider = () => {
   );
   const grafanaUrl = GrafanaStackRef.getOutput(GrafanaStackOutputs.GrafanaUrl);
 
-  const credentials = vault.kv.getSecretV2Output(
-    {
-      mount: VaultConstants.Backend.kv2,
-      name: adminCredsPath,
-    },
-    { provider: getVaultProvider() },
-  );
+  const credentials = adminCredsPath.apply(($path) => {
+    return vault.kv.getSecretV2Output(
+      {
+        mount: VaultConstants.Backend.kv2,
+        name: $path.split("kv2/data").pop()!,
+      },
+      { provider: getVaultProvider() },
+    );
+  });
 
   provider = new grafana.Provider("grafana-provider", {
-    url: grafanaUrl.apply(($url) => UrlAvailable(`https://${$url}`)),
+    url: grafanaUrl.apply(($url) =>
+      UrlAvailable($url.startsWith("https://") ? $url : `https://${$url}`),
+    ),
     auth: credentials.apply(
       ($creds) => `${$creds.data.username}:${$creds.data.password}`,
     ),
