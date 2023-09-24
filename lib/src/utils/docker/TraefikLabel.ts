@@ -66,6 +66,7 @@ abstract class TraefikLabel {
     return this;
   }
 
+  // TODO: CertResolver -> Enum
   tls(certResolver: string) {
     this.output.push(this.routerLabel("tls", "true"));
     if (config.getBoolean("no-tls")) return this;
