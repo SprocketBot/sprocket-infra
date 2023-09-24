@@ -1,6 +1,9 @@
 import * as pulumi from "@pulumi/pulumi";
+import * as docker from "@pulumi/docker";
 import {
   buildUrn,
+  RabbitMq,
+  Redis,
   TimescaleDatabase,
   TimescaleDatabaseArgs,
   URN_TYPE,
@@ -8,6 +11,8 @@ import {
 
 export type PlatformArgs = {
   vaultConnName: TimescaleDatabaseArgs["vaultConnName"];
+  ingressNetworkId: docker.Network["id"];
+  monitoringNetworkId: docker.Network["id"];
   // TODO: Accept Redis
   // TODO: Accept RMQ
 };
@@ -25,6 +30,35 @@ export class Platform extends pulumi.ComponentResource {
       opts,
     );
 
+    const network = new docker.Network(
+      `${pulumi.getStack()}-network`,
+      {
+        driver: "overlay",
+      },
+      { parent: this },
+    );
+
+    const redis = new Redis(
+      "redis",
+      {
+        exposeInsights: true,
+        ingressNetworkId: args.ingressNetworkId,
+        platformNetworkId: network.id,
+        monitoringNetworkId: args.monitoringNetworkId,
+      },
+      { parent: this },
+    );
+
+    const rmq = new RabbitMq(
+      "rabbitmq",
+      {
+        exposeManagement: true,
+        ingressNetworkId: args.ingressNetworkId,
+        platformNetworkId: network.id,
+      },
+      { parent: this },
+    );
+
     const database = new TimescaleDatabase(
       "platform-db",
       {
@@ -38,8 +72,8 @@ export class Platform extends pulumi.ComponentResource {
           mledb: { restrictedPerms: "r" },
         },
         searchPath: {
-          restricted: "sprocket,mledb,mledb_bridge,history,data_science",
-          write: "sprocket,mledb,mledb_bridge,history,data_science",
+          restricted: ["sprocket","mledb","mledb_bridge","history","data_science"],
+          write: ["sprocket","mledb","mledb_bridge","history","data_science"],
         },
         vaultConnName: args.vaultConnName,
         static: { write: true },

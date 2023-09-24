@@ -16,6 +16,12 @@ const p = new Platform(
     vaultConnName: InfrastructureStackRef.getOutput(
       InfrastructureStackOutputs.PostgresVaultConnectionName,
     ),
+    ingressNetworkId: InfrastructureStackRef.getOutput(
+      InfrastructureStackOutputs.IngressNetworkId,
+    ),
+    monitoringNetworkId: InfrastructureStackRef.getOutput(
+      InfrastructureStackOutputs.MonitoringNetworkId,
+    ),
   },
   {
     providers: [
