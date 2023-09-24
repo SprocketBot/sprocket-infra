@@ -4,13 +4,21 @@ import * as random from "@pulumi/random";
 import { buildUrn, URN_TYPE } from "../../constants/pulumi";
 import { TimescaleRole } from "./TimescaleRole";
 import { Outputable } from "../../types";
+import * as grafana from "@lbrlabs/pulumi-grafana";
+import {
+  InfrastructureStackOutputs,
+  InfrastructureStackRef,
+} from "../../stack-refs";
 
 export type TimescaleDatabaseArgs = {
   name: Outputable<string>;
-  schemas: Record<string, { restrictedPerms: "" | "r" | "rw" }>;
+  schemas: Record<
+    string,
+    { restrictedPerms: "" | "r" | "rw"; restrictedOwns?: boolean }
+  >;
   restrictedRoleAlias?: Outputable<string>;
   vaultConnName: Outputable<string>;
-  searchPath?: { restricted?: Outputable<string>; write?: Outputable<string> };
+  searchPath?: { restricted?: Outputable<string[]>; write?: Outputable<string[]> };
   static?: { restricted?: boolean; write?: boolean };
 };
 
@@ -58,9 +66,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
 
     this.name = db.name;
 
-    // TODO: Create Extension?
     // TODO: Can we just use a default permissions on this to simplify the grants?
-    // TODO: This should just wire itself up to grafana (if possible)
 
     const restrictedRole = new TimescaleRole(
       "restricted-role",
@@ -74,9 +80,44 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           ),
         searchPath: args.searchPath?.restricted,
         static: args.static?.restricted,
+        canLogIn: true,
       },
       { parent: this },
     );
+
+    const grafanaProvider = this.getProvider("grafana::") as grafana.Provider;
+
+    // We don't connect if there isn't a grafana provider, or we are in the infra space
+    if (grafanaProvider.auth && InfrastructureStackRef) {
+      new grafana.DataSource(
+        `${name}-${pulumi.getStack()}`,
+        {
+          name: `${name}-${pulumi.getStack()}`,
+          type: "postgres",
+          url: pulumi
+            .all([
+              InfrastructureStackRef?.getOutput(
+                InfrastructureStackOutputs.PostgresInternalHostname,
+              ),
+            ])
+            .apply(([$host]) => `${$host}:5432`),
+          username: restrictedRole.pgRole.name,
+          jsonDataEncoded: db.name.apply(($dbName) =>
+            JSON.stringify({
+              timescaledb: true,
+              sslmode: "disable",
+              database: $dbName,
+            }),
+          ),
+          secureJsonDataEncoded: restrictedRole.pgRole.password.apply(($pass) =>
+            JSON.stringify({
+              password: $pass,
+            }),
+          ),
+        },
+        { parent: this },
+      );
+    }
 
     const writeRole = new TimescaleRole(
       "write-role",
@@ -133,7 +174,9 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           {
             database: db.name,
             name: schemaName,
-            owner: rootRole.name,
+            owner: args.schemas[schemaName].restrictedOwns
+              ? restrictedRole.pgRole.name
+              : rootRole.name,
           },
           { parent: schemaComponent, dependsOn: [rootRole] },
         );
@@ -149,7 +192,9 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
             database: db.name,
             schema: schemaNameOutput,
             role: restrictedRole.pgRole.name,
-            privileges: ["USAGE"],
+            privileges: restrictedPerms.includes("w")
+                ? ["CREATE", "USAGE"]
+                : ["USAGE"],
             objectType: "schema",
           },
           { parent: schemaComponent, dependsOn: [restrictedRole] },
@@ -178,7 +223,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           database: db.name,
           schema: schemaNameOutput,
           role: writeRole.pgRole.name,
-          privileges: ["USAGE"],
+          privileges: ["CREATE", "USAGE"],
           objectType: "schema",
         },
         { parent: schemaComponent, dependsOn: [writeRole] },
@@ -190,7 +235,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           database: db.name,
           schema: schemaNameOutput,
           role: writeRole.pgRole.name,
-          privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+          privileges: ["ALL"],
           objectType: "table",
         },
         { parent: schemaComponent, dependsOn: [writeRole] },

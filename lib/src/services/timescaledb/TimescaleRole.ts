@@ -1,15 +1,16 @@
 import * as vault from "@pulumi/vault";
 import * as pulumi from "@pulumi/pulumi";
 import * as postgres from "@pulumi/postgresql";
+import * as random from "@pulumi/random";
 import { VaultConstants, buildUrn, URN_TYPE } from "../../constants";
 import { Outputable } from "../../types";
-import { VaultUtils } from "../../utils";
 
 export type TimescaleRoleArgs = {
   name: Outputable<string>;
   vaultConnName: Outputable<string>;
   static?: boolean;
-  searchPath?: Outputable<string>;
+  searchPath?: Outputable<string[]>;
+  canLogIn?: boolean;
 };
 
 // TODO: Refactor this to a component resource including the actual Postgres role AND the Vault role
@@ -30,12 +31,22 @@ export class TimescaleRole extends pulumi.ComponentResource {
       {},
       opts,
     );
+    // If role is static, we must be able to log in
+    if (args.static) args.canLogIn = true;
 
     this.pgRole = new postgres.Role(
       "pg-role",
       {
         name: args.name,
-        login: args.static,
+        login: args.canLogIn,
+        searchPaths: args.searchPath,
+        password: args.canLogIn
+          ? new random.RandomPassword(
+              "pw",
+              { special: false, length: 32 },
+              { parent: this },
+            ).result
+          : undefined,
       },
       { parent: this },
     );
@@ -67,7 +78,7 @@ export class TimescaleRole extends pulumi.ComponentResource {
               .output(args.searchPath)
               .apply(
                 ($searchPath) =>
-                  `ALTER ROLE "{{name}} SET SEARCH_PATH='${$searchPath}';`,
+                  `ALTER ROLE "{{name}} SET SEARCH_PATH='${$searchPath?.join(",")}';`,
               ),
           ].filter(Boolean),
           revocationStatements: [`DROP ROLE "{{name}}";`],
