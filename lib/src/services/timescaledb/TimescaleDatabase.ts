@@ -33,7 +33,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         name: pulumi.output(args.name).apply(($dbname) => `${$dbname}-admin`),
         password: new random.RandomPassword(
           "admin-pw",
-          { length: 32 },
+          { length: 32, special: false },
           { parent: this },
         ).result,
         login: true,
@@ -57,6 +57,8 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
     this.name = db.name;
 
     // TODO: Create Extension?
+    // TODO: Can we just use a default permissions on this to simplify the grants?
+    // TODO: This should just wire itself up to grafana (if possible)
 
     const restrictedRole = new TimescaleRole(
       "restricted-role",
