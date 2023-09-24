@@ -8,8 +8,7 @@
   "dependencies": {
     "@pulumi/docker": "^4.4.0",
     "@pulumi/pulumi": "^3.0.0",
-    "@sprocketbot/infra-lib": "workspace:^",
-    "node-vault": "^0.10.2"
+    "@sprocketbot/infra-lib": "workspace:^"
   },
   "scripts": {
     "check": "tsc -p ./tsconfig.json --noEmit"
