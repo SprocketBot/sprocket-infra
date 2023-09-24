@@ -25,4 +25,5 @@ export const buildUrn = (
 
 export const config = new pulumi.Config();
 
+// TODO: should we have a utility hostname as well?
 export const BASE_HOSTNAME = config.require("base-hostname");
