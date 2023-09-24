@@ -10,6 +10,8 @@ export type TimescaleDatabaseArgs = {
   schemas: Record<string, { restrictedPerms: "" | "r" | "rw" }>;
   restrictedRoleAlias?: Outputable<string>;
   vaultConnName: Outputable<string>;
+  searchPath?: { restricted?: Outputable<string>; write?: Outputable<string> };
+  static?: { restricted?: boolean; write?: boolean };
 };
 
 export class TimescaleDatabase extends pulumi.ComponentResource {
@@ -68,8 +70,10 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           .all([args.name, args.restrictedRoleAlias ?? "ro"])
           .apply(
             ([$dbname, $restrictedRoleAlias]) =>
-              `${$dbname}-${$restrictedRoleAlias ?? "ro"}`,
+              `${$dbname}_${$restrictedRoleAlias ?? "ro"}`,
           ),
+        searchPath: args.searchPath?.restricted,
+        static: args.static?.restricted,
       },
       { parent: this },
     );
@@ -78,23 +82,62 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
       "write-role",
       {
         vaultConnName: args.vaultConnName,
-        name: pulumi.all([args.name]).apply(([$dbname]) => `${$dbname}-writer`),
+        name: pulumi.all([args.name]).apply(([$dbname]) => `${$dbname}`),
+        searchPath: args.searchPath?.write,
+        static: args.static?.write,
+      },
+      { parent: this },
+    );
+
+    new postgres.Extension(
+      "timescale-ext",
+      {
+        name: "timescaledb",
+        database: db.name,
+      },
+      { parent: this },
+    );
+
+    new postgres.Extension(
+      "trigram-ext",
+      {
+        name: "pg_trgm",
+        database: db.name,
+      },
+      { parent: this },
+    );
+
+    new postgres.Extension(
+      "uuid-ext",
+      {
+        name: "uuid-ossp",
+        database: db.name,
       },
       { parent: this },
     );
 
     for (const schemaName in args.schemas) {
+      const schemaComponent = new pulumi.ComponentResource(
+        buildUrn(URN_TYPE.LogicalGroup, "DatabaseSchema"),
+        schemaName,
+        {},
+        { parent: this },
+      );
+
+      let schemaNameOutput = pulumi.output(schemaName);
+
       if (schemaName !== "public") {
         // Create the schema
-        new postgres.Schema(
+        const createdSchema = new postgres.Schema(
           `${schemaName}-schema`,
           {
             database: db.name,
             name: schemaName,
             owner: rootRole.name,
           },
-          { parent: this },
+          { parent: schemaComponent, dependsOn: [rootRole] },
         );
+        schemaNameOutput = createdSchema.name;
       }
 
       const { restrictedPerms } = args.schemas[schemaName];
@@ -104,26 +147,26 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           `${schemaName}-restricted-grant-usage`,
           {
             database: db.name,
-            schema: schemaName,
+            schema: schemaNameOutput,
             role: restrictedRole.pgRole.name,
             privileges: ["USAGE"],
             objectType: "schema",
           },
-          { parent: this },
+          { parent: schemaComponent, dependsOn: [restrictedRole] },
         );
 
         const tableGrant = new postgres.Grant(
           `${schemaName}-restricted-grant-tables`,
           {
             database: db.name,
-            schema: schemaName,
+            schema: schemaNameOutput,
             role: restrictedRole.pgRole.name,
             privileges: restrictedPerms.includes("w")
               ? ["SELECT", "INSERT", "UPDATE", "DELETE"]
               : ["SELECT"],
             objectType: "table",
           },
-          { parent: this },
+          { parent: schemaComponent, dependsOn: [restrictedRole] },
         );
 
         // TODO: Do we need a sequence grant?
@@ -133,24 +176,24 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         `${schemaName}-write-grant-usage`,
         {
           database: db.name,
-          schema: schemaName,
+          schema: schemaNameOutput,
           role: writeRole.pgRole.name,
           privileges: ["USAGE"],
           objectType: "schema",
         },
-        { parent: this },
+        { parent: schemaComponent, dependsOn: [writeRole] },
       );
 
       const tableGrant = new postgres.Grant(
         `${schemaName}-write-grant-tables`,
         {
           database: db.name,
-          schema: schemaName,
+          schema: schemaNameOutput,
           role: writeRole.pgRole.name,
           privileges: ["SELECT", "INSERT", "UPDATE", "DELETE"],
           objectType: "table",
         },
-        { parent: this },
+        { parent: schemaComponent, dependsOn: [writeRole] },
       );
 
       // TODO: Do we need a sequence grant?

@@ -9,6 +9,7 @@ export type TimescaleRoleArgs = {
   name: Outputable<string>;
   vaultConnName: Outputable<string>;
   static?: boolean;
+  searchPath?: Outputable<string>;
 };
 
 // TODO: Refactor this to a component resource including the actual Postgres role AND the Vault role
@@ -39,15 +40,16 @@ export class TimescaleRole extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    // TODO: Add handling VaultUtils.Paths.db static support
     if (args.static) {
       this.vaultRole = new vault.database.SecretBackendStaticRole(
         "vault-static-role",
         {
+          name: this.pgRole.name,
           dbName: args.vaultConnName,
           backend: VaultConstants.Backend.db,
           username: this.pgRole.name,
-          rotationPeriod: 0, // disable credential rotation
+          rotationPeriod: 24 * 60 * 60, // 24 hours
+          rotationStatements: [], // Do nothing when rotating
         },
         { parent: this },
       );
@@ -55,12 +57,19 @@ export class TimescaleRole extends pulumi.ComponentResource {
       this.vaultRole = new vault.database.SecretBackendRole(
         "vault-role",
         {
+          name: this.pgRole.name,
           dbName: args.vaultConnName,
           backend: VaultConstants.Backend.db,
           creationStatements: [
             `CREATE ROLE "{{name}}" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';`,
             this.pgRole.name.apply(($name) => `GRANT ${$name} TO "{{name}}";`),
-          ],
+            pulumi
+              .output(args.searchPath)
+              .apply(
+                ($searchPath) =>
+                  `ALTER ROLE "{{name}} SET SEARCH_PATH='${$searchPath}';`,
+              ),
+          ].filter(Boolean),
           revocationStatements: [`DROP ROLE "{{name}}";`],
           renewStatements: [
             `ALTER USER "{{name}}" VALID UNTIL '{{expiration}}';`,
