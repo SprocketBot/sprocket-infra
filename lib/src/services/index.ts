@@ -3,6 +3,7 @@ export * from "./grafana";
 export * from "./influxdb";
 export * from "./loki";
 export * from "./prefect";
+export * from "./rabbitmq";
 export * from "./redis";
 export * from "./timescaledb";
 export * from "./traefik";
