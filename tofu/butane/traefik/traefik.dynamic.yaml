@@ -1,0 +1,40 @@
+http:
+  routers:
+    vault:
+      rule: Host(`vault.spr.ocket.dev`)
+      entrypoints: [ websecure ]
+      tls:
+        certResolver: lets-encrypt
+      service: vault@file
+    consul:
+      rule: Host(`consul.spr.ocket.dev`)
+      entrypoints: [ websecure ]
+      tls:
+        certResolver: lets-encrypt
+      service: consul@file
+    nomad:
+      rule: Host(`nomad.spr.ocket.dev`)
+      entrypoints: [ websecure ]
+      tls:
+        certResolver: lets-encrypt
+      service: nomad@file
+    traefik:
+      rule: Host(`traefik.spr.ocket.dev`)
+      entrypoints: [ websecure ]
+      tls:
+        certResolver: lets-encrypt
+      service: api@internal
+  
+  services:
+    vault:
+      loadBalancer:
+        servers:
+          - url: http://localhost:8200
+    consul:
+      loadBalancer:
+        servers:
+          - url: http://localhost:8500
+    nomad:
+      loadBalancer:
+        servers:
+          - url: http://localhost:4646

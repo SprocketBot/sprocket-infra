@@ -1,0 +1,70 @@
+variant: flatcar
+version: 1.0.0
+
+systemd:
+  units:
+    # Download the traefik binary
+    - name: "prepare-traefik-binary.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Unpack Traefik binary to /opt/bin
+        ConditionPathExists=!/opt/bin/traefik
+
+        [Service]
+        Type=oneshot
+        Restart=on-failure
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/wget https://github.com/traefik/traefik/releases/download/v3.0.0-beta4/traefik_v3.0.0-beta4_linux_amd64.tar.gz -O /opt/traefik-beta4.tar
+        ExecStart=/usr/bin/tar -xf /opt/traefik-beta4.tar -C /opt/bin
+        ExecStart=/usr/bin/rm "/opt/traefik-beta4.tar"
+        ExecStart=mkdir -p /opt/traefik/acme
+
+        [Install]
+        WantedBy=multi-user.target
+
+    # Set up the traefik service
+    - name: "traefik.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description="Traefik Reverse Proxy"
+        Documentation=https://docs.traefik.io/traefik
+        After=network-online.target
+        After=prepare-vault-binary.service
+
+        [Service]
+        Restart=always
+        ExecStart=/opt/bin/traefik --configfile=/etc/traefik.yaml
+        LimitNOFILE=1048576
+        PrivateTmp=true
+        PrivateDevices=true
+        ProtectHome=tmpfs
+        ProtectSystem=full
+        ReadWriteDirectories=/opt/traefik
+        ReadOnlyDirectories=/etc/traefik
+        CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+        AmbientCapabilities=CAP_NET_BIND_SERVICE
+        NoNewPrivileges=true
+
+        [Install]
+        WantedBy=multi-user.target
+
+storage:
+  files:
+    - path: /etc/traefik.yaml
+      mode: 0644
+      contents:
+        inline: |
+          ${static-config}
+
+    - path: /etc/traefik.dynamic.yaml
+      mode: 0644
+      contents:
+        inline: |
+          ${dynamic-config}
+
+  directories:
+    - path: /opt/traefik
+    - path: /opt/traefik/acme
+    - path: /opt/traefik/logs

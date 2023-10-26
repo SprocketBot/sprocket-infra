@@ -1,0 +1,62 @@
+entryPoints:
+  web:
+    address: ':80'
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ':443'
+    http:
+      tls:
+        certResolver: lets-encrypt
+
+  tailscale:
+    address: ':4443' # TODO: Figure out how to get the tailscale ip and bind to that.
+                     # A 1 shot service + sed might be the easiest way
+
+providers:
+  file:
+    filename: /etc/traefik.dynamic.yaml
+    watch: false
+
+  consulCatalog:
+    endpoint:
+        address: 127.0.0.1:8500
+        scheme: http
+    exposedByDefault: false
+    watch: true
+    connectAware: true
+
+  consul:
+    endpoints:
+      - "127.0.0.1:8500"
+  
+certificatesResolvers:
+  lets-encrypt:
+    acme:
+      email: admin@sprocket.gg
+      storage: /opt/traefik/acme/le.json
+      tlsChallenge: {}
+  # lets-encrypt-dns:
+  #   acme:
+  #     email: contact@noimbrian.com
+  #     storage: /opt/traefik/acme/le-dns.json
+  #     dnsChallenge:
+  #       provider: digitalocean
+
+
+# TODO: FluentD
+log:
+  level: INFO
+
+accessLog:
+  filePath: /opt/traefik/logs/access.log
+
+api:
+  dashboard: true
+  insecure: true
+
+serversTransport:
+  insecureSkipVerify: true

@@ -1,0 +1,337 @@
+variant: flatcar
+version: 1.0.0
+
+systemd:
+  units: 
+    - name: "prepare-vault-binary.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Unpack Vault binary to /opt/bin
+        ConditionPathExists=!/opt/bin/vault
+        
+        After=network-online.target
+        Requires=network-online.target
+
+        [Service]
+        Type=oneshot
+        Restart=on-failure
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/unzip "/etc/assets/vault_1.15.0_linux_amd64.zip" -d /opt/bin
+        ExecStart=/usr/bin/rm "/etc/assets/vault_1.15.0_linux_amd64.zip"
+
+        [Install]
+        WantedBy=multi-user.target
+
+    - name: "vault.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description="HashiCorp Vault - A tool for managing secrets"
+        Documentation=https://www.vaultproject.io/docs/
+        
+        Requires=network-online.target
+        After=network-online.target
+
+        Requires=consul.service
+        After=consul.service
+
+        Requires=prepare-vault-binary.service
+        After=prepare-vault-binary.service
+
+        ConditionFileNotEmpty=/etc/vault.d/vault.hcl
+        StartLimitIntervalSec=60
+        StartLimitBurst=3
+
+        [Service]
+        Type=notify
+        ProtectSystem=full
+        ProtectHome=read-only
+        PrivateTmp=yes
+        PrivateDevices=yes
+        SecureBits=keep-caps
+        AmbientCapabilities=CAP_IPC_LOCK
+        CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
+        NoNewPrivileges=yes
+        ExecStart=/opt/bin/vault server -config=/etc/vault.d/vault.hcl
+        ExecReload=/bin/kill --signal HUP $MAINPID
+        KillMode=process
+        KillSignal=SIGTERM
+        Restart=on-failure
+        RestartSec=5
+        TimeoutStopSec=30
+        LimitNOFILE=65536
+        LimitMEMLOCK=infinity
+
+        [Install]
+        WantedBy=multi-user.target
+
+    - name: "initialize-vault.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Automatically initialize vault if needed
+        
+        Requires=vault.service
+        After=vault.service
+
+        Requires=prepare-vault-binary.service
+        After=prepare-vault-binary.service
+
+        [Service]
+        Type=oneshot
+        Restart=on-failure
+        RemainAfterExit=yes
+        ExecStart=/etc/vault.d/scripts/initialize-vault.sh
+
+        [Install]
+        WantedBy=multi-user.target
+
+    - name: "configure-vault.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Runs initial config needed for nomad and vault to interact with vault correctly
+
+        Requires=vault.service
+        After=vault.service
+
+        Requires=prepare-vault-binary.service
+        After=prepare-vault-binary.service
+
+        Requires=initialize-vault.service
+        After=initialize-vault.service
+        
+        Requires=unseal-vault.service
+        After=unseal-vault.service
+
+        [Service]
+        ExecStart=/etc/vault.d/scripts/base-configuration.sh
+        RemainAfterExit=yes
+        Type=oneshot
+        Restart=on-failure
+
+        [Install]
+        WantedBy=multi-user.target
+
+    - name: "unseal-vault.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Periodic check to see if the Vault is sealed
+        After=initialize-vault.service
+        ConditionPathExists=/opt/vault.d/unseals
+
+        [Service]
+        Type=oneshot
+        ExecStart=/etc/vault.d/scripts/unseal-vault.sh
+        Restart=on-failure
+
+        [Install]
+        WantedBy=multi-user.target
+
+
+    - name: "unseal-vault.timer"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Timer for periodic Vault unsealing
+
+        [Timer]
+        OnBootSec=1min
+        OnUnitActiveSec=5min
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target
+
+
+storage:
+  directories:
+    - path: /opt/vault.d
+    - path: /etc/vault.d/scripts
+    - path: /etc/vault.d/policies
+    - path: /opt/vault
+    - path: /etc/assets
+
+  files:
+    - path: /etc/vault.d/vault.hcl
+      mode: 0644
+      contents:
+        inline: |
+          ${vault-hcl}
+
+    - path: /etc/assets/vault_1.15.0_linux_amd64.zip
+      mode: 0644
+      overwrite: true
+      contents:
+        source: "https://releases.hashicorp.com/vault/1.15.0/vault_1.15.0_linux_amd64.zip"
+
+    - path: /etc/vault.d/policies/nomad.hcl
+      mode: 0600
+      contents:
+        inline: |
+          # Allow creating tokens under "nomad" token role. The token role name
+          # should be updated if "nomad" is not used.
+          path "auth/token/create/nomad" { capabilities = ["update"] }
+
+          # Allow looking up "nomad" token role. The token role name should be
+          # updated if "nomad" is not used.
+          path "auth/token/roles/nomad" { capabilities = ["read"] }
+
+          # Allow looking up the token passed to Nomad to validate # the token has the
+          # proper capabilities. This is provided by the "default" policy.
+          path "auth/token/lookup-self" { capabilities = ["read"] }
+
+          # Allow looking up incoming tokens to validate they have permissions to access
+          # the tokens they are requesting. This is only required if
+          # `allow_unauthenticated` is set to false.
+          path "auth/token/lookup" { capabilities = ["update"] }
+
+          # Allow revoking tokens that should no longer exist. This allows revoking
+          # tokens for dead tasks.
+          path "auth/token/revoke-accessor" { capabilities = ["update"] }
+
+          # Allow checking the capabilities of our own token. This is used to validate the
+          # token upon startup. Note this requires update permissions because the Vault API
+          # is a POST
+          path "sys/capabilities-self" { capabilities = ["update"] }
+
+          # Allow our own token to be renewed.
+          path "auth/token/renew-self" { capabilities = ["update"] }
+
+          path "database/creds/nomad*" { capabilities = ["read"] }
+          path "database/static-creds/nomad*" { capabilities = ["read"] }
+
+          path "kv/metadata/*" { capabilities = ["list"] }
+          path "kv/data/nomad/*" { capabilities = ["read", "list"] }
+          
+    - path: /etc/vault.d/policies/terraform.hcl
+      mode: 0600
+      contents:
+        inline: |
+          # Full access to kv and database secret engines
+          path "kv2/*" { capabilities = ["create", "read", "update", "delete", "list"] }
+          path "database/*" { capabilities = ["create", "read", "update", "delete", "list"] }
+          path "auth/*" { capabilities = ["create", "read", "update", "delete", "list"] } # TODO: Is this needed?
+
+          # Create and Manage kv and database secret engines
+          path "sys/mounts" { capabilities = ["read", "list"] }
+          path "sys/mounts/kv2" { capabilities = ["create", "read", "update", "delete", "list"] }
+          path "sys/mounts/kv2/*" { capabilities = ["create", "read", "update", "delete", "list"] }
+          path "sys/mounts/database" { capabilities = ["create", "read", "update", "delete", "list"] }
+          path "sys/mounts/database/*" { capabilities = ["create", "read", "update", "delete", "list"] }
+
+          path "sys/remount" {capabilities = ["create", "update", "read", "delete", "list"]}
+
+          # Create LDAP Method
+          path "sys/auth/ldap" { capabilities = [ "create", "read", "update", "delete", "sudo" ] }
+          # Configure the LDAP method
+          path "sys/auth/ldap/*" { capabilities = [ "create", "read", "update", "delete", "list" ] }
+          path "sys/auth" { capabilities = ["read", "list"] }
+          path "sys/mounts/auth/ldap/*" { capabilities = [ "create", "read", "update", "delete", "list" ] }
+
+          # Write ACL policies (prefixed with pulumi- to prevent improper access)
+          path "sys/policies/acl/pulumi-*" { capabilities = [ "create", "read", "update", "delete", "list" ] }
+
+          # List available secrets engines to retrieve accessor ID
+          path "sys/mounts" { capabilities = [ "read" ] }
+
+      #### Scripts
+    - path: /etc/vault.d/scripts/initialize-vault.sh
+      mode: 0700
+      contents:
+        inline: |
+          #!/usr/bin/env bash
+          set -e
+
+          # Define the URL of the Vault server
+          export VAULT_ADDR="http://localhost:8200"
+
+          # Function to check if Vault is initialized
+          is_vault_init() {
+            init_status=$(curl -s "$VAULT_ADDR/v1/sys/health" | jq -r .initialized)
+            [ "$init_status" = "true" ]
+          }
+          if is_vault_init; then
+            echo "Vault is already initialized. Skipping..."
+            exit 0
+          fi;
+          
+          /opt/bin/vault operator init -key-shares=20 -key-threshold=2 > /tmp/init-stdout
+          mkdir -p /opt/vault.d
+          cat /tmp/init-stdout | grep "Unseal Key" | awk -F ": " '{print $2}' > /opt/vault.d/unseals
+          cat /tmp/init-stdout | grep "Root Token" | awk -F ": " '{print $2}' > /opt/vault.d/root
+
+    - path: /etc/vault.d/scripts/unseal-vault.sh
+      mode: 0700
+      contents:
+        inline: |
+          #!/usr/bin/env bash
+          set -e
+
+          # Define the URL of the Vault server
+          export VAULT_ADDR="http://localhost:8200"
+
+          # Function to check if Vault is sealed
+          is_vault_sealed() {
+              sealed_status=$(curl -s "$VAULT_ADDR/v1/sys/health" | jq -r .sealed)
+              [ "$sealed_status" = "true" ]
+          }
+
+          # Read unseal keys from the file
+          while IFS= read -r unseal_key; do
+              if is_vault_sealed; then
+                  # Vault is sealed, so unseal it
+                  echo "Unsealing Vault with key: $unseal_key"
+                  /opt/bin/vault operator unseal "$unseal_key"
+              else
+                  # Vault is already unsealed, so exit
+                  echo "Vault is already unsealed."
+                  exit 0
+              fi
+          done < /opt/vault.d/unseals
+
+          # Check the sealed status after all unseal attempts
+          if is_vault_sealed; then
+              echo "Vault is still sealed after all unseal attempts."
+          else
+              echo "Vault has been successfully unsealed."
+          fi
+
+    - path: /etc/vault.d/scripts/base-configuration.sh
+      mode: 0700
+      contents:
+        inline: |
+          #!/usr/bin/env bash
+          set -e
+
+          # Write Policies
+          export VAULT_ADDR="http://localhost:8200"
+          export VAULT_TOKEN=$(cat /opt/vault.d/root)
+          /opt/bin/vault policy write terraform /etc/vault.d/policies/terraform.hcl
+          /opt/bin/vault policy write nomad /etc/vault.d/policies/nomad.hcl
+
+          # Write a token & role for nomad
+
+          /opt/bin/vault write /auth/token/roles/nomad renewable=true token_period=1d orphan=true name=nomad token_explicit_max_ttl=0m allowed_policies=nomad
+
+          touch /etc/nomad.d/nomad.env
+          if ! grep -q "VAULT_TOKEN" "/etc/nomad.d/nomad.env"; then
+            vault_token=$(/opt/bin/vault token create -orphan -policy=nomad -renewable -ttl=336h -period=72h -display-name=nomad-system | grep token | head -n 1 | awk '{print $2}')
+            echo "VAULT_TOKEN=$vault_token" > /etc/nomad.d/nomad.env
+          else
+            echo "Did not generate nomad token; one already exists"
+          fi
+
+    
+          # Enable userpass auth backend
+          /opt/bin/vault auth enable -path=tf -description="Used during provisioning to allow terraform access to the vault" -listing-visibility=hidden userpass
+          /opt/bin/vault write auth/tf/users/tofu password=$(cat /etc/vault.d/terraform-password) policies=terraform
+          # Clean up to make sure it isn't visible
+          rm /etc/vault.d/terraform-password
+
+    - path: /etc/vault.d/terraform-password
+      mode: 0400
+      contents: 
+        inline: "${vault-password}"

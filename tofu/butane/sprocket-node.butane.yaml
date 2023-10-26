@@ -1,0 +1,20 @@
+# Basic configuration for all sprocket nodes
+variant: flatcar
+version: 1.0.0
+
+# TODO: Setup Tailscale
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: ${hostname}
+
+passwd:
+  users:
+    - name: sprunkle
+      password_hash: $6$rounds=4096$kzoGtmJp0p/h443e$YVzWkmBO0/4g4nXAtNhDLIWdgT5GNPlQR1YkZ1LFb77cP13L1oCigNONC7VkZCcerXSBGjQaMTSa.pc55bTwt1
+      no_create_home: true
+      shell: /bin/bash
+      groups: [sudo, docker, systemd-journal]

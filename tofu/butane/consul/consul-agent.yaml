@@ -1,0 +1,73 @@
+variant: flatcar
+version: 1.0.0
+
+systemd:
+  units:
+      # Download the consul binary
+    - name: "prepare-consul-binary.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Unpack Consul binary to /opt/bin
+        ConditionPathExists=!/opt/bin/consul
+        After=network-online.target
+        Requires=network-online.targets
+
+        [Service]
+        Type=oneshot
+        Restart=on-failure
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/unzip "/etc/assets/consul_1.16.2_linux_amd64.zip" -d /opt/bin
+        ExecStart=/usr/bin/rm "/etc/assets/consul_1.16.2_linux_amd64.zip"
+
+        [Install]
+        WantedBy=multi-user.target
+
+      # Run consul
+      # This could be a server or a client because consul uses
+      # the config file to determine that behavior
+    - name: "consul.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description="HashiCorp Consul - A service mesh solution"
+        Documentation=https://www.consul.io/docs
+        
+        Requires=network-online.target 
+        After=network-online.target
+        
+        Requires=prepare-consul-binary.service
+        After=prepare-consul-binary.service
+
+        ConditionFileNotEmpty=/etc/consul.d/consul.hcl
+        ConditionPathExists=/opt/bin/consul
+
+        [Service]
+        EnvironmentFile=-/etc/consul.d/consul.env
+        ExecStart=/opt/bin/consul agent -config-dir /etc/consul.d/
+        ExecReload=/bin/kill --signal HUP $MAINPID
+        KillMode=process
+        KillSignal=SIGTERM
+        Restart=on-failure
+        LimitNOFILE=65536
+
+        [Install]
+        WantedBy=multi-user.target
+
+storage:
+  directories:
+    - path: /etc/assets
+    - path: /opt/consul
+  files:
+      # Consul configuration file
+    - path: /etc/consul.d/consul.hcl
+      mode: 0644
+      contents:
+        inline: |
+          ${consul-hcl}
+      # Consul Binary Package
+    - path: /etc/assets/consul_1.16.2_linux_amd64.zip
+      overwrite: true
+      mode: 0644
+      contents:
+        source: https://releases.hashicorp.com/consul/1.16.2/consul_1.16.2_linux_amd64.zip

@@ -1,0 +1,388 @@
+{
+  "version": 4,
+  "terraform_version": "1.6.0",
+  "serial": 3,
+  "lineage": "defdafe1-b2dc-1d5a-0d22-91901a987045",
+  "outputs": {
+    "debug": {
+      "value": {
+        "megaman-0": {
+          "host": "megaman",
+          "idx": 0
+        }
+      },
+      "type": [
+        "object",
+        {
+          "megaman-0": [
+            "object",
+            {
+              "host": "string",
+              "idx": "number"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "proxmox_vm_qemu",
+      "name": "sprocket-vm-template",
+      "provider": "provider[\"registry.opentofu.org/telmate/proxmox\"]",
+      "instances": [
+        {
+          "status": "tainted",
+          "schema_version": 0,
+          "attributes": {
+            "additional_wait": 5,
+            "agent": 1,
+            "args": "",
+            "automatic_reboot": true,
+            "balloon": 512,
+            "bios": "seabios",
+            "boot": "order=scsi0",
+            "bootdisk": "",
+            "bridge": null,
+            "ci_wait": null,
+            "cicustom": "",
+            "cipassword": "",
+            "ciuser": "",
+            "clone": null,
+            "clone_wait": 10,
+            "cloudinit_cdrom_storage": null,
+            "cores": 1,
+            "cpu": "kvm64",
+            "default_ipv4_address": null,
+            "define_connection_info": true,
+            "desc": "",
+            "disk": [
+              {
+                "aio": "",
+                "backup": true,
+                "cache": "none",
+                "discard": "",
+                "file": "vm-97000-disk-0",
+                "format": "raw",
+                "iops": 0,
+                "iops_max": 0,
+                "iops_max_length": 0,
+                "iops_rd": 0,
+                "iops_rd_max": 0,
+                "iops_rd_max_length": 0,
+                "iops_wr": 0,
+                "iops_wr_max": 0,
+                "iops_wr_max_length": 0,
+                "iothread": 0,
+                "mbps": 0,
+                "mbps_rd": 0,
+                "mbps_rd_max": 0,
+                "mbps_wr": 0,
+                "mbps_wr_max": 0,
+                "media": "",
+                "replicate": 0,
+                "size": "8696M",
+                "slot": 0,
+                "ssd": 0,
+                "storage": "nas-iscsi-lvm",
+                "storage_type": "lvm",
+                "type": "scsi",
+                "volume": "nas-iscsi-lvm:vm-97000-disk-0"
+              }
+            ],
+            "disk_gb": null,
+            "force_create": false,
+            "force_recreate_on_change_of": null,
+            "full_clone": true,
+            "guest_agent_ready_timeout": 100,
+            "hagroup": "",
+            "hastate": "",
+            "hostpci": [],
+            "hotplug": "network,disk,usb",
+            "id": "megaman/qemu/97000",
+            "ipconfig0": "",
+            "ipconfig1": "",
+            "ipconfig10": "",
+            "ipconfig11": "",
+            "ipconfig12": "",
+            "ipconfig13": "",
+            "ipconfig14": "",
+            "ipconfig15": "",
+            "ipconfig2": "",
+            "ipconfig3": "",
+            "ipconfig4": "",
+            "ipconfig5": "",
+            "ipconfig6": "",
+            "ipconfig7": "",
+            "ipconfig8": "",
+            "ipconfig9": "",
+            "iso": "TrueNas-ProxMox:iso/flatcar_production_iso_image.iso",
+            "kvm": true,
+            "mac": null,
+            "machine": "",
+            "memory": 512,
+            "name": "ponos-template",
+            "nameserver": "",
+            "network": [
+              {
+                "bridge": "vmbr0",
+                "firewall": false,
+                "link_down": false,
+                "macaddr": "16:D3:7B:7B:A9:74",
+                "model": "e1000",
+                "mtu": 0,
+                "queues": 0,
+                "rate": 0,
+                "tag": -1
+              }
+            ],
+            "nic": null,
+            "numa": false,
+            "onboot": false,
+            "oncreate": false,
+            "os_network_config": null,
+            "os_type": "cloud-init",
+            "pool": "",
+            "preprovision": true,
+            "pxe": null,
+            "qemu_os": "other",
+            "reboot_required": false,
+            "scsihw": "lsi",
+            "searchdomain": "",
+            "serial": [],
+            "sockets": 1,
+            "ssh_forward_ip": null,
+            "ssh_host": null,
+            "ssh_port": null,
+            "ssh_private_key": null,
+            "ssh_user": null,
+            "sshkeys": "",
+            "startup": "",
+            "storage": null,
+            "storage_type": null,
+            "tablet": true,
+            "tags": "nomad;sprocket;tofu",
+            "target_node": "megaman",
+            "timeouts": null,
+            "unused_disk": [],
+            "usb": [],
+            "vcpus": 0,
+            "vga": [],
+            "vlan": -1,
+            "vmid": 200000
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWZhdWx0IjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19"
+        }
+      ]
+    },
+    {
+      "module": "module.vms[\"megaman-0\"]",
+      "mode": "data",
+      "type": "ct_config",
+      "name": "ignition",
+      "provider": "provider[\"registry.opentofu.org/poseidon/ct\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "# Basic configuration for all sprocket nodes\nvariant: flatcar\nversion: 1.0.0\n\n# TODO: Setup Tailscale\nstorage:\n  files:\n    - path: /etc/hostname\n      mode: 0644\n      overwrite: true\n      contents:\n        inline: sprocket-megaman-0\n\npasswd:\n  users:\n    - name: sprunkle\n      password_hash: $6$rounds=4096$kzoGtmJp0p/h443e$YVzWkmBO0/4g4nXAtNhDLIWdgT5GNPlQR1YkZ1LFb77cP13L1oCigNONC7VkZCcerXSBGjQaMTSa.pc55bTwt1\n      no_create_home: true\n      shell: /bin/bash\n      groups: [sudo, docker, systemd-journal]",
+            "id": "1084755857",
+            "pretty_print": true,
+            "rendered": "{\n  \"ignition\": {\n    \"config\": {\n      \"replace\": {\n        \"verification\": {}\n      }\n    },\n    \"proxy\": {},\n    \"security\": {\n      \"tls\": {}\n    },\n    \"timeouts\": {},\n    \"version\": \"3.4.0\"\n  },\n  \"kernelArguments\": {},\n  \"passwd\": {\n    \"users\": [\n      {\n        \"groups\": [\n          \"sudo\",\n          \"docker\",\n          \"systemd-journal\"\n        ],\n        \"name\": \"sprunkle\",\n        \"noCreateHome\": true,\n        \"passwordHash\": \"$6$rounds=4096$kzoGtmJp0p/h443e$YVzWkmBO0/4g4nXAtNhDLIWdgT5GNPlQR1YkZ1LFb77cP13L1oCigNONC7VkZCcerXSBGjQaMTSa.pc55bTwt1\",\n        \"shell\": \"/bin/bash\"\n      }\n    ]\n  },\n  \"storage\": {\n    \"directories\": [\n      {\n        \"group\": {},\n        \"path\": \"/etc/assets\",\n        \"user\": {}\n      },\n      {\n        \"group\": {},\n        \"path\": \"/opt/consul\",\n        \"user\": {}\n      },\n      {\n        \"group\": {},\n        \"path\": \"/opt/nomad\",\n        \"user\": {}\n      },\n      {\n        \"group\": {},\n        \"path\": \"/opt/tailscale\",\n        \"user\": {}\n      }\n    ],\n    \"files\": [\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/hostname\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"\",\n          \"source\": \"data:,sprocket-megaman-0\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"path\": \"/etc/consul.d/consul.hcl\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"gzip\",\n          \"source\": \"data:;base64,H4sIAAAAAAAC/1yNTcrCMBRF528Vl37z/nyg4qALcAHiQKTE5NVGw4vkRyjSvUtbR84uh8M9RiWlWRIHtIhD1g/HFDm8FtArF5lmpzN2BpV/pkp7idkRaWdZEt4EACzq6tigRQqZaSLKttNeenv7Gn84Mby4EcJskAbG8QAvy1qTP09rfiIKnMLY3b0VtDgvVtHUdbnbl83mv2y2dUEX+gQAAP//zJR9fcwAAAA=\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/consul_1.16.2_linux_amd64.zip\",\n        \"user\": {},\n        \"contents\": {\n          \"source\": \"https://releases.hashicorp.com/consul/1.16.2/consul_1.16.2_linux_amd64.zip\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"path\": \"/etc/nomad.d/nomad.hcl\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"gzip\",\n          \"source\": \"data:;base64,H4sIAAAAAAAC/3yOTW6DMBCF9z7FyAcAEyU0ReIkVYUGPCFWJzbyXxcVd69wyaJNFVne+Pn73tMYcdDGQw+yzuhrNmNt3Q21FKOxekCtS6iqcqQQgXwmD18CAIAsjkwaerggBxKrEBMbsvEhjz5RefrhA/TwJq8xLl1dN0pVL69VczpUTau6Y3ts5XtxORsS765tCoUNvHPsJuSrC7E7n5SSG5Ex8ZPyR8ef7vNhFy2cZmNBajd9kJdFOTl7MfN9DrP7HBZvsmGaf9dkx+lGYf/575JVbHcV3wEAAP//IlxmFoIBAAA=\",\n          \"verification\": {}\n        },\n        \"mode\": 384\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/nomad_1.6.2_linux_amd64.zip\",\n        \"user\": {},\n        \"contents\": {\n          \"source\": \"https://releases.hashicorp.com/nomad/1.6.2/nomad_1.6.2_linux_amd64.zip\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/tailscale_1.50.1_amd64.tgz\",\n        \"user\": {},\n        \"contents\": {\n          \"source\": \"https://pkgs.tailscale.com/stable/tailscale_1.50.1_amd64.tgz\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/tailscale-authkey\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"\",\n          \"source\": \"data:,tskey-auth-kMbxHC5CNTRL-bFZDhMRjAEg3r9tacS2kEgTzGtNQXbXG\",\n          \"verification\": {}\n        },\n        \"mode\": 384\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/prepare-tailscale.sh\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"gzip\",\n          \"source\": \"data:;base64,H4sIAAAAAAAC/4yQXUrEQBCE33OKMvqgC50xoF7AgyydSbsJmT+mO67x9LKCBkHEx4bqr4rv+sqtWt0wJyfpFQPr1KgYSBrAuILeXuDEvGNVMXXGc1DPQY5993jf9UeO49NDZ6d30DNcLnaBgUitzoV8jiUnSaboQXSew+i5jor2cNhZ7c9zbBtANzWJ3gIk8RAERCmfsYcafNftr1gLiHi1iRbZcHPr2X7f/xlaZLsD0ZTVEkeBlpr9IkZjpjmdqqg2QI1/Iy5LvizWiPZ/vtqPAAAA//8oI9XLfAEAAA==\",\n          \"verification\": {}\n        },\n        \"mode\": 448\n      }\n    ]\n  },\n  \"systemd\": {\n    \"units\": [\n      {\n        \"contents\": \"[Unit]\\nDescription=Unpack Consul binary to /opt/bin\\nConditionPathExists=!/opt/bin/consul\\nAfter=network-online.target\\nRequires=network-online.target\\n\\n[Service]\\nType=oneshot\\nRestart=on-failure\\nRemainAfterExit=yes\\nExecStart=/usr/bin/unzip \\\"/etc/assets/consul_1.16.2_linux_amd64.zip\\\" -d /opt/bin\\nExecStart=/usr/bin/rm \\\"/etc/assets/consul_1.16.2_linux_amd64.zip\\\"\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"prepare-consul-binary.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=\\\"HashiCorp Consul - A service mesh solution\\\"\\nDocumentation=https://www.consul.io/docs\\nRequires=network-online.target \\nRequires=prepare-consul-binary.service\\nAfter=network-online.target\\nAfter=prepare-consul-binary.service\\nConditionFileNotEmpty=/etc/consul.d/consul.hcl\\nConditionPathExists=/opt/bin/consul\\n\\n[Service]\\nEnvironmentFile=-/etc/consul.d/consul.env\\nExecStart=/opt/bin/consul agent -config-dir /etc/consul.d/\\nExecReload=/bin/kill --signal HUP $MAINPID\\nKillMode=process\\nKillSignal=SIGTERM\\nRestart=on-failure\\nLimitNOFILE=65536\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"consul.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Unpack Nomad binary to /opt/bin\\nConditionPathExists=!/opt/bin/nomad\\n\\n[Service]\\nType=oneshot\\nRestart=on-failure\\nRemainAfterExit=yes\\nEnvironment=NOMAD_VERSION=1.6.2\\nExecStart=/usr/bin/unzip \\\"/etc/assets/nomad_1.6.2_linux_amd64.zip\\\" -d /opt/bin\\nExecStart=/usr/bin/rm \\\"/etc/assets/nomad_1.6.2_linux_amd64.zip\\\"\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"prepare-nomad-binary.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Nomad\\nDocumentation=https://www.nomadproject.io/docs/\\nWants=network-online.target\\nAfter=network-online.target\\n\\nRequires=prepare-nomad-binary.service\\nAfter=prepare-nomad-binary.service\\n\\n# When using Nomad with Consul it is not necessary to start Consul first. These\\n# lines start Consul before Nomad as an optimization to avoid Nomad logging\\n# that Consul is unavailable at startup.\\nWants=consul.service\\nAfter=consul.service\\n\\nWants=vault.service\\nAfter=vault.service\\nWants=configure-vault.service\\nAfter=configure-vault.service\\n\\n[Service]\\nEnvironmentFile=/etc/nomad.d/nomad.env\\nExecReload=/bin/kill -HUP $MAINPID\\nExecStart=/opt/bin/nomad agent -config /etc/nomad.d\\nKillMode=process\\nKillSignal=SIGINT\\nLimitNOFILE=65536\\nLimitNPROC=infinity\\nRestart=on-failure\\nRestartSec=2\\nTasksMax=infinity\\nOOMScoreAdjust=-1000\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"nomad-agent.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Downloads and \\\"ups\\\" the tailscale daemon\\nAfter=network-online.target\\nRequires=network-online.target\\n\\n[Service]\\nType=oneshot\\nRestart=on-failure\\nRemainAfterExit=yes\\nExecStart=/etc/assets/prepare-tailscale.sh\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"prepare-tailscale.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Tailscale node agent\\nDocumentation=https://tailscale.com/kb/\\nWants=network-pre.target\\nAfter=network-pre.target NetworkManager.service systemd-resolved.service\\n\\n[Service]\\nExecStartPre=/opt/bin/tailscaled --cleanup\\nExecStart=/opt/bin/tailscaled --state=/opt/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=46461\\nExecStopPost=/opt/bin/tailscaled --cleanup\\n\\nRestart=on-failure\\n\\nRuntimeDirectory=tailscale\\nRuntimeDirectoryMode=0755\\nStateDirectory=tailscale\\nStateDirectoryMode=0700\\nCacheDirectory=tailscale\\nCacheDirectoryMode=0750\\nType=notify\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": false,\n        \"name\": \"tailscaled.service\"\n      }\n    ]\n  }\n}",
+            "snippets": [
+              "variant: flatcar\nversion: 1.0.0\n\nsystemd:\n  units:\n      # Download the consul binary\n    - name: \"prepare-consul-binary.service\"\n      enabled: true\n      contents: |\n        [Unit]\n        Description=Unpack Consul binary to /opt/bin\n        ConditionPathExists=!/opt/bin/consul\n        After=network-online.target\n        Requires=network-online.target\n\n        [Service]\n        Type=oneshot\n        Restart=on-failure\n        RemainAfterExit=yes\n        ExecStart=/usr/bin/unzip \"/etc/assets/consul_1.16.2_linux_amd64.zip\" -d /opt/bin\n        ExecStart=/usr/bin/rm \"/etc/assets/consul_1.16.2_linux_amd64.zip\"\n\n        [Install]\n        WantedBy=multi-user.target\n\n      # Run consul\n      # This could be a server or a client because consul uses\n      # the config file to determine that behavior\n    - name: \"consul.service\"\n      enabled: true\n      contents: |\n        [Unit]\n        Description=\"HashiCorp Consul - A service mesh solution\"\n        Documentation=https://www.consul.io/docs\n        Requires=network-online.target \n        Requires=prepare-consul-binary.service\n        After=network-online.target\n        After=prepare-consul-binary.service\n        ConditionFileNotEmpty=/etc/consul.d/consul.hcl\n        ConditionPathExists=/opt/bin/consul\n\n        [Service]\n        EnvironmentFile=-/etc/consul.d/consul.env\n        ExecStart=/opt/bin/consul agent -config-dir /etc/consul.d/\n        ExecReload=/bin/kill --signal HUP $MAINPID\n        KillMode=process\n        KillSignal=SIGTERM\n        Restart=on-failure\n        LimitNOFILE=65536\n\n        [Install]\n        WantedBy=multi-user.target\n\nstorage:\n  directories:\n    - path: /etc/assets\n    - path: /opt/consul\n  files:\n      # Consul configuration file\n    - path: /etc/consul.d/consul.hcl\n      mode: 0644\n      contents:\n        inline: |\n          datacenter = shuckle\n          server = false\n          data_dir = /opt/consul\n          \n          client {\n              enabled = true\n          }\n          \n          ui_config {\n              # We only need the UI on the server\n              enabled = false\n          }\n          \n          retry_join = [\n              \"100.79.152.160\"\n          ]\n      # Consul Binary Package\n    - path: /etc/assets/consul_1.16.2_linux_amd64.zip\n      overwrite: true\n      mode: 0644\n      contents:\n        source: https://releases.hashicorp.com/consul/1.16.2/consul_1.16.2_linux_amd64.zip",
+              "variant: flatcar\nversion: 1.0.0\n\nsystemd:\n  units:\n    # Download the nomad binary\n    - name: \"prepare-nomad-binary.service\"\n      enabled: true\n      contents: |\n        [Unit]\n        Description=Unpack Nomad binary to /opt/bin\n        ConditionPathExists=!/opt/bin/nomad\n\n        [Service]\n        Type=oneshot\n        Restart=on-failure\n        RemainAfterExit=yes\n        Environment=NOMAD_VERSION=1.6.2\n        ExecStart=/usr/bin/unzip \"/etc/assets/nomad_1.6.2_linux_amd64.zip\" -d /opt/bin\n        ExecStart=/usr/bin/rm \"/etc/assets/nomad_1.6.2_linux_amd64.zip\"\n\n        [Install]\n        WantedBy=multi-user.target\n    # Run the nomad agent\n    - name: \"nomad-agent.service\"\n      enabled: true\n      contents: |\n        [Unit]\n        Description=Nomad\n        Documentation=https://www.nomadproject.io/docs/\n        Wants=network-online.target\n        After=network-online.target\n        \n        Requires=prepare-nomad-binary.service\n        After=prepare-nomad-binary.service\n        \n        # When using Nomad with Consul it is not necessary to start Consul first. These\n        # lines start Consul before Nomad as an optimization to avoid Nomad logging\n        # that Consul is unavailable at startup.\n        Wants=consul.service\n        After=consul.service\n\n        Wants=vault.service\n        After=vault.service\n        Wants=configure-vault.service\n        After=configure-vault.service\n\n        [Service]\n        EnvironmentFile=/etc/nomad.d/nomad.env\n        ExecReload=/bin/kill -HUP $MAINPID\n        ExecStart=/opt/bin/nomad agent -config /etc/nomad.d\n        KillMode=process\n        KillSignal=SIGINT\n        LimitNOFILE=65536\n        LimitNPROC=infinity\n        Restart=on-failure\n        RestartSec=2\n        TasksMax=infinity\n        OOMScoreAdjust=-1000\n\n        [Install]\n        WantedBy=multi-user.target\n    \n    \nstorage:\n  files: \n    # Nomad Configuration\n    - path: /etc/nomad.d/nomad.hcl\n      mode: 0600\n      contents:\n        inline: |\n          data_dir = \"/var/lib/nomad\"\n          bind_addr = \"0.0.0.0\"\n          \n          server {\n              enabled = false\n          }\n          \n          client {\n              enabled = true\n              servers = [\"http://100.79.152.160:4646\"]\n          }\n          \n          consul {\n              address = \"http://localhost:8500\"\n          }\n          \n          vault {\n              enabled = true\n              address = \"http://100.79.152.160:8200\"\n          }\n          \n          plugin \"docker\" {\n            config {\n              allow_privileged = true\n              volumes {\n                enabled = true\n              }\n            }\n          }\n    - path: /etc/assets/nomad_1.6.2_linux_amd64.zip\n      mode: 0644\n      overwrite: true\n      contents:\n        source: https://releases.hashicorp.com/nomad/1.6.2/nomad_1.6.2_linux_amd64.zip\n  directories:\n    - path: /opt/nomad\n    - path: /etc/assets",
+              "variant: flatcar\nversion: 1.0.0\n\nsystemd:\n  units:\n    - name: \"prepare-tailscale.service\"\n      enabled: true\n      contents: |\n        [Unit]\n        Description=Downloads and \"ups\" the tailscale daemon\n        After=network-online.target\n        Requires=network-online.target\n\n        [Service]\n        Type=oneshot\n        Restart=on-failure\n        RemainAfterExit=yes\n        ExecStart=/etc/assets/prepare-tailscale.sh\n\n        [Install]\n        WantedBy=multi-user.target\n    \n    - name: \"tailscaled.service\"\n      enabled: false\n      contents: |\n        [Unit]\n        Description=Tailscale node agent\n        Documentation=https://tailscale.com/kb/\n        Wants=network-pre.target\n        After=network-pre.target NetworkManager.service systemd-resolved.service\n\n        [Service]\n        ExecStartPre=/opt/bin/tailscaled --cleanup\n        ExecStart=/opt/bin/tailscaled --state=/opt/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=46461\n        ExecStopPost=/opt/bin/tailscaled --cleanup\n\n        Restart=on-failure\n\n        RuntimeDirectory=tailscale\n        RuntimeDirectoryMode=0755\n        StateDirectory=tailscale\n        StateDirectoryMode=0700\n        CacheDirectory=tailscale\n        CacheDirectoryMode=0750\n        Type=notify\n\n        [Install]\n        WantedBy=multi-user.target\n\nstorage:\n  directories:\n    - path: /etc/assets\n    - path: /opt/tailscale\n  files:\n    - path: /etc/assets/tailscale_1.50.1_amd64.tgz\n      mode: 0644\n      overwrite: true\n      contents:\n        source: https://pkgs.tailscale.com/stable/tailscale_1.50.1_amd64.tgz\n    \n    - path: /etc/assets/tailscale-authkey\n      mode: 0600\n      overwrite: true\n      contents: \n        inline: \"tskey-auth-kMbxHC5CNTRL-bFZDhMRjAEg3r9tacS2kEgTzGtNQXbXG\"\n\n    - path: /etc/assets/prepare-tailscale.sh\n      mode: 0700\n      overwrite: true\n      contents:\n        inline: |\n          #!/usr/bin/env bash\n          set -e\n            tar -xf /etc/assets/tailscale_1.50.1_amd64.tgz -C /opt/bin --strip-components 1 --wildcards \"**/tailscale\" \"**/tailscaled\"\n            systemctl enable --now tailscaled\n            /opt/bin/tailscale up --auth-key $(cat /etc/assets/tailscale-authkey) --hostname sprocket-do-ingress\n            rm /etc/assets/tailscale-authkey\n            /usr/bin/rm \"/etc/assets/tailscale_1.50.1_amd64.tgz\""
+            ],
+            "strict": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "snippets"
+              },
+              {
+                "type": "index",
+                "value": {
+                  "value": 2,
+                  "type": "number"
+                }
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.vms[\"megaman-0\"]",
+      "mode": "data",
+      "type": "tailscale_device",
+      "name": "sprocket-ingress",
+      "provider": "provider[\"registry.opentofu.org/tailscale/tailscale\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "addresses": [
+              "100.79.152.160",
+              "fd7a:115c:a1e0:ab12:4843:cd96:624f:98a0"
+            ],
+            "id": "4367927199019977",
+            "name": "sprocket-do-ingress.taile3a45.ts.net",
+            "tags": [],
+            "user": "ItsMeBrianD@github",
+            "wait_for": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "module": "module.vms[\"megaman-0\"]",
+      "mode": "data",
+      "type": "tailscale_devices",
+      "name": "d",
+      "provider": "provider[\"registry.opentofu.org/tailscale/tailscale\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "devices": [
+              {
+                "addresses": [
+                  "100.79.221.61",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:624f:dd3d"
+                ],
+                "id": "20296392702102739",
+                "name": "sprocket-do-0.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.81.40.3",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:6251:2803"
+                ],
+                "id": "3023918792504506",
+                "name": "sprocket-do-1.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.79.152.160",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:624f:98a0"
+                ],
+                "id": "4367927199019977",
+                "name": "sprocket-do-ingress.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.99.125.106",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:6263:7d6a"
+                ],
+                "id": "67664379223375770",
+                "name": "sprocket-hyper-w-0.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.102.204.75",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:6266:cc4b"
+                ],
+                "id": "18001512458496688",
+                "name": "sprocket-nigel-w-0.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.97.76.76",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:6261:4c4c"
+                ],
+                "id": "37098228046537975",
+                "name": "sprocket-shuckle-backups.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.98.161.63",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:6262:a13f"
+                ],
+                "id": "28560016377164449",
+                "name": "sprocket-shuckle-m-0.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.109.13.87",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:626d:d57"
+                ],
+                "id": "8297883497014209",
+                "name": "sprocket-shuckle-m-1.taile3a45.ts.net",
+                "tags": [],
+                "user": "ItsMeBrianD@github"
+              },
+              {
+                "addresses": [
+                  "100.107.217.98",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:626b:d962"
+                ],
+                "id": "7814326246505548",
+                "name": "sprocket-zach-w-0.taile3a45.ts.net",
+                "tags": [],
+                "user": "zachstence@github"
+              },
+              {
+                "addresses": [
+                  "100.126.144.3",
+                  "fd7a:115c:a1e0:ab12:4843:cd96:627e:9003"
+                ],
+                "id": "53728589734269020",
+                "name": "sprocket-zach-w-1.taile3a45.ts.net",
+                "tags": [],
+                "user": "zachstence@github"
+              }
+            ],
+            "id": "bead7b56-c4f0-8b13-e3db-a39d3fa2bec8",
+            "name_prefix": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "module": "module.vms[\"megaman-0\"]",
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "ignition_remote",
+      "provider": "provider[\"registry.opentofu.org/hashicorp/null\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 0,
+          "attributes": {
+            "id": "4047334418647011798",
+            "triggers": {
+              "configContent": "{\n  \"ignition\": {\n    \"config\": {\n      \"replace\": {\n        \"verification\": {}\n      }\n    },\n    \"proxy\": {},\n    \"security\": {\n      \"tls\": {}\n    },\n    \"timeouts\": {},\n    \"version\": \"3.4.0\"\n  },\n  \"kernelArguments\": {},\n  \"passwd\": {\n    \"users\": [\n      {\n        \"groups\": [\n          \"sudo\",\n          \"docker\",\n          \"systemd-journal\"\n        ],\n        \"name\": \"sprunkle\",\n        \"noCreateHome\": true,\n        \"passwordHash\": \"$6$rounds=4096$kzoGtmJp0p/h443e$YVzWkmBO0/4g4nXAtNhDLIWdgT5GNPlQR1YkZ1LFb77cP13L1oCigNONC7VkZCcerXSBGjQaMTSa.pc55bTwt1\",\n        \"shell\": \"/bin/bash\"\n      }\n    ]\n  },\n  \"storage\": {\n    \"directories\": [\n      {\n        \"group\": {},\n        \"path\": \"/etc/assets\",\n        \"user\": {}\n      },\n      {\n        \"group\": {},\n        \"path\": \"/opt/consul\",\n        \"user\": {}\n      },\n      {\n        \"group\": {},\n        \"path\": \"/opt/nomad\",\n        \"user\": {}\n      },\n      {\n        \"group\": {},\n        \"path\": \"/opt/tailscale\",\n        \"user\": {}\n      }\n    ],\n    \"files\": [\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/hostname\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"\",\n          \"source\": \"data:,sprocket-megaman-0\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"path\": \"/etc/consul.d/consul.hcl\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"gzip\",\n          \"source\": \"data:;base64,H4sIAAAAAAAC/1yNTcrCMBRF528Vl37z/nyg4qALcAHiQKTE5NVGw4vkRyjSvUtbR84uh8M9RiWlWRIHtIhD1g/HFDm8FtArF5lmpzN2BpV/pkp7idkRaWdZEt4EACzq6tigRQqZaSLKttNeenv7Gn84Mby4EcJskAbG8QAvy1qTP09rfiIKnMLY3b0VtDgvVtHUdbnbl83mv2y2dUEX+gQAAP//zJR9fcwAAAA=\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/consul_1.16.2_linux_amd64.zip\",\n        \"user\": {},\n        \"contents\": {\n          \"source\": \"https://releases.hashicorp.com/consul/1.16.2/consul_1.16.2_linux_amd64.zip\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"path\": \"/etc/nomad.d/nomad.hcl\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"gzip\",\n          \"source\": \"data:;base64,H4sIAAAAAAAC/3yOTW6DMBCF9z7FyAcAEyU0ReIkVYUGPCFWJzbyXxcVd69wyaJNFVne+Pn73tMYcdDGQw+yzuhrNmNt3Q21FKOxekCtS6iqcqQQgXwmD18CAIAsjkwaerggBxKrEBMbsvEhjz5RefrhA/TwJq8xLl1dN0pVL69VczpUTau6Y3ts5XtxORsS765tCoUNvHPsJuSrC7E7n5SSG5Ex8ZPyR8ef7vNhFy2cZmNBajd9kJdFOTl7MfN9DrP7HBZvsmGaf9dkx+lGYf/575JVbHcV3wEAAP//IlxmFoIBAAA=\",\n          \"verification\": {}\n        },\n        \"mode\": 384\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/nomad_1.6.2_linux_amd64.zip\",\n        \"user\": {},\n        \"contents\": {\n          \"source\": \"https://releases.hashicorp.com/nomad/1.6.2/nomad_1.6.2_linux_amd64.zip\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/tailscale_1.50.1_amd64.tgz\",\n        \"user\": {},\n        \"contents\": {\n          \"source\": \"https://pkgs.tailscale.com/stable/tailscale_1.50.1_amd64.tgz\",\n          \"verification\": {}\n        },\n        \"mode\": 420\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/tailscale-authkey\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"\",\n          \"source\": \"data:,tskey-auth-kMbxHC5CNTRL-bFZDhMRjAEg3r9tacS2kEgTzGtNQXbXG\",\n          \"verification\": {}\n        },\n        \"mode\": 384\n      },\n      {\n        \"group\": {},\n        \"overwrite\": true,\n        \"path\": \"/etc/assets/prepare-tailscale.sh\",\n        \"user\": {},\n        \"contents\": {\n          \"compression\": \"gzip\",\n          \"source\": \"data:;base64,H4sIAAAAAAAC/4yQXUrEQBCE33OKMvqgC50xoF7AgyydSbsJmT+mO67x9LKCBkHEx4bqr4rv+sqtWt0wJyfpFQPr1KgYSBrAuILeXuDEvGNVMXXGc1DPQY5993jf9UeO49NDZ6d30DNcLnaBgUitzoV8jiUnSaboQXSew+i5jor2cNhZ7c9zbBtANzWJ3gIk8RAERCmfsYcafNftr1gLiHi1iRbZcHPr2X7f/xlaZLsD0ZTVEkeBlpr9IkZjpjmdqqg2QI1/Iy5LvizWiPZ/vtqPAAAA//8oI9XLfAEAAA==\",\n          \"verification\": {}\n        },\n        \"mode\": 448\n      }\n    ]\n  },\n  \"systemd\": {\n    \"units\": [\n      {\n        \"contents\": \"[Unit]\\nDescription=Unpack Consul binary to /opt/bin\\nConditionPathExists=!/opt/bin/consul\\nAfter=network-online.target\\nRequires=network-online.target\\n\\n[Service]\\nType=oneshot\\nRestart=on-failure\\nRemainAfterExit=yes\\nExecStart=/usr/bin/unzip \\\"/etc/assets/consul_1.16.2_linux_amd64.zip\\\" -d /opt/bin\\nExecStart=/usr/bin/rm \\\"/etc/assets/consul_1.16.2_linux_amd64.zip\\\"\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"prepare-consul-binary.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=\\\"HashiCorp Consul - A service mesh solution\\\"\\nDocumentation=https://www.consul.io/docs\\nRequires=network-online.target \\nRequires=prepare-consul-binary.service\\nAfter=network-online.target\\nAfter=prepare-consul-binary.service\\nConditionFileNotEmpty=/etc/consul.d/consul.hcl\\nConditionPathExists=/opt/bin/consul\\n\\n[Service]\\nEnvironmentFile=-/etc/consul.d/consul.env\\nExecStart=/opt/bin/consul agent -config-dir /etc/consul.d/\\nExecReload=/bin/kill --signal HUP $MAINPID\\nKillMode=process\\nKillSignal=SIGTERM\\nRestart=on-failure\\nLimitNOFILE=65536\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"consul.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Unpack Nomad binary to /opt/bin\\nConditionPathExists=!/opt/bin/nomad\\n\\n[Service]\\nType=oneshot\\nRestart=on-failure\\nRemainAfterExit=yes\\nEnvironment=NOMAD_VERSION=1.6.2\\nExecStart=/usr/bin/unzip \\\"/etc/assets/nomad_1.6.2_linux_amd64.zip\\\" -d /opt/bin\\nExecStart=/usr/bin/rm \\\"/etc/assets/nomad_1.6.2_linux_amd64.zip\\\"\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"prepare-nomad-binary.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Nomad\\nDocumentation=https://www.nomadproject.io/docs/\\nWants=network-online.target\\nAfter=network-online.target\\n\\nRequires=prepare-nomad-binary.service\\nAfter=prepare-nomad-binary.service\\n\\n# When using Nomad with Consul it is not necessary to start Consul first. These\\n# lines start Consul before Nomad as an optimization to avoid Nomad logging\\n# that Consul is unavailable at startup.\\nWants=consul.service\\nAfter=consul.service\\n\\nWants=vault.service\\nAfter=vault.service\\nWants=configure-vault.service\\nAfter=configure-vault.service\\n\\n[Service]\\nEnvironmentFile=/etc/nomad.d/nomad.env\\nExecReload=/bin/kill -HUP $MAINPID\\nExecStart=/opt/bin/nomad agent -config /etc/nomad.d\\nKillMode=process\\nKillSignal=SIGINT\\nLimitNOFILE=65536\\nLimitNPROC=infinity\\nRestart=on-failure\\nRestartSec=2\\nTasksMax=infinity\\nOOMScoreAdjust=-1000\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"nomad-agent.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Downloads and \\\"ups\\\" the tailscale daemon\\nAfter=network-online.target\\nRequires=network-online.target\\n\\n[Service]\\nType=oneshot\\nRestart=on-failure\\nRemainAfterExit=yes\\nExecStart=/etc/assets/prepare-tailscale.sh\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": true,\n        \"name\": \"prepare-tailscale.service\"\n      },\n      {\n        \"contents\": \"[Unit]\\nDescription=Tailscale node agent\\nDocumentation=https://tailscale.com/kb/\\nWants=network-pre.target\\nAfter=network-pre.target NetworkManager.service systemd-resolved.service\\n\\n[Service]\\nExecStartPre=/opt/bin/tailscaled --cleanup\\nExecStart=/opt/bin/tailscaled --state=/opt/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=46461\\nExecStopPost=/opt/bin/tailscaled --cleanup\\n\\nRestart=on-failure\\n\\nRuntimeDirectory=tailscale\\nRuntimeDirectoryMode=0755\\nStateDirectory=tailscale\\nStateDirectoryMode=0700\\nCacheDirectory=tailscale\\nCacheDirectoryMode=0750\\nType=notify\\n\\n[Install]\\nWantedBy=multi-user.target\\n\",\n        \"enabled\": false,\n        \"name\": \"tailscaled.service\"\n      }\n    ]\n  }\n}"
+            }
+          },
+          "sensitive_attributes": [],
+          "dependencies": [
+            "module.vms.data.ct_config.ignition",
+            "module.vms.data.tailscale_device.sprocket-ingress"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

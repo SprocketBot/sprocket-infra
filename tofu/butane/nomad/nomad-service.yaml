@@ -1,0 +1,87 @@
+variant: flatcar
+version: 1.0.0
+
+systemd:
+  units:
+    # Download the nomad binary
+    - name: "prepare-nomad-binary.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Unpack Nomad binary to /opt/bin
+        ConditionPathExists=!/opt/bin/nomad
+
+        [Service]
+        Type=oneshot
+        Restart=on-failure
+        RemainAfterExit=yes
+        Environment=NOMAD_VERSION=1.6.2
+        ExecStart=/usr/bin/unzip "/etc/assets/nomad_1.6.2_linux_amd64.zip" -d /opt/bin
+        ExecStart=/usr/bin/rm "/etc/assets/nomad_1.6.2_linux_amd64.zip"
+
+        [Install]
+        WantedBy=multi-user.target
+    # Run the nomad agent
+    - name: "nomad-agent.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Nomad
+        Documentation=https://www.nomadproject.io/docs/
+        
+        Wants=network-online.target
+        After=network-online.target
+
+        Requires=prepare-nomad-binary.service
+        After=prepare-nomad-binary.service
+        
+        Requires=consul.service
+        After=consul.service
+
+        %{ if "${include-vault}" != "" }
+        Wants=vault.service
+        After=vault.service
+        
+        Wants=configure-vault.service
+        After=configure-vault.service
+        %{ endif }
+
+        [Service]
+        EnvironmentFile=/etc/nomad.d/nomad.env
+        ExecReload=/bin/kill -HUP $MAINPID
+        ExecStart=/opt/bin/nomad agent -config /etc/nomad.d
+        KillMode=process
+        KillSignal=SIGINT
+        LimitNOFILE=65536
+        LimitNPROC=infinity
+        Restart=on-failure
+        RestartSec=2
+        TasksMax=infinity
+        OOMScoreAdjust=-1000
+
+        [Install]
+        WantedBy=multi-user.target
+    
+    
+storage:
+  files: 
+    # Nomad Configuration
+    - path: /etc/nomad.d/nomad.hcl
+      mode: 0600
+      contents:
+        inline: |
+          ${nomad-hcl}
+    - path: /etc/assets/nomad_1.6.2_linux_amd64.zip
+      mode: 0644
+      overwrite: true
+      contents:
+        source: https://releases.hashicorp.com/nomad/1.6.2/nomad_1.6.2_linux_amd64.zip
+    - path: /etc/nomad.d/nomad.env
+      mode: 0600
+      overwrite: false
+      contents:
+        inline: ""
+
+  directories:
+    - path: /opt/nomad
+    - path: /etc/assets

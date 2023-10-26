@@ -1,0 +1,17 @@
+variant: flatcar
+version: 1.0.0
+
+storage:
+  disks:
+    - device: /dev/disk/by-label/${opt-disk-label}
+      partitions:
+        - label: spr-fc-persist
+          wipe_partition_entry: true
+          resize: true
+          number: 1
+  filesystems:
+    - path: /opt
+      device: /dev/disk/by-partlabel/spr-fc-persist
+      format: ext4
+      wipe_filesystem: false
+      with_mount_unit: false
