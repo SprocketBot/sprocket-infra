@@ -1,4 +1,3 @@
 config:
-  SprocketDataTeam:base-hostname: sprocket-testing-1.h.hl1.io
-  SprocketDataTeam:traefik-trust-ca: ../certs/stepca-root.crt
-  docker:host: ssh://sprocket@sprocket-testing-1.h.hl1.io
+  SprocketDataTeam:base-hostname: d.next.spr.ocket.cloud
+  docker:host: ssh://sprocket-do-1@portal

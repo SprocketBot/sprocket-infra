@@ -48,7 +48,7 @@ export class Vault extends pulumi.ComponentResource {
         name: name,
         labels: new TraefikLabels(name)
           .rule(`Host(\`${url}\`)`)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .targetPort(8200).complete,
 
         taskSpec: {

@@ -2,7 +2,7 @@
     "name": "@sprocketbot/infra-data-team",
     "main": "index.ts",
     "devDependencies": {
-        "@types/node": "^14.18.3",
+        "@types/node": "^18.17.19",
         "typescript": "^5.2.2"
     },
     "dependencies": {

@@ -7,11 +7,12 @@
     "check": "tsc -p ./tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@types/node": "^14.18.3",
+    "@types/node": "^18.17.19",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "@lbrlabs/pulumi-grafana": "^0.1.0",
+    "@pulumi/command": "^0.9.1",
     "@pulumi/docker": "^4.4.0",
     "@pulumi/postgresql": "^3.9.0",
     "@pulumi/pulumi": "^3.0.0",

@@ -22,6 +22,12 @@ const p = new Platform(
     monitoringNetworkId: InfrastructureStackRef.getOutput(
       InfrastructureStackOutputs.MonitoringNetworkId,
     ),
+    postgresNetworkId: InfrastructureStackRef.getOutput(
+      InfrastructureStackOutputs.PostgresNetworkId,
+    ),
+    postgresHostname: InfrastructureStackRef.getOutput(
+      InfrastructureStackOutputs.PostgresInternalHostname,
+    ),
   },
   {
     providers: [

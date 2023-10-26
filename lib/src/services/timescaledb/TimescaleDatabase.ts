@@ -18,8 +18,12 @@ export type TimescaleDatabaseArgs = {
   >;
   restrictedRoleAlias?: Outputable<string>;
   vaultConnName: Outputable<string>;
-  searchPath?: { restricted?: Outputable<string[]>; write?: Outputable<string[]> };
+  searchPath?: {
+    restricted?: Outputable<string[]>;
+    write?: Outputable<string[]>;
+  };
   static?: { restricted?: boolean; write?: boolean };
+  exposed?: { restricted?: boolean; write?: boolean };
 };
 
 export class TimescaleDatabase extends pulumi.ComponentResource {
@@ -29,6 +33,9 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
     username: postgres.Role["name"];
     password: postgres.Role["password"];
   };
+
+  readonly writer: TimescaleRole;
+  readonly restricted: TimescaleRole;
 
   constructor(
     name: string,
@@ -80,15 +87,17 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           ),
         searchPath: args.searchPath?.restricted,
         static: args.static?.restricted,
+        exposed: args.exposed?.restricted,
         canLogIn: true,
       },
-      { parent: this },
+      { parent: this, dependsOn: [db] },
     );
+    this.restricted = restrictedRole;
 
     const grafanaProvider = this.getProvider("grafana::") as grafana.Provider;
 
     // We don't connect if there isn't a grafana provider, or we are in the infra space
-    if (grafanaProvider.auth && InfrastructureStackRef) {
+    if (grafanaProvider?.auth && InfrastructureStackRef) {
       new grafana.DataSource(
         `${name}-${pulumi.getStack()}`,
         {
@@ -115,7 +124,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
             }),
           ),
         },
-        { parent: this },
+        { parent: this, dependsOn: [db] },
       );
     }
 
@@ -126,9 +135,11 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         name: pulumi.all([args.name]).apply(([$dbname]) => `${$dbname}`),
         searchPath: args.searchPath?.write,
         static: args.static?.write,
+        exposed: args.exposed?.write,
       },
-      { parent: this },
+      { parent: this, dependsOn: [db] },
     );
+    this.writer = writeRole;
 
     new postgres.Extension(
       "timescale-ext",
@@ -136,7 +147,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         name: "timescaledb",
         database: db.name,
       },
-      { parent: this },
+      { parent: this, dependsOn: [db] },
     );
 
     new postgres.Extension(
@@ -145,7 +156,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         name: "pg_trgm",
         database: db.name,
       },
-      { parent: this },
+      { parent: this, dependsOn: [db] },
     );
 
     new postgres.Extension(
@@ -154,7 +165,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         name: "uuid-ossp",
         database: db.name,
       },
-      { parent: this },
+      { parent: this, dependsOn: [db] },
     );
 
     for (const schemaName in args.schemas) {
@@ -162,7 +173,7 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
         buildUrn(URN_TYPE.LogicalGroup, "DatabaseSchema"),
         schemaName,
         {},
-        { parent: this },
+        { parent: this, dependsOn: [db] },
       );
 
       let schemaNameOutput = pulumi.output(schemaName);
@@ -193,8 +204,8 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
             schema: schemaNameOutput,
             role: restrictedRole.pgRole.name,
             privileges: restrictedPerms.includes("w")
-                ? ["CREATE", "USAGE"]
-                : ["USAGE"],
+              ? ["CREATE", "USAGE"]
+              : ["USAGE"],
             objectType: "schema",
           },
           { parent: schemaComponent, dependsOn: [restrictedRole] },
@@ -235,7 +246,15 @@ export class TimescaleDatabase extends pulumi.ComponentResource {
           database: db.name,
           schema: schemaNameOutput,
           role: writeRole.pgRole.name,
-          privileges: ["ALL"],
+          privileges: [
+            "UPDATE",
+            "REFERENCES",
+            "TRUNCATE",
+            "SELECT",
+            "DELETE",
+            "TRIGGER",
+            "INSERT",
+          ],
           objectType: "table",
         },
         { parent: schemaComponent, dependsOn: [writeRole] },

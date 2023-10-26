@@ -1,11 +1,16 @@
 config:
-  SprocketInfrastructure:base-hostname: sprocket-testing-1.h.hl1.io
-  SprocketInfrastructure:traefik-ca-server: https://stepca.i.hl1.io/acme/acme/directory
-  SprocketInfrastructure:traefik-trust-ca: ../certs/stepca-root.crt
+  SprocketInfrastructure:base-hostname: i.next.spr.ocket.cloud
+  SprocketInfrastructure:remote-host: mercury.h.hl1.io
+  SprocketInfrastructure:remote-port: "2222"
+  SprocketInfrastructure:remote-user: sprocket-do-1
+  SprocketInfrastructure:rolypoly-token:
+    secure: AAABALfd2gCN7AkwPkPU6bcC2DhOC9FMCzS57MriOUIU1Zle9SbiaSM7bBwEtHWZCrPg1U0SjKy5ZOuFBuwYx0OQJ3rh5GgRlGM351vaunQZwCdko/JBRSZ1qBNf7vEDZ3VULDuQrpY=
+  SprocketInfrastructure:traefik-dns-token:
+    secure: AAABAOJkgNHuQ0x51oW2V9zfNwuMfH3ioK+AsCMqOm+LlObHdF3eBRgmMwqfU3/Q9UtfcEoA5zkWdDQK+QHcQY0ZtIxluRo8OPHaT28sEFeABmn107Kk/c+C7VrWerLtGyKCMYthVw==
   SprocketInfrastructure:vault-s3-access-key:
-    secure: AAABAEgVUIYHKrsiVlcp/c3A/mhGJ7oMxU8K1ysn/tsclQRIbVN68q2yRN2xseWEBnePOw==
-  SprocketInfrastructure:vault-s3-bucket: vault
-  SprocketInfrastructure:vault-s3-endpoint: https://s3.itsbrian.dev
+    secure: AAABAFs1tT8C50Re+xpkeNHpNdHfbrJDwkJzchc88mqyVYOdQf8sP6e5WKXn9rFnOdhwkpFatb+C
+  SprocketInfrastructure:vault-s3-bucket: sprocket-vault
+  SprocketInfrastructure:vault-s3-endpoint: https://s3.us-west-004.backblazeb2.com
   SprocketInfrastructure:vault-s3-secret-key:
-    secure: AAABAMyg09eWWVb8cbfheAVcH2hkQtphz9YIrg8wu7Ob3axpm5kRTCVfDgvLK+K+b6Qp0KbSqy3snbtuZ0Lz+97tlWtvBz0p
-  docker:host: ssh://sprocket@sprocket-testing-1.h.hl1.io
+    secure: AAABAIHHDTpxbowl/0S0jjJ1I2Z8+4K66lm3as03JaxHewdrqmxOSDVTtoSOFiBXTky8OGFu2J7ru7SkIr7W
+  docker:host: ssh://sprocket-do-1@portal

@@ -156,19 +156,19 @@ export class Platform extends pulumi.ComponentResource {
     const coreLabels = new TraefikLabels(
       `sprocket-core-${this.environmentSubdomain}`,
     )
-      .tls("lets-encrypt-tls")
+      .tls(CertResolver.DNS)
       .rule(`Host(\`${this.apiUrl}\`)`)
       .targetPort(3001);
     const webLabels = new TraefikLabels(
       `sprocket-web-${this.environmentSubdomain}`,
     )
-      .tls("lets-encrypt-tls")
+      .tls(CertResolver.DNS)
       .rule(`Host(\`${this.webUrl}\`)`)
       .targetPort(3000);
     const imageGenLabels = new TraefikLabels(
       `sprocket-image-gen-${this.environmentSubdomain}`,
     )
-      .tls("lets-encrypt-tls")
+      .tls(CertResolver.DNS)
       .rule(`Host(\`${this.igUrl}\`)`)
       .targetPort(3000);
 

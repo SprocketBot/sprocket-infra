@@ -1,0 +1,1 @@
+b2 sync --delete /empty b2://sprocket-vault/vault_storage --allowEmptySource 

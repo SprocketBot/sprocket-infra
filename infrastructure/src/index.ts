@@ -1,22 +1,32 @@
 import { BuildVault } from "./BuildVault";
-import { Traefik } from "@sprocketbot/infra-lib";
+import { config, RolyPoly, Traefik } from "@sprocketbot/infra-lib";
 import { BuildTimescale } from "./BuildTimescale";
 import { Monitoring } from "./Monitoring";
+import * as docker from "@pulumi/docker";
+
+const ingressNet = new docker.Network("ingress-net", {
+  attachable: true,
+  driver: "overlay",
+});
+
+const rolyPoly = new RolyPoly("rolypoly", { ingressNetworkId: ingressNet.id });
 
 const traefik = new Traefik("traefik", {
-  staticConfigPath: "./src/config/traefik.yaml",
+  staticConfigPath: "./src/config/traefik.hbs.yaml",
   forwardAuthConfigPath: "./src/config/traefik-forward-auth.yaml",
+  ingressNetwork: ingressNet,
+  dnsToken: config.requireSecret("traefik-dns-token"),
 });
 
 const vaultResult = BuildVault({
   traefik,
-  configFilepath: `./src/config/vault.hcl`,
+  configFilepath: `./src/config/vault.hbs.hcl`,
 });
 const timescaleResult = BuildTimescale({
   traefik,
   configPaths: {
     "pg_hba.conf": "./src/config/pg_hba.conf",
-    "postgresql.conf": "./src/config/postgresql.conf",
+    "postgresql.conf": "./src/config/postgresql.hbs.conf",
   },
   vault: vaultResult.provider,
 });

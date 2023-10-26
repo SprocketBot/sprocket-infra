@@ -1,9 +1,13 @@
 import * as docker from "@pulumi/docker";
-import { EntryPoint } from "../../constants/traefik";
-import { config } from "../../constants/pulumi";
+import {
+  CertResolver,
+  config,
+  EntryPoint,
+  ForwardAuthRule,
+} from "../../constants";
 
 abstract class TraefikLabel {
-  private output: docker.types.input.ServiceLabel[] = [
+  protected output: docker.types.input.ServiceLabel[] = [
     {
       label: "traefik.enable",
       value: "true",
@@ -67,10 +71,16 @@ abstract class TraefikLabel {
   }
 
   // TODO: CertResolver -> Enum
-  tls(certResolver: string) {
+  tls(certResolver: CertResolver, wildcardRoot: string | false = false) {
     this.output.push(this.routerLabel("tls", "true"));
     if (config.getBoolean("no-tls")) return this;
     this.output.push(this.routerLabel("tls.certResolver", certResolver));
+    if (wildcardRoot) {
+      this.output.push(this.routerLabel(`tls.domains[0].main`, wildcardRoot));
+      this.output.push(
+        this.routerLabel(`tls.domains[0].sans`, `*.${wildcardRoot}`),
+      );
+    }
     return this;
   }
 }
@@ -80,7 +90,9 @@ export class TraefikHttpLabel extends TraefikLabel {
   protected readonly servicePrefix = `traefik.http.services.${this.name}`;
   protected readonly middlewarePrefix = `traefik.http.middlewares.${this.name}`;
 
-  forwardAuthRule(ruleName: string) {
+  forwardAuthRule(ruleName: ForwardAuthRule) {
+    this.output.push(this.routerLabel("middlewares", `${ruleName}@file`));
+
     return this;
   }
 }

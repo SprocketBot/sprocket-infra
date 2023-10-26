@@ -119,7 +119,7 @@ export class Neo4j extends pulumi.ComponentResource {
         },
         labels: [
           ...new TraefikLabels(name)
-            .tls("lets-encrypt-tls")
+            .tls(CertResolver.DNS)
             .rule(`Host(\`${buildHost("neo4j", args.environment, HOSTNAME)}\`)`)
             .targetPort(7474)
             .forwardAuthRule("EloTeam")
@@ -134,7 +134,7 @@ export class Neo4j extends pulumi.ComponentResource {
               )}\`)`,
             )
             .targetPort(7687)
-            .tls("lets-encrypt-tls")
+            .tls(CertResolver.DNS)
             .service(`${name}-bolt`).complete,
           ...new TraefikLabels(`${name}-bolt-http`)
             .rule(
@@ -146,7 +146,7 @@ export class Neo4j extends pulumi.ComponentResource {
               )}\`)`,
             )
             .targetPort(7687)
-            .tls("lets-encrypt-tls")
+            .tls(CertResolver.DNS)
             .service(`${name}-bolt-http`).complete,
         ],
       },

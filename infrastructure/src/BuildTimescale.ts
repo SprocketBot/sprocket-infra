@@ -59,7 +59,7 @@ export function BuildTimescale({
     configs["postgresql.conf"] = new ConfigFile(
       "postgresql.conf",
       {
-        filepath: "./src/config/postgresql.conf",
+        filepath: configPaths["postgresql.conf"],
         vars: {
           hba_path: configs["pg_hba.conf"]
             ? "/etc/postgresql/pg_hba.conf"

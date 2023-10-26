@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@types/node':
-        specifier: ^14.18.3
-        version: 14.18.58
+        specifier: ^18.17.19
+        version: 18.17.19
       prettier:
         specifier: ^3.0.3
         version: 3.0.3
@@ -31,8 +31,8 @@ importers:
         version: link:../lib
     devDependencies:
       '@types/node':
-        specifier: ^14.18.3
-        version: 14.18.58
+        specifier: ^18.17.19
+        version: 18.17.19
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -62,8 +62,8 @@ importers:
         version: 3.22.2
     devDependencies:
       '@types/node':
-        specifier: ^14.18.3
-        version: 14.18.58
+        specifier: ^18.17.19
+        version: 18.17.19
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -81,8 +81,8 @@ importers:
         version: link:../lib
     devDependencies:
       '@types/node':
-        specifier: ^14.18.3
-        version: 14.18.58
+        specifier: ^18.17.19
+        version: 18.17.19
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -92,6 +92,9 @@ importers:
       '@lbrlabs/pulumi-grafana':
         specifier: ^0.1.0
         version: 0.1.0
+      '@pulumi/command':
+        specifier: ^0.9.1
+        version: 0.9.1
       '@pulumi/docker':
         specifier: ^4.4.0
         version: 4.4.0
@@ -118,8 +121,8 @@ importers:
         version: 2.7.0
     devDependencies:
       '@types/node':
-        specifier: ^14.18.3
-        version: 14.18.58
+        specifier: ^18.17.19
+        version: 18.17.19
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -243,16 +246,22 @@ importers:
       '@pulumi/pulumi':
         specifier: ^3.0.0
         version: 3.81.0
+      '@pulumi/random':
+        specifier: ^4.14.0
+        version: 4.14.0
       '@pulumi/vault':
         specifier: ^5.15.0
         version: 5.15.0
       '@sprocketbot/infra-lib':
         specifier: workspace:^
         version: link:../lib
+      zod:
+        specifier: ^3.22.2
+        version: 3.22.2
     devDependencies:
       '@types/node':
-        specifier: ^14.18.3
-        version: 14.18.58
+        specifier: ^18.17.19
+        version: 18.17.19
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -264,7 +273,7 @@ packages:
     engines: {node: ^8.13.0 || >=10.10.0}
     dependencies:
       '@grpc/proto-loader': 0.7.9
-      '@types/node': 14.18.58
+      '@types/node': 18.17.19
     dev: false
 
   /@grpc/proto-loader@0.7.9:
@@ -489,6 +498,15 @@ packages:
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
     dev: false
 
+  /@pulumi/command@0.9.1:
+    resolution: {integrity: sha512-0QVj0N02FOZRv/DrEPEx//wfMI6Iv2gatPj0s6ue5LpmhXXjLuOC/TBnpcTq1DqB9/uc3sCLafqXdJSdFzbt9g==}
+    requiresBuild: true
+    dependencies:
+      '@pulumi/pulumi': 3.81.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@pulumi/docker@3.6.1:
     resolution: {integrity: sha512-BZME50QkT556v+LvmTXPT8ssB2xxNkp9+msB5xYFEnUnWcdGAx5yUysQw70RJCb+U0GbkJSbxtlgMJgOQf/now==}
     requiresBuild: true
@@ -573,6 +591,14 @@ packages:
       - supports-color
     dev: false
 
+  /@pulumi/random@4.14.0:
+    resolution: {integrity: sha512-R9GgDbX/PR53C3a9V55FrOHwS3k7YEUr6bDnPcXI3M9PEELFIprYQRnO0oafpE4je5NRxY5a0qQ+TJQLpkhSkA==}
+    dependencies:
+      '@pulumi/pulumi': 3.81.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@pulumi/vault@5.15.0:
     resolution: {integrity: sha512-i1gfJNdNo4qCgYondNnJfkZXnwa4OtHlv7tICvuN6wbMgYn6ROrxokD4gyK9s5l/NC8+nOx/XAL0Kg9ul2CdYQ==}
     requiresBuild: true
@@ -594,12 +620,16 @@ packages:
   /@types/node-fetch@2.6.4:
     resolution: {integrity: sha512-1ZX9fcN4Rvkvgv4E6PAY5WXUFWFcRWxZa3EW83UjycOB9ljJCedb2CupIP4RZMEwF/M3eTcCihbBRgwtGbg5Rg==}
     dependencies:
-      '@types/node': 14.18.58
+      '@types/node': 18.17.19
       form-data: 3.0.1
     dev: false
 
   /@types/node@14.18.58:
     resolution: {integrity: sha512-Y8ETZc8afYf6lQ/mVp096phIVsgD/GmDxtm3YaPcc+71jmi/J6zdwbwaUU4JvS56mq6aSfbpkcKhQ5WugrWFPw==}
+    dev: true
+
+  /@types/node@18.17.19:
+    resolution: {integrity: sha512-+pMhShR3Or5GR0/sp4Da7FnhVmTalWm81M6MkEldbwjETSaPalw138Z4KdpQaistvqQxLB7Cy4xwYdxpbSOs9Q==}
 
   /@types/yaml@1.9.7:
     resolution: {integrity: sha512-8WMXRDD1D+wCohjfslHDgICd2JtMATZU8CkhH8LVJqcJs6dyYj5TGptzP8wApbmEullGBSsCEzzap73DQ1HJaA==}
@@ -1453,7 +1483,7 @@ packages:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 14.18.58
+      '@types/node': 18.17.19
       long: 5.2.3
     dev: false
 

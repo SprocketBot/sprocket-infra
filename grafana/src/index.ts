@@ -23,7 +23,7 @@ if (InfrastructureStackRef === null)
 const grafanaInstance = new Grafana(
   "grafana",
   {
-    configFilePath: "./src/config/grafana.ini",
+    configFilePath: "./src/config/grafana.hbs.ini",
     networks: {
       ingress: InfrastructureStackRef.getOutput(
         InfrastructureStackOutputs.IngressNetworkId,

@@ -1,80 +1,111 @@
-provider: "discord"
+roles:
+    maintainer: &maintainer "discordId=856290331292991490,ou=Roles,dc=rolypoly,dc=sh"
+    administrator: &administrator "discordId=856290331292991489,ou=Roles,dc=rolypoly,dc=sh"
+    moderator: &moderator "discordId=856290331292991488,ou=Roles,dc=rolypoly,dc=sh"
+    developer: &developer "discordId=856291576014569502,ou=Roles,dc=rolypoly,dc=sh"
+    support: &support "discordId=856290331279884297,ou=Roles,dc=rolypoly,dc=sh"
+    data_team: &data_team "discordId=923396697600704532,ou=Roles,dc=rolypoly,dc=sh"
+    design: &design "discordId=895054913212665898,ou=Roles,dc=rolypoly,dc=sh"
+    sprockette: &sprockette "discordId=957813905005117470,ou=Roles,dc=rolypoly,dc=sh"
+    elo: &elo "discordId=930203170636976178,ou=Roles,dc=rolypoly,dc=sh"
+    team_lead: &team_lead "discordId=987449495132454922,ou=Roles,dc=rolypoly,dc=sh"
+    data_lead: &data_lead "discordId=929803683280072774,ou=Roles,dc=rolypoly,dc=sh"
 
-oauth:
-  clientId: "846086564479631372"
-  callbackUrl: https://fa.spr.ocket.cloud/login
+basePlugin: &basePluginConfig
+    Attribute: cn
+    BaseDn: ou=Users,dc=rolypoly,dc=sh
+    Enabled: "true"
+    Port: "389"
+    LogLevel: DEBUG
+    Url: ldap://rolypoly-ldap
+    BindDn: cn=admin,dc=rolypoly,dc=sh
+    BindPassword: admin
+    SearchFilter: (\{\{.Attribute\}\}=\{\{.Username\}\})
 
-cookieDomain: "spr.ocket.cloud"
-
-rules:
-  - key: "SprocketAdmin"
-    type: "roles"
-    guildId: "856290331279884288"
-    roleIds:
-      # Maintainer
-      - "856290331292991490"
-      # Administrator
-      - "856290331292991489"
-  - key: "SprocketStaff"
-    type: "roles"
-    guildId: "856290331279884288"
-    roleIds:
-      # Maintainer
-      - "856290331292991490"
-      # Administrator
-      - "856290331292991489"
-      # Moderator
-      - "856290331292991488"
-      # Contributor
-      - "856291576014569502"
-      # Support
-      - "856290331279884297"
-      # Data Team
-      - "923396697600704532"
-      # Design
-      - "895054913212665898"
-  - key: "SprocketDeveloper"
-    type: "roles"
-    guildId: "856290331279884288"
-    roleIds:
-      # Maintainer
-      - "856290331292991490"
-      # Administrator
-      - "856290331292991489"
-      # Contributor
-      - "856291576014569502"
-  - key: "AlphaTesters"
-    type: "roles"
-    guildId: "856290331279884288"
-    roleIds:
-      # Maintainer
-      - "856290331292991490"
-      # Administrator
-      - "856290331292991489"
-      # Moderator
-      - "856290331292991488"
-      # Contributor
-      - "856291576014569502"
-      # Support
-      - "856290331279884297"
-      # Data Team
-      - "923396697600704532"
-      # Design
-      - "895054913212665898"
-      # Alpha Tester
-      - "957813905005117470"
-  - key: "EloTeam"
-    type: "roles"
-    guildId: "856290331279884288"
-    roleIds:
-      # Maintainer
-      - "856290331292991490"
-      # Administrator
-      - "856290331292991489"
-      # Elo Team
-      - "930203170636976178"
-
-defaultRule:
-  key: "DefaultRule"
-  type: "guild"
-  guildId: "856290331279884288"
+http:
+    middlewares:
+        fa-data-lead:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-data-lead
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+                        - *data_lead
+        fa-team-leads:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-data-lead
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+                        - *team_lead
+        fa-data-team:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-data-team
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+                        - *data_team
+        fa-everyone:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-everyone
+        fa-admins:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-admins
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+        fa-sprocket-staff:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-staff
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+                        - *moderator
+                        - *developer
+                        - *support
+                        - *data_team
+                        - *design
+        fa-sprocket-developers:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-sprocket-devs
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+                        - *developer
+        fa-sprocket-alpha:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-sprocket-alpha
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+                        - *moderator
+                        - *developer
+                        - *support
+                        - *data_team
+                        - *design
+                        - *sprockette
+        fa-sprocket-elo:
+            plugin:
+                ldapAuth:
+                    <<: *basePluginConfig
+                    CacheCookieName: fa-sprocket-elo
+                    AllowedGroups:
+                        - *maintainer
+                        - *administrator
+                        - *elo

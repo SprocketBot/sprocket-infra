@@ -1,14 +1,19 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as postgres from "@pulumi/postgresql";
-import { BASE_HOSTNAME, buildUrn, EntryPoint, URN_TYPE } from "../../constants";
+import {
+  BASE_HOSTNAME,
+  buildUrn,
+  CertResolver,
+  EntryPoint,
+  URN_TYPE,
+} from "../../constants";
 import {
   ConfigFile,
   LogDriver,
   ServiceCategory,
   TraefikTcpLabel,
   UserPassCredential,
-  VaultUtils,
 } from "../../utils";
 import { Role, RoleRestriction } from "../../constants/docker-node-labels";
 import { TimescaleVault } from "./TimescaleVault";
@@ -133,7 +138,7 @@ export class TimescaleDb extends pulumi.ComponentResource {
         },
         labels: new TraefikTcpLabel("timescaledb")
           .rule(`HostSNI(\`${this.hostname}\`)`)
-          .tls("lets-encrypt")
+          .tls(CertResolver.DNS)
           .targetPort(5432)
           .entryPoints(EntryPoint.HTTPS).complete,
       },

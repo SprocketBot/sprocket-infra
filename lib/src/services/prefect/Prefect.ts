@@ -4,10 +4,18 @@
 
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import { BASE_HOSTNAME, buildUrn, EntryPoint, URN_TYPE } from "../../constants";
+import {
+  BASE_HOSTNAME,
+  buildUrn,
+  CertResolver,
+  EntryPoint,
+  ForwardAuthRule,
+  URN_TYPE,
+} from "../../constants";
 import { TimescaleDatabase } from "../timescaledb";
 import { Outputable } from "../../types";
 import { LogDriver, ServiceCategory, TraefikHttpLabel } from "../../utils";
+import {RoleRestriction, Role} from "../../constants/docker-node-labels";
 
 export type PrefectArgs = {
   pg: {
@@ -32,7 +40,7 @@ export class Prefect extends pulumi.ComponentResource {
     args: PrefectArgs,
     opts?: pulumi.ComponentResourceOptions,
   ) {
-    super(buildUrn(URN_TYPE.Invalid, "Prefect"), name, {}, opts);
+    super(buildUrn(URN_TYPE.Service, "Prefect"), name, {}, opts);
     this.db = new TimescaleDatabase(
       "prefect-db",
       {
@@ -55,6 +63,9 @@ export class Prefect extends pulumi.ComponentResource {
       "prefect-service",
       {
         taskSpec: {
+          placement: {
+            constraints: [RoleRestriction(Role.INGRESS, true)]
+          },
           containerSpec: {
             image: "prefecthq/prefect:2-latest", // TODO: SHA,
             commands:
@@ -89,7 +100,8 @@ export class Prefect extends pulumi.ComponentResource {
           .targetPort(4200)
           .rule(`Host(\`${hostname}\`)`)
           .entryPoints(EntryPoint.HTTPS)
-          .tls("lets-encrypt-tls").complete,
+          .forwardAuthRule(ForwardAuthRule.DATA_LEAD)
+          .tls(CertResolver.DNS).complete,
       },
       { parent: this },
     );
@@ -122,6 +134,9 @@ export class Prefect extends pulumi.ComponentResource {
                     `postgresql+asyncpg://${$user}:${$pass}@${$host}:${$port}/${$db}`,
                 ),
             },
+          },
+          placement: {
+            constraints: [RoleRestriction(Role.INGRESS, true)]
           },
           logDriver: LogDriver("prefect", ServiceCategory.DATA_TOOL),
           networksAdvanceds: [

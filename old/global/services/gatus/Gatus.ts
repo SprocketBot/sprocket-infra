@@ -40,7 +40,7 @@ export class Gatus extends pulumi.ComponentResource {
 
     const traefikLabels = new TraefikLabels(name)
       .rule(`Host(\`${this.url}\`)`)
-      .tls("lets-encrypt-tls")
+      .tls(CertResolver.DNS)
       .targetPort(8080).complete;
 
     this.service = new docker.Service(name, {

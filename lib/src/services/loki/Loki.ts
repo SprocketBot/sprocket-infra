@@ -33,7 +33,7 @@ export class Loki extends pulumi.ComponentResource {
         ).id.apply(($id) => `loki-${$id}`),
         taskSpec: {
           containerSpec: {
-            image: "grafana/loki:2.9.1",
+            image: "grafana/loki:2.9.1@sha256:ac8275500db293df1da30ab8782e6eae184a9ad89136231a7d39760a4826f3bc",
             mounts: [
               {
                 type: "volume",
@@ -46,6 +46,10 @@ export class Loki extends pulumi.ComponentResource {
           networksAdvanceds: [{ name: args.monitoringNetworkId }],
           placement: {
             constraints: [RoleRestriction(Role.SECONDARY_STORAGE)],
+            platforms: [{
+              architecture: "amd64",
+              os: "linux"
+            }]
           },
         },
       },

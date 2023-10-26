@@ -103,7 +103,7 @@ export class Postgres extends pulumi.ComponentResource {
         },
         labels: new TraefikLabels("postgres", "tcp")
           .rule(`HostSNI(\`${this.url}\`)`)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .targetPort(5432).complete,
       },
       { parent: this },

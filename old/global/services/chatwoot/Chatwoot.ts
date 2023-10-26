@@ -205,7 +205,7 @@ export class Chatwoot extends pulumi.ComponentResource {
           logDriver: defaultLogDriver(name, true),
         },
         labels: new TraefikLabels(name)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .rule(`Host(\`${this.url}\`)`)
           .targetPort(3000).complete,
       },

@@ -8,3 +8,5 @@ export * from "./redis";
 export * from "./timescaledb";
 export * from "./traefik";
 export * from "./vault";
+export * from "./rolypoly";
+export * from "./mage";

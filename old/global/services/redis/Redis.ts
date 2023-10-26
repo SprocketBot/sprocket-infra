@@ -100,7 +100,7 @@ export class Redis extends pulumi.ComponentResource {
         labels: args.url
           ? new TraefikLabels(`${name}`, "tcp")
               .rule(`HostSNI(\`${args.url}\`)`)
-              .tls("lets-encrypt-tls")
+              .tls(CertResolver.DNS)
               .targetPort(6379).complete
           : [],
       },

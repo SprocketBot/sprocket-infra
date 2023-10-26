@@ -2,12 +2,19 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as vault from "@pulumi/vault";
 import { BASE_HOSTNAME, buildUrn, URN_TYPE } from "../../constants/pulumi";
-import { TraefikHttpLabel, LogDriver, ServiceCategory } from "../../utils";
-import { EntryPoint } from "../../constants/traefik";
+import {
+  TraefikHttpLabel,
+  LogDriver,
+  ServiceCategory,
+  UrlAvailable,
+} from "../../utils";
+import { CertResolver, EntryPoint } from "../../constants/traefik";
 import { ConfigFile } from "../../utils";
 import { VaultPulumiAuth } from "./VaultPulumiAuth";
 import { VaultInitializer } from "./VaultInitializer";
 import { VaultBaseConfig } from "./VaultBaseConfig";
+import { VaultLdap } from "./VaultLdap";
+import { VaultUtilitiesAuth } from "./VaultUtilitiesAuth";
 
 export type VaultArgs = {
   config: ConfigFile;
@@ -29,7 +36,7 @@ export class Vault extends pulumi.ComponentResource {
   constructor(
     name: string,
     args: VaultArgs,
-    opts?: pulumi.ComponentResourceOptions,
+    opts?: pulumi.ComponentResourceOptions
   ) {
     super(buildUrn(URN_TYPE.Service, "Vault"), name, {}, opts);
 
@@ -44,7 +51,7 @@ export class Vault extends pulumi.ComponentResource {
             .rule(`Host(\`${hostname}\`)`)
             .entryPoints(EntryPoint.HTTPS)
             .targetPort(8200)
-            .tls("lets-encrypt-tls").complete,
+            .tls(CertResolver.DNS).complete,
         ],
         taskSpec: {
           containerSpec: {
@@ -67,18 +74,24 @@ export class Vault extends pulumi.ComponentResource {
           ],
         },
       },
-      { parent: this },
+      { parent: this }
     );
 
     const vaultInitializer = new VaultInitializer(
       "initializer",
       {
         vaultService: this.service,
-        vaultImage: vaultImage,
+        // 501 is what vault gives before it has initialized
+        vaultImage: UrlAvailable(
+          endpoint + "/v1/sys/health",
+          [(r) => r.status === 501 || r.ok],
+          true,
+          "VaultInitializer"
+        ).apply(() => vaultImage),
         traefikNetId: args.traefikNetId,
         vaultEndpoint: endpoint,
       },
-      { parent: this },
+      { parent: this }
     );
 
     const internalProvider = new vault.Provider(
@@ -86,21 +99,21 @@ export class Vault extends pulumi.ComponentResource {
       {
         token: vaultInitializer.rootToken,
         address: vaultInitializer.vaultHealthy.apply(
-          ($endpoint: string) => $endpoint,
+          ($endpoint: string) => $endpoint
         ),
       },
-      { parent: this },
+      { parent: this }
     );
 
     const auth = new VaultPulumiAuth(
       "auth",
       {
         address: vaultInitializer.vaultHealthy.apply(
-          ($endpoint: string) => $endpoint,
+          ($endpoint: string) => $endpoint
         ),
         rootProvider: internalProvider,
       },
-      { parent: this },
+      { parent: this }
     );
 
     const baseConfig = new VaultBaseConfig(
@@ -108,13 +121,23 @@ export class Vault extends pulumi.ComponentResource {
       {
         unsealKeys: vaultInitializer.unsealKeys,
       },
-      { parent: this, provider: auth.provider },
+      { parent: this, provider: auth.provider }
     );
 
+    const ldapAuth = new VaultLdap(
+      "ldap",
+      {},
+      { parent: this, provider: internalProvider }
+    );
+    const utilsAuth = new VaultUtilitiesAuth(
+      "utils",
+      { approleBackend: auth.approleBackend },
+      { parent: this, provider: internalProvider }
+    );
     this.provider = auth.provider;
     this.approleCreds = auth.approleCreds;
     this.endpoint = vaultInitializer.vaultHealthy.apply(
-      ($endpoint: string) => $endpoint,
+      ($endpoint: string) => $endpoint
     );
   }
 }

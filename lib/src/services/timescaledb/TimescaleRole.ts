@@ -11,12 +11,13 @@ export type TimescaleRoleArgs = {
   static?: boolean;
   searchPath?: Outputable<string[]>;
   canLogIn?: boolean;
+  exposed?: boolean;
 };
 
 // TODO: Refactor this to a component resource including the actual Postgres role AND the Vault role
 export class TimescaleRole extends pulumi.ComponentResource {
   readonly pgRole: postgres.Role;
-  readonly vaultRole:
+  readonly vaultRole?:
     | vault.database.SecretBackendRole
     | vault.database.SecretBackendStaticRole;
 
@@ -51,7 +52,7 @@ export class TimescaleRole extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    if (args.static) {
+    if (args.static && args.exposed) {
       this.vaultRole = new vault.database.SecretBackendStaticRole(
         "vault-static-role",
         {
@@ -60,11 +61,11 @@ export class TimescaleRole extends pulumi.ComponentResource {
           backend: VaultConstants.Backend.db,
           username: this.pgRole.name,
           rotationPeriod: 24 * 60 * 60, // 24 hours
-          rotationStatements: [], // Do nothing when rotating
+          rotationStatements: [""], // Do nothing when rotating
         },
         { parent: this },
       );
-    } else {
+    } else if (!args.static && args.exposed) {
       this.vaultRole = new vault.database.SecretBackendRole(
         "vault-role",
         {
@@ -78,7 +79,9 @@ export class TimescaleRole extends pulumi.ComponentResource {
               .output(args.searchPath)
               .apply(
                 ($searchPath) =>
-                  `ALTER ROLE "{{name}} SET SEARCH_PATH='${$searchPath?.join(",")}';`,
+                  `ALTER ROLE "{{name}} SET SEARCH_PATH='${$searchPath?.join(
+                    ",",
+                  )}';`,
               ),
           ].filter(Boolean),
           revocationStatements: [`DROP ROLE "{{name}}";`],

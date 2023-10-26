@@ -7,6 +7,7 @@ import {
   BASE_HOSTNAME,
   buildUrn,
   URN_TYPE,
+  CertResolver,
 } from "../../constants";
 import { TimescaleDatabase } from "../timescaledb";
 import { Role, RoleRestriction } from "../../constants/docker-node-labels";
@@ -166,7 +167,7 @@ export class Grafana extends pulumi.ComponentResource {
         },
         labels: new TraefikHttpLabel(name)
           .rule(`Host(\`${hostname}\`)`)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .targetPort(3000).complete,
       },
       { parent: this },

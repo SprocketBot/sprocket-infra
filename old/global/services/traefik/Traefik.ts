@@ -67,7 +67,7 @@ export class Traefik extends pulumi.ComponentResource {
           .rule(`Host(\`traefik.${HOSTNAME}\`)`)
           .service("api@internal")
           .entryPoints("websecure")
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .targetPort(9999)
           .forwardAuthRule("SprocketAdmin").complete,
         taskSpec: {

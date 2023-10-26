@@ -13,6 +13,7 @@ export class VaultPulumiAuth extends pulumi.ComponentResource {
     secretId: pulumi.Output<string>;
     roleId: pulumi.Output<string>;
   };
+  readonly approleBackend: vault.AuthBackend
 
   constructor(
     name: string,
@@ -33,6 +34,7 @@ export class VaultPulumiAuth extends pulumi.ComponentResource {
       },
       { parent: this, provider: args.rootProvider },
     );
+    this.approleBackend = approleBackend
 
     // TODO: Leverage paths.ts to build policies more specifically
     const pulumiPolicy = new vault.Policy(
@@ -54,12 +56,12 @@ path "sys/mounts/database/*" { capabilities = ["create", "read", "update", "dele
 
 path "sys/remount" {capabilities = ["create", "update", "read", "delete", "list"]}
 
-# Create Discord Auth Method
-path "sys/auth/discord" { capabilities = [ "create", "read", "update", "delete", "sudo" ] }
-# Configure the Discord Auth method
-path "sys/auth/discord/*" { capabilities = [ "create", "read", "update", "delete", "list" ] }
+# Create LDAP Method
+path "sys/auth/ldap" { capabilities = [ "create", "read", "update", "delete", "sudo" ] }
+# Configure the LDAP method
+path "sys/auth/ldap/*" { capabilities = [ "create", "read", "update", "delete", "list" ] }
 path "sys/auth" { capabilities = ["read", "list"] }
-path "sys/mounts/auth/discord/*" { capabilities = [ "create", "read", "update", "delete", "list" ] }
+path "sys/mounts/auth/ldap/*" { capabilities = [ "create", "read", "update", "delete", "list" ] }
 
 
 # Write ACL policies (prefixed with pulumi- to prevent improper access)

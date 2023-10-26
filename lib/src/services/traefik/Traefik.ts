@@ -1,11 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import {
-  BASE_HOSTNAME,
-  buildUrn,
-  config,
-  URN_TYPE,
-} from "../../constants/pulumi";
 import { SocketProxy } from "./TraefikSocketProxy";
 import {
   ConfigFile,
@@ -13,13 +7,23 @@ import {
   ServiceCategory,
   TraefikHttpLabel,
 } from "../../utils";
-import { EntryPoint } from "../../constants/traefik";
+import {
+  CertResolver,
+  EntryPoint,
+  ForwardAuthRule,
+  BASE_HOSTNAME,
+  buildUrn,
+  config,
+  URN_TYPE,
+} from "../../constants";
 import { Role, RoleRestriction } from "../../constants/docker-node-labels";
-import { Config } from "@pulumi/pulumi";
+import { Outputable } from "../../types";
 
 export interface TraefikArgs {
   staticConfigPath: string;
-  forwardAuthConfigPath: string;
+  ingressNetwork?: docker.Network;
+  forwardAuthConfigPath?: string;
+  dnsToken?: Outputable<string>;
 }
 
 export class Traefik extends pulumi.ComponentResource {
@@ -38,14 +42,16 @@ export class Traefik extends pulumi.ComponentResource {
     super(buildUrn(URN_TYPE.Service, "Traefik"), name, {}, opts);
     this.socketProxy = new SocketProxy(`socket-proxy`, { parent: this });
 
-    this.network = new docker.Network(
-      `traefik-network`,
-      {
-        driver: "overlay",
-        attachable: true,
-      },
-      { parent: this },
-    );
+    if (args.ingressNetwork) this.network = args.ingressNetwork;
+    else
+      this.network = new docker.Network(
+        `traefik-network`,
+        {
+          driver: "overlay",
+          attachable: true,
+        },
+        { parent: this },
+      );
 
     this.staticConfig = new ConfigFile(
       `traefik-static-config`,
@@ -61,10 +67,21 @@ export class Traefik extends pulumi.ComponentResource {
             socketProxyHostname: $serviceName,
             caServer: $caServer,
             traefik_network_name: $netName,
+            rolypoly: Boolean(args.ingressNetwork),
+            dnsToken: Boolean(args.dnsToken),
           })),
       },
       { parent: this },
     );
+    const faConfig = args.forwardAuthConfigPath
+      ? new ConfigFile(
+          `traefik-forward-auth-config`,
+          {
+            filepath: args.forwardAuthConfigPath,
+          },
+          { parent: this },
+        )
+      : null;
 
     this.volume = new docker.Volume(`acme-data-vol`, {}, { parent: this });
 
@@ -79,6 +96,17 @@ export class Traefik extends pulumi.ComponentResource {
         )
       : null;
 
+    const env: Record<string, Outputable<string>> = {};
+
+    if (customCa) {
+      env.LEGO_CA_CERTIFICATES =
+        "/usr/local/share/ca-certificates/custom-ca.crt";
+    }
+
+    if (args.dnsToken) {
+      env.DO_AUTH_TOKEN = args.dnsToken;
+    }
+
     this.service = new docker.Service(
       name,
       {
@@ -86,9 +114,9 @@ export class Traefik extends pulumi.ComponentResource {
           .rule(`Host(\`traefik.${BASE_HOSTNAME}\`)`)
           .service("api@internal")
           .entryPoints(EntryPoint.HTTPS)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS, BASE_HOSTNAME)
           .targetPort(9999)
-          .forwardAuthRule("SprocketAdmin").complete,
+          .forwardAuthRule(ForwardAuthRule.ADMINS).complete,
         taskSpec: {
           containerSpec: {
             image:
@@ -107,6 +135,13 @@ export class Traefik extends pulumi.ComponentResource {
                 configName: this.staticConfig.name,
                 fileName: "/static.yaml",
               },
+              faConfig
+                ? {
+                    configId: faConfig.id,
+                    configName: faConfig.name,
+                    fileName: "/fa-dyn.yaml",
+                  }
+                : null,
               customCa
                 ? {
                     configId: customCa.id,
@@ -117,11 +152,7 @@ export class Traefik extends pulumi.ComponentResource {
             ].filter(
               Boolean,
             ) as docker.types.input.ServiceTaskSpecContainerSpecConfig[],
-            env: {
-              LEGO_CA_CERTIFICATES: customCa
-                ? "/usr/local/share/ca-certificates/custom-ca.crt"
-                : "",
-            },
+            env: env,
           },
           logDriver: LogDriver("traefik", ServiceCategory.INFRASTRUCTURE),
           placement: {
@@ -143,10 +174,12 @@ export class Traefik extends pulumi.ComponentResource {
               targetPort: 80,
               publishedPort: 80,
               protocol: "tcp",
+              publishMode: "host",
             },
             {
               targetPort: 443,
               publishedPort: 443,
+              publishMode: "host",
               protocol: "tcp",
             },
           ],

@@ -1,0 +1,15 @@
+dn: olcDatabase={1}mdb,cn=config
+changetype: modify
+replace: olcAccess
+# Allow users to bind (authenticate) to their own entries in the ou=Users subtree
+olcAccess: to attrs=userPassword by self auth by anonymous auth by * none
+# Allow users to search and read their own entries
+olcAccess: to dn.subtree="ou=Users,dc=rolypoly,dc=sh" by dn.exact="cn=admin,dc=rolypoly,dc=sh" manage by self read
+# Lets everybody see the basic layout of the directory
+olcAccess: to dn.base="dc=rolypoly,dc=sh" by dn.exact="cn=admin,dc=rolypoly,dc=sh" manage by * read
+olcAccess: to dn.one="dc=rolypoly,dc=sh" by dn.exact="cn=admin,dc=rolypoly,dc=sh" manage by * read
+# Allow discordUsers to read discordGuild and discordRole entries they are a member of
+olcAccess: to dn.children="ou=Roles,dc=rolypoly,dc=sh" by dnattr=member read
+olcAccess: to dn.children="ou=Guilds,dc=rolypoly,dc=sh" by dnattr=member read
+# Allow the admin to manage everything
+olcAccess: to * by dn.exact="cn=admin,dc=rolypoly,dc=sh" manage by * none

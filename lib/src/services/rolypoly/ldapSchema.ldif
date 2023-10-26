@@ -1,0 +1,9 @@
+dn: cn=discordAcl,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: discordAcl
+olcAttributeTypes: ( 115.112.114.111.99.107.101.116.1.1 NAME 'discordId' DESC 'Discord Snowflake' EQUALITY caseIgnoreMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 115.112.114.111.99.107.101.116.1.2 NAME 'members' EQUALITY distinguishedNameMatch  SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+olcAttributeTypes: ( 115.112.114.111.99.107.101.116.1.3 NAME 'roles' EQUALITY distinguishedNameMatch  SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+olcObjectClasses: ( 115.112.114.111.99.107.101.116.1.4 NAME 'discordUser' STRUCTURAL MUST ( cn $ discordId ) MAY (userPassword ) ) 
+olcObjectClasses: ( 115.112.114.111.99.107.101.116.1.5 NAME 'discordGuild' STRUCTURAL MUST ( cn $ discordId ) MAY (members $ roles) )
+olcObjectClasses: ( 115.112.114.111.99.107.101.116.1.6 NAME 'discordRole' STRUCTURAL MUST ( cn $ discordId ) MAY (members) )

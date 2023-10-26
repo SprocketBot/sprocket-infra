@@ -143,7 +143,7 @@ export class DGraph extends pulumi.ComponentResource {
           : [args.ingressNetworkId, this.dgraphNet.id],
       },
       labels: new TraefikLabels(name)
-        .tls("lets-encrypt-tls")
+        .tls(CertResolver.DNS)
         .rule(`Host(\`${this.url}\`)`)
         .targetPort(8080)
         .forwardAuthRule("EloTeam").complete,

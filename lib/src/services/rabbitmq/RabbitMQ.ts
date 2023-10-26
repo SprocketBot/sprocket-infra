@@ -1,6 +1,11 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import { BASE_HOSTNAME, buildUrn, URN_TYPE } from "../../constants";
+import {
+  BASE_HOSTNAME,
+  buildUrn,
+  CertResolver,
+  URN_TYPE,
+} from "../../constants";
 import { TraefikHttpLabel, TraefikTcpLabel } from "../../utils";
 
 type ExposedRabbitMqArgs = {
@@ -41,12 +46,12 @@ export class RabbitMq extends pulumi.ComponentResource {
         labels: [
           ...new TraefikTcpLabel(`${name}-rmq`)
             .rule(`HostSNI(\`rmq.${BASE_HOSTNAME}\`)`)
-            .tls("lets-encrypt-tls")
+            .tls(CertResolver.DNS)
             .targetPort(5672).complete,
           ...(args.exposeManagement
             ? new TraefikHttpLabel(`${name}-rmq-management`)
                 .rule(`Host(\`management.rmq.${BASE_HOSTNAME}\`)`)
-                .tls("lets-encrypt-tls")
+                .tls(CertResolver.DNS)
                 .targetPort(15672).complete
             : []),
         ],

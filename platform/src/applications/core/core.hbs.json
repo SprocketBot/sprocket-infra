@@ -1,0 +1,61 @@
+{
+  "transport": {{{transport}}},
+  "gql": {
+    "playground": false
+  },
+  "logger": {
+    "levels": {{{logger.levels}}}
+  },
+  "minio": {
+    "endPoint": "{{s3.endpoint}}",
+    "port": {{ s3.port }},
+    "useSSL": {{ s3.ssl }},
+    "bucketNames": {
+      "replays": "{{s3.buckets.replayParse}}",
+      "image_generation": "{{s3.buckets.imageGeneration}}"
+    }
+  },
+  "redis": {
+    "port": {{redis.port }},
+    "host": "{{ redis.host }}",
+    "prefix": "{{ redis.prefix }}",
+    "secure": false
+  },
+  "db": {
+    "host": "{{database.host}}",
+    "port": {{database.port}},
+    "username": "{{database.username}}",
+    "database": "{{database.database}}",
+    "enable_logs": {{database.enable_logs}}
+  },
+  "web": {
+    "url": "{{frontend.url}}",
+    "api_root": "{{api.url}}"
+  },
+  "auth": {
+    "discord": {
+      "callbackUrl": "{{ api.url }}/login"
+    },
+    "google": {
+      "callbackUrl": "{{ api.url }}/authentication/google/login"
+    },
+    "epic": {
+      "callbackUrl": "{{ api.url }}/authentication/epic/login"
+    },
+    "steam": {
+      "callbackUrl": "{{ api.url }}/authentication/steam/login",
+      "realm": "{{ api.url }}"
+    },
+    "microsoft": {
+      "callbackUrl": "{{ api.url }}/authentication/microsoft/login"
+    },
+    "xbox": {
+      "callbackUrl": "{{ api.url }}/authentication/xbox/login"
+    },
+    "jwt_expiry": 12000,
+    "access_expiry": "6h",
+    "refresh_expiry": "7d",
+    "frontend_callback": "{{ frontend.url }}/auth/callback"
+  },
+  "defaultOrganizationId": 2
+}

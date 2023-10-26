@@ -49,7 +49,7 @@ export class Influx extends pulumi.ComponentResource {
 
     const traefikLabels = new TraefikLabels(name, "http")
       .rule(`Host(\`influx.${HOSTNAME}\`)`)
-      .tls("lets-encrypt-tls")
+      .tls(CertResolver.DNS)
       .targetPort(8086)
       .entryPoints("websecure").complete;
 

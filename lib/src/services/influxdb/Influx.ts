@@ -7,9 +7,8 @@ import {
   ServiceCategory,
   TraefikHttpLabel,
   UserPassCredential,
-  VaultUtils,
 } from "../../utils";
-import { EntryPoint } from "../../constants/traefik";
+import { CertResolver, EntryPoint } from "../../constants/traefik";
 import { Role, RoleRestriction } from "../../constants/docker-node-labels";
 import { Outputable } from "../../types";
 
@@ -51,7 +50,7 @@ export class InfluxDb extends pulumi.ComponentResource {
     this.url = `https://influx.${BASE_HOSTNAME}`;
     const traefikLabels = new TraefikHttpLabel(name)
       .rule(`Host(\`influx.${BASE_HOSTNAME}\`)`)
-      .tls("lets-encrypt-tls")
+      .tls(CertResolver.DNS)
       .targetPort(8086)
       .entryPoints(EntryPoint.HTTPS).complete;
 

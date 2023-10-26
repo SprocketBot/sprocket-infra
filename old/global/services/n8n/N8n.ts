@@ -105,13 +105,13 @@ export class N8n extends pulumi.ComponentResource {
         },
         labels: [
           ...new TraefikLabels("n8n", "http")
-            .tls("lets-encrypt-tls")
+            .tls(CertResolver.DNS)
             .rule(`Host(\`${hostname}\`)`)
             .targetPort(5678)
             .service("n8n")
             .forwardAuthRule("EloTeam").complete,
           ...new TraefikLabels("n8n-webhooks", "http")
-            .tls("lets-encrypt-tls")
+            .tls(CertResolver.DNS)
             .rule(`Host(\`${hostname}\`) && PathPrefix(\`/webhook\`)`)
             .service("n8n-webhooks")
             .targetPort(5678).complete,

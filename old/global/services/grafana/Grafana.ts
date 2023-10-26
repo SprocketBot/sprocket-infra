@@ -61,7 +61,7 @@ export class Grafana extends pulumi.ComponentResource {
       {
         labels: new TraefikLabels(name)
           .rule(`Host(\`grafana.${HOSTNAME}\`)`)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .targetPort(3000).complete,
         taskSpec: {
           placement: {

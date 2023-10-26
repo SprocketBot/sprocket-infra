@@ -236,7 +236,7 @@ export class Airbyte extends pulumi.ComponentResource {
       {
         name: "airbyte-webapp",
         labels: new TraefikLabels("airbyte")
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .rule(`Host(\`airbyte.${HOSTNAME}\`)`)
           .forwardAuthRule("SprocketAdmin")
           .targetPort(80).complete,
@@ -261,7 +261,7 @@ export class Airbyte extends pulumi.ComponentResource {
       {
         name: "airbyte-server",
         labels: new TraefikLabels("airbyte-server")
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .rule(`Host(\`api.airbyte.${HOSTNAME}\`)`)
           .forwardAuthRule("SprocketAdmin")
           .targetPort(8001).complete,

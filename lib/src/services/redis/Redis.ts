@@ -1,13 +1,20 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as grafana from "@lbrlabs/pulumi-grafana";
-import { BASE_HOSTNAME, buildUrn, EntryPoint, URN_TYPE } from "../../constants";
+import {
+  BASE_HOSTNAME,
+  buildUrn,
+  CertResolver,
+  EntryPoint,
+  URN_TYPE,
+} from "../../constants";
 import {
   ConfigFile,
   LogDriver,
   ServiceCategory,
   TraefikHttpLabel,
 } from "../../utils";
+import * as random from "@pulumi/random";
 
 type ExposedRedisArgs = {
   exposeInsights: true;
@@ -22,6 +29,8 @@ export type RedisArgs = {
 
 export class Redis extends pulumi.ComponentResource {
   readonly service: docker.Service;
+  readonly password: random.RandomPassword;
+  readonly passwordSecret: docker.Secret;
 
   constructor(
     name: string,
@@ -29,6 +38,20 @@ export class Redis extends pulumi.ComponentResource {
     opts?: pulumi.ComponentResourceOptions,
   ) {
     super(buildUrn(URN_TYPE.Database, "Redis"), name, {}, opts);
+
+    this.password = new random.RandomPassword(
+      "password",
+      { length: 64 },
+      { parent: this },
+    );
+
+    this.passwordSecret = new docker.Secret(
+      "password-secret",
+      {
+        data: this.password.result.apply(btoa),
+      },
+      { parent: this },
+    );
 
     this.service = new docker.Service(
       `${name}-service-${pulumi.getStack()}`,
@@ -50,6 +73,11 @@ export class Redis extends pulumi.ComponentResource {
             ].filter(
               Boolean,
             ) as docker.types.input.ServiceTaskSpecContainerSpecConfig[],
+            env: {
+              REDIS_ARGS: this.password.result.apply(
+                ($result) => `--requirepass ${$result}`,
+              ),
+            },
           },
           logDriver: LogDriver(name, ServiceCategory.UTILITY),
           networksAdvanceds: [
@@ -64,7 +92,7 @@ export class Redis extends pulumi.ComponentResource {
               // TODO: How would this work if we chose to expose more than one redis?
               // This applies to many other things
               .rule(`Host(\`insights.redis.${BASE_HOSTNAME}\`)`)
-              .tls("lets-encrypt-tls")
+              .tls(CertResolver.DNS)
               .entryPoints(EntryPoint.HTTPS).complete
           : [],
       },

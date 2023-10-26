@@ -3,6 +3,7 @@ import {
   getVaultProvider,
   InfrastructureStackOutputs,
   InfrastructureStackRef,
+  Mage,
   Prefect,
   VaultConstants,
 } from "@sprocketbot/infra-lib";
@@ -16,7 +17,7 @@ const githubAccessToken = vault.kv
       name: "maintainer/manual/github-pat",
       mount: VaultConstants.Backend.kv2,
     },
-    { provider: getVaultProvider() },
+    { provider: getVaultProvider() }
   )
   .apply(($data) => $data.data.accessToken as string);
 
@@ -25,19 +26,19 @@ new Prefect(
   {
     ingress: {
       networkId: InfrastructureStackRef.getOutput(
-        InfrastructureStackOutputs.IngressNetworkId,
+        InfrastructureStackOutputs.IngressNetworkId
       ),
     },
     pg: {
       hostname: InfrastructureStackRef.getOutput(
-        InfrastructureStackOutputs.PostgresInternalHostname,
+        InfrastructureStackOutputs.PostgresInternalHostname
       ),
       networkId: InfrastructureStackRef.getOutput(
-        InfrastructureStackOutputs.PostgresNetworkId,
+        InfrastructureStackOutputs.PostgresNetworkId
       ),
       port: 5432,
       vaultConnName: InfrastructureStackRef.getOutput(
-        InfrastructureStackOutputs.PostgresVaultConnectionName,
+        InfrastructureStackOutputs.PostgresVaultConnectionName
       ),
     },
     envs: {
@@ -46,7 +47,14 @@ new Prefect(
   },
   {
     providers: [getVaultProvider(), getPostgresProvider()],
-  },
+  }
 );
+
+//new Mage("ds-mage", {
+//  ingressNetworkId: InfrastructureStackRef.getOutput(
+//    InfrastructureStackOutputs.IngressNetworkId
+//  ),
+//  githubPat: githubAccessToken
+//});
 
 export const NO = "";

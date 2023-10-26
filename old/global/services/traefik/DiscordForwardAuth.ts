@@ -60,7 +60,7 @@ export class DiscordForwardAuth extends pulumi.ComponentResource {
         },
         labels: [
           ...new TraefikLabels("http")
-            .tls("lets-encrypt-tls")
+            .tls(CertResolver.DNS)
             .targetPort(3000)
             .rule("Host(`fa.spr.ocket.cloud`)").complete,
         ],

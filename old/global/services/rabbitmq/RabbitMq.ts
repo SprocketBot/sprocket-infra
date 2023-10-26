@@ -79,11 +79,11 @@ export class RabbitMq extends pulumi.ComponentResource {
           ? [
               ...new TraefikLabels(`${name}-management`)
                 .rule(`Host(\`management.${args.url}\`)`)
-                .tls("lets-encrypt-tls")
+                .tls(CertResolver.DNS)
                 .targetPort(15672).complete,
               ...new TraefikLabels(`${name}-management`, "tcp")
                 .rule(`HostSNI(\`${args.url}\`)`)
-                .tls("lets-encrypt-tls")
+                .tls(CertResolver.DNS)
                 .targetPort(5672).complete,
             ]
           : [],

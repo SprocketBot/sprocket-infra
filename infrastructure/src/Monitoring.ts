@@ -50,7 +50,7 @@ export class Monitoring extends pulumi.ComponentResource {
     const fluentConfig = new ConfigFile(
       "fluent-config",
       {
-        filepath: "./src/config/fluentd.yaml",
+        filepath: "./src/config/fluentd.hbs.yaml",
         vars: {
           loki_hostname: this.loki.hostname,
         },

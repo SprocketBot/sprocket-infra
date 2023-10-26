@@ -74,12 +74,12 @@ export class Minio extends pulumi.ComponentResource {
       labels: [
         ...new TraefikLabels("minio-endpoint")
           .rule(`Host(\`${this.url}\`)`)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .targetPort(9000)
           .service("minio-endpoint@docker").complete,
         ...new TraefikLabels("minio-console")
           .rule(`Host(\`${this.consoleUrl}\`)`)
-          .tls("lets-encrypt-tls")
+          .tls(CertResolver.DNS)
           .targetPort(9001)
           .service("minio-console@docker").complete,
       ],
