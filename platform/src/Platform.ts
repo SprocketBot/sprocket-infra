@@ -483,7 +483,8 @@ export class Platform extends pulumi.ComponentResource {
             },
             gql: {
                 internal: this.core?.hostname ? this.core.hostname.apply(h => `${h}:3001/graphql`) : "",
-                public: this.apiUrl
+                public: this.apiUrl,
+                playground: pulumi.getStack() === "main" ? false : true, 
             },
             frontend: {
                 url: this.webUrl
