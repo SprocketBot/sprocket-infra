@@ -3,24 +3,6 @@ import axios from "axios";
 
 const config = new pulumi.Config()
 
-type DockerHubResponse = {
-    count: number,
-    next: string | null,
-    previous: string | null,
-    results: {
-        namespace: string,
-        repository: string,
-        digest: string,
-        tags: {
-            tag: string,
-            is_current: boolean
-        }[],
-        last_pushed: string,
-        last_pulled: string | null,
-        status: string
-    }[]
-}
-
 /**
  * @param namespace {string} Dockerhub username (i.e. namespace/repository:tag)
  * @param repository {string} Image name (i.e. namespace/repository:tag)
@@ -41,7 +23,8 @@ export function getImageSha(namespace: string, repository: string, tag: string):
             })
             const token = tokenResponse.data.token
 
-            const results = await axios.get<DockerHubResponse>(`https://hub.docker.com/v2/namespaces/${namespace}/repositories/${repository}/images?currently_tagged=true`, {
+
+            const result = await axios.get<unknown>(`https://hub.docker.com/v2/namespaces/${namespace}/repositories/${repository}/tags/${tag}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -50,12 +33,15 @@ export function getImageSha(namespace: string, repository: string, tag: string):
                 throw e
             })
 
-            const result = results.data.results.find(r => r.tags.some(t => t.tag === tag))
+            const {data} = result;
+            if (!data || typeof data !== "object" || !data) throw new Error(`Tag not found! ${namespace}/${repository}:${tag}`)
+            if (!("digest" in data)) throw new Error(`Tag not found! ${namespace}/${repository}:${tag}`)
+            // @ts-ignore
+            const {digest} = data;
 
-
-            if (!result) throw new Error(`Tag not found! ${namespace}/${repository}:${tag}`)
-            console.log(`${namespace}/${repository}@${result.digest} (${tag})`)
-            return `${namespace}/${repository}@${result.digest}`
+            // if (!result) throw new Error(`Tag not found! ${namespace}/${repository}:${tag}`)
+            console.log(`${namespace}/${repository}@${digest} (${tag})`)
+            return `${namespace}/${repository}@${digest}`
         })
 
 }
