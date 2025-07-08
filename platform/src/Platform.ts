@@ -1,7 +1,7 @@
 import * as docker from "@pulumi/docker"
 import * as postgresql from "@pulumi/postgresql"
 import * as pulumi from "@pulumi/pulumi"
-import * as vault from "@pulumi/vault"
+
 import * as minio from "@pulumi/minio"
 import * as random from "@pulumi/random";
 
@@ -13,18 +13,17 @@ import {buildHost} from "global/helpers/buildHost";
 import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME, PRODUCTION_CHATWOOT_WEBSITE_TOKEN} from "global/constants"
 import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
-import {PlatformVault} from "./PlatformVault";
+import {PlatformDoppler} from "./PlatformVault";
 import {PlatformMinio} from "./PlatformMinio";
 import {EloService} from "./microservices/EloService";
 import {LegacyPlatform} from './legacy/LegacyPlatform';
 
 const config = new pulumi.Config()
 
+import * as doppler from "@pulumi/doppler";
+
 export interface PlatformArgs {
-    vault: {
-        infrastructure: vault.Provider,
-        platform: vault.Provider
-    }
+    dopplerProvider: doppler.Provider;
 
     postgresProvider: postgresql.Provider
     postgresHostname: string | pulumi.Output<string>
@@ -65,7 +64,7 @@ export class Platform extends pulumi.ComponentResource {
 
     readonly key: random.RandomUuid
 
-    readonly vaultSync: PlatformVault
+    readonly vaultSync: PlatformDoppler
 
     readonly services: {
         imageGen: SprocketService,
@@ -378,8 +377,8 @@ export class Platform extends pulumi.ComponentResource {
             })
         };
 
-        this.vaultSync = new PlatformVault(`${name}-vault-sync`, {
-            vaultProvider: args.vault.platform,
+        this.vaultSync = new PlatformDoppler(`${name}-doppler-sync`, {
+            dopplerProvider: args.dopplerProvider,
             environment: this.environmentSubdomain,
             redis: {
                 url: this.datastore.redis.url ?? "",

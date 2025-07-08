@@ -1,43 +1,37 @@
 import * as pulumi from "@pulumi/pulumi"
 import * as postgres from "@pulumi/postgresql"
-import * as vault from '@pulumi/vault'
+
 import * as minio from "@pulumi/minio"
 
 import {LayerOne, LayerOneExports, LayerTwo, LayerTwoExports} from "global/refs"
 import {SprocketPostgresProvider} from "global/providers/SprocketPostgresProvider"
 import {SprocketMinioProvider} from "global/providers/SprocketMinioProvider"
+import * as doppler from "@pulumi/doppler"
 
 
 import {Platform} from "./Platform";
 
-const infrastructureVaultProvider = new vault.Provider("InfrastructureVaultProvider", {
-    address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
-    token: LayerTwo.stack.requireOutput(LayerTwoExports.InfrastructureVaultToken)
-})
 
-const platformVaultProvider = new vault.Provider("PlatformVaultProvider", {
-    address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
-    token: LayerTwo.stack.requireOutput(LayerTwoExports.PlatformVaultToken)
-})
 
-const postgresProvider = new SprocketPostgresProvider({
-    vaultProvider: infrastructureVaultProvider,
-    postgresHostname: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresUrl) as pulumi.Output<string>
-})
-
-const minioProvider = new SprocketMinioProvider({
-    vaultProvider: infrastructureVaultProvider,
-    minioHostname: LayerTwo.stack.requireOutput(LayerTwoExports.MinioUrl) as pulumi.Output<string>
+const dopplerProvider = new doppler.Provider("DopplerProvider", {
+    token: pulumi.secret(process.env.DOPPLER_TOKEN)
 })
 
 const postgresNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.PostgresNetworkId) as pulumi.Output<string>
 const n8nNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.N8nNetwork) as pulumi.Output<string>
 
+const postgresProvider = new SprocketPostgresProvider({
+    dopplerProvider: dopplerProvider,
+    postgresHostname: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresUrl) as pulumi.Output<string>
+})
+
+const minioProvider = new SprocketMinioProvider({
+    dopplerProvider: dopplerProvider,
+    minioHostname: LayerTwo.stack.requireOutput(LayerTwoExports.MinioUrl) as pulumi.Output<string>
+})
+
 export const platform = new Platform(pulumi.getStack(), {
-    vault: {
-        infrastructure: infrastructureVaultProvider,
-        platform: platformVaultProvider
-    },
+    dopplerProvider: dopplerProvider,
     postgresProvider: postgresProvider as postgres.Provider,
     postgresNetworkId,
     n8nNetworkId,
