@@ -1,0 +1,25 @@
+encryptionsalt: v1:NEW_SALT_HERE:WILL_BE_GENERATED_ON_FIRST_USE
+config:
+  # DigitalOcean configuration
+  platform:use-digital-ocean: "true"
+  platform:do-region: "nyc3"
+  platform:do-manager-size: "s-4vcpu-8gb"
+  platform:do-worker-size: "s-2vcpu-4gb"  
+  platform:do-worker-count: "2"
+
+  # Application configuration
+  platform:subdomain: do-test
+  platform:hostname: do.sprocketbot.gg
+  platform:image-tag: main
+  
+  # Docker registry
+  platform:docker-username: actualsovietshark
+  platform:docker-access-token:
+    secure: CONFIGURE_THIS_SECRET
+    
+  # Discord bot (for testing)
+  platform:discord-bot-token:
+    secure: CONFIGURE_THIS_SECRET
+    
+  # Legacy settings (can be disabled for DO deployment)
+  platform:split-legacy: "false"

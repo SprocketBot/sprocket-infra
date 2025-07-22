@@ -30,6 +30,8 @@ const minioProvider = new SprocketMinioProvider({
     minioHostname: LayerTwo.stack.requireOutput(LayerTwoExports.MinioUrl) as pulumi.Output<string>
 })
 
+const config = new pulumi.Config()
+
 export const platform = new Platform(pulumi.getStack(), {
     dopplerProvider: dopplerProvider,
     postgresProvider: postgresProvider as postgres.Provider,
@@ -43,4 +45,8 @@ export const platform = new Platform(pulumi.getStack(), {
 
     ingressNetworkId: LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>,
     monitoringNetworkId: LayerTwo.stack.requireOutput(LayerTwoExports.MonitoringNetworkId) as pulumi.Output<string>,
+
+    // DigitalOcean configuration
+    useDigitalOcean: config.getBoolean("use-digital-ocean") || false,
+    digitalOceanRegion: config.get("do-region") || "nyc3",
 })

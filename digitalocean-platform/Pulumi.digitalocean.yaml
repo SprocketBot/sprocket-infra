@@ -1,0 +1,14 @@
+encryptionsalt: v1:KTT7XlSunds=:v1:TDQqhguFuay0FgI1:6XAypyQ5EomQkPhmETJyLJuvKJRWrg==
+config:
+  digitalocean:token:
+    secure: v1:YVuyFAEdU6nHQM+U:lfKkzZiicbTyzL2gWy7M/AI1zahd98cG7XlhlEEusH541HllRZAtpwiFuzGUGOInliqHmExO1T55ZwBaNmI22xcdfqRmdDI7mM4MhKOEfTiynBwehKQU
+  digitalocean-platform:doppler-token:
+    secure: v1:32AS1rmmEB81CG6l:b4VB0fwKu0VW7FfjwoX+RtYPcOb435F+v4CYBOqgwvnE4HQXblXBzXz9oPvUuSlqwjjtMAZ+mw4+YYfSc6fJPi0=
+  digitalocean-platform:region: nyc3
+  digitalocean-platform:manager-size: s-4vcpu-8gb
+  digitalocean-platform:worker-size: s-2vcpu-4gb
+  digitalocean-platform:worker-count: "2"
+  digitalocean-platform:discord-bot-token:
+    secure: v1:6FqBsLl+sLRvZcJc:gd8ya5DVPy1TyFlVS+nMynJqOw==
+  digitalocean-platform:docker-access-token:
+    secure: v1:zAoyY3tbC3BQSlVP:iOw353V4iZskDqMKrhjMz7VZLQ==
