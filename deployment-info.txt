@@ -1,0 +1,6 @@
+# SprocketBot DigitalOcean Deployment Information
+# Generated on Tue Jul 22 00:24:50 PDT 2025
+
+MANAGER_IP=142.93.65.172
+LOAD_BALANCER_IP=209.38.51.235
+REGION=nyc3

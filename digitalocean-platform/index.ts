@@ -60,6 +60,19 @@ set -e
 apt-get update
 apt-get install -y curl jq
 
+# Configure UFW for Docker Swarm ports
+echo "Configuring UFW for Docker Swarm..."
+ufw --force enable
+ufw allow ssh
+ufw allow 2377/tcp  # Docker Swarm management
+ufw allow 7946/tcp  # Docker Swarm node communication (TCP)
+ufw allow 7946/udp  # Docker Swarm node communication (UDP)
+ufw allow 4789/udp  # Docker Swarm overlay network traffic
+ufw allow 80/tcp    # HTTP
+ufw allow 443/tcp   # HTTPS
+ufw allow 8080/tcp  # Health checks
+echo "UFW configured for Docker Swarm"
+
 # Wait for docker to be ready
 while ! systemctl is-active --quiet docker; do
     echo "Waiting for Docker to start..."
@@ -79,6 +92,9 @@ chmod 755 /mnt/postgres-data /mnt/minio-data /mnt/influx-data
 echo "Docker Swarm manager initialized"
 `;
 
+        // Get SSH key ID for droplets
+        const sshKeyId = config.get("ssh-key-id");
+        
         // Manager node
         this.managerDroplet = new digitalocean.Droplet(`${name}-manager`, {
             region: region,
@@ -92,9 +108,30 @@ echo "Docker Swarm manager initialized"
                 this.volumes.minio.id,
                 this.volumes.influx.id
             ],
+            sshKeys: sshKeyId ? [sshKeyId] : [],
             monitoring: true,
             backups: true
         }, { parent: this });
+
+        // Worker init script
+        const workerInitScript = `#!/bin/bash
+set -e
+
+# Update system
+apt-get update
+apt-get install -y curl jq
+
+# Configure UFW for Docker Swarm ports
+echo "Configuring UFW for Docker Swarm on worker..."
+ufw --force enable
+ufw allow ssh
+ufw allow 7946/tcp  # Docker Swarm node communication (TCP)
+ufw allow 7946/udp  # Docker Swarm node communication (UDP)
+ufw allow 4789/udp  # Docker Swarm overlay network traffic
+echo "UFW configured for Docker Swarm worker"
+
+echo "Docker Swarm worker ready for joining"
+`;
 
         // Worker nodes
         this.workerDroplets = [];
@@ -106,7 +143,9 @@ echo "Docker Swarm manager initialized"
                 size: config.get("worker-size") || "s-2vcpu-4gb", 
                 image: "docker-20-04",
                 vpcUuid: this.vpc.id,
+                userData: workerInitScript,
                 tags: ["docker-swarm", "worker", "sprocketbot"],
+                sshKeys: sshKeyId ? [sshKeyId] : [],
                 monitoring: true
             }, { parent: this }));
         }
@@ -136,12 +175,9 @@ echo "Docker Swarm manager initialized"
             redirectHttpToHttps: false  // Let Traefik handle redirects
         }, { parent: this });
 
-        // Firewall
+        // Firewall - using tags instead of dropletIds to avoid type issues
         new digitalocean.Firewall(`${name}-firewall`, {
-            dropletIds: [
-                this.managerDroplet.id,
-                ...this.workerDroplets.map(w => w.id)
-            ],
+            tags: ["sprocketbot"],
             inboundRules: [
                 // SSH
                 {
@@ -212,3 +248,4 @@ export const vpcId = infrastructure.vpc.id;
 export const managerIp = infrastructure.managerDroplet.ipv4Address;
 export const loadBalancerIp = infrastructure.loadBalancer.ip;
 export const managerPrivateIp = infrastructure.managerDroplet.ipv4AddressPrivate;
+export const workerIps = infrastructure.workerDroplets.map(droplet => droplet.ipv4Address);

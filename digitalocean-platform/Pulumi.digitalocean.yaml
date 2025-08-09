@@ -1,14 +1,16 @@
 encryptionsalt: v1:KTT7XlSunds=:v1:TDQqhguFuay0FgI1:6XAypyQ5EomQkPhmETJyLJuvKJRWrg==
 config:
   digitalocean:token:
-    secure: v1:YVuyFAEdU6nHQM+U:lfKkzZiicbTyzL2gWy7M/AI1zahd98cG7XlhlEEusH541HllRZAtpwiFuzGUGOInliqHmExO1T55ZwBaNmI22xcdfqRmdDI7mM4MhKOEfTiynBwehKQU
+    secure: v1:6YEobTvB+7pYbSJn:eEx+kIlmu+UppF+kMZli6jQw4+EjJWO411KlWMTiIfkUEXkZC/mtutgIWErXO0kIOqanMDXAveNONOol3MsMXCj0TYziKw0YR0WbBUnn4Ph3Np/Q8iv6
   digitalocean-platform:doppler-token:
-    secure: v1:32AS1rmmEB81CG6l:b4VB0fwKu0VW7FfjwoX+RtYPcOb435F+v4CYBOqgwvnE4HQXblXBzXz9oPvUuSlqwjjtMAZ+mw4+YYfSc6fJPi0=
+    secure: v1:YSurSI9xdaRXs9Is:diCwA4Gv5I3ZZfi4CwlC9f/ArlQjsqpjxx9dItF1Q7Aw0etvAu5Rhp4MlAbyt82u6vh7d89wR+wkrxUpjKgMRw4=
   digitalocean-platform:region: nyc3
-  digitalocean-platform:manager-size: s-4vcpu-8gb
+  digitalocean-platform:manager-size: s-2vcpu-4gb
   digitalocean-platform:worker-size: s-2vcpu-4gb
   digitalocean-platform:worker-count: "2"
   digitalocean-platform:discord-bot-token:
     secure: v1:6FqBsLl+sLRvZcJc:gd8ya5DVPy1TyFlVS+nMynJqOw==
   digitalocean-platform:docker-access-token:
     secure: v1:zAoyY3tbC3BQSlVP:iOw353V4iZskDqMKrhjMz7VZLQ==
+  digitalocean-platform:ssh-key-name: sprocketbot-jacbaile-1753169982
+  digitalocean-platform:ssh-key-id: "49434744"

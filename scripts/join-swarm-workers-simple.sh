@@ -3,48 +3,29 @@ set -e
 
 echo "🔗 Joining worker nodes to Docker Swarm..."
 
-cd "$(dirname "$0")/../digitalocean-platform"
-
-# Get outputs from Pulumi
-echo "📋 Getting deployment information..."
-echo "🔍 Current directory: $(pwd)"
-echo "🔍 Checking Pulumi stack status..."
-
-# Check if we're in the right directory
-if [[ ! -f "Pulumi.yaml" ]]; then
-    echo "❌ Error: Not in Pulumi project directory"
-    echo "   Looking for Pulumi.yaml in: $(pwd)"
-    echo "   Available files:"
-    ls -la
+# Get deployment information from saved file
+REPO_ROOT="$(dirname "$0")/.."
+if [[ ! -f "$REPO_ROOT/deployment-info.txt" ]]; then
+    echo "❌ Error: deployment-info.txt not found"
+    echo "   Please run the infrastructure deployment script first"
     exit 1
 fi
 
-echo "🔍 Checking Pulumi stack..."
-pulumi stack ls
-echo "🔍 Current stack:"
-pulumi stack select digitalocean 2>/dev/null || echo "No digitalocean stack selected"
+echo "📋 Loading deployment information..."
+echo "🔍 Reading from: $REPO_ROOT/deployment-info.txt"
+echo "🔍 File contents:"
+cat "$REPO_ROOT/deployment-info.txt"
 
-echo "🔍 Getting manager IP..."
-MANAGER_IP=$(timeout 30 pulumi stack output managerIp 2>&1)
-PULUMI_EXIT_CODE=$?
-if [[ $PULUMI_EXIT_CODE -ne 0 ]]; then
-    echo "❌ Error getting manager IP (exit code: $PULUMI_EXIT_CODE)"
-    echo "   Output: $MANAGER_IP"
-    echo "🔍 Available stack outputs:"
-    pulumi stack output 2>&1 || echo "Could not list outputs"
-    exit 1
-fi
+echo "🔍 Sourcing variables..."
+source "$REPO_ROOT/deployment-info.txt"
 
-echo "🔍 Getting load balancer IP..."
-LOAD_BALANCER_IP=$(timeout 30 pulumi stack output loadBalancerIp 2>&1)
-if [[ $? -ne 0 ]]; then
-    echo "❌ Error getting load balancer IP: $LOAD_BALANCER_IP"
-    exit 1
-fi
+echo "🔍 Variables loaded:"
+echo "   MANAGER_IP='$MANAGER_IP'"
+echo "   LOAD_BALANCER_IP='$LOAD_BALANCER_IP'"
+echo "   REGION='$REGION'"
 
-if [ -z "$MANAGER_IP" ]; then
-    echo "❌ Error: Could not get manager IP from Pulumi outputs"
-    echo "   Make sure the deployment completed successfully"
+if [[ -z "$MANAGER_IP" ]]; then
+    echo "❌ Error: MANAGER_IP not found in deployment-info.txt"
     exit 1
 fi
 
@@ -85,19 +66,21 @@ fi
 
 echo "🔗 Manager private IP: $MANAGER_PRIVATE_IP"
 
-# Get worker IPs from Pulumi outputs
-echo "📋 Getting worker node IPs from Pulumi..."
-WORKER_IPS_JSON=$(pulumi stack output workerIps --json 2>/dev/null)
+# Get worker IPs from deployment info (we know there should be 2)
+echo "📋 Getting worker node IPs..."
+echo "🔍 Looking up worker droplets..."
 
-if [ -z "$WORKER_IPS_JSON" ]; then
-    echo "❌ Error: Could not get worker IPs from Pulumi outputs"
-    echo "   Make sure the deployment completed successfully"
+# Use doctl to get worker IPs (since we know doctl is configured now)
+WORKER_IPS=$(doctl compute droplet list --tag-name sprocketbot --tag-name worker --format PublicIPv4 --no-header)
+
+if [ -z "$WORKER_IPS" ]; then
+    echo "❌ Error: Could not get worker IPs"
+    echo "   Available droplets:"
+    doctl compute droplet list --tag-name sprocketbot --format ID,Name,PublicIPv4,Tags
     exit 1
 fi
 
-echo "🔍 Raw worker IPs JSON: $WORKER_IPS_JSON"
-WORKER_IPS=$(echo "$WORKER_IPS_JSON" | jq -r '.[]' 2>/dev/null)
-echo "🔍 Parsed worker IPs:"
+echo "🔍 Found worker IPs:"
 echo "$WORKER_IPS"
 
 # Join each worker to the swarm
@@ -120,6 +103,17 @@ for ip in $WORKER_IPS; do
         echo "🔄 Ensuring worker is not in an existing swarm..."
         ssh -o StrictHostKeyChecking=no root@$ip "docker swarm leave --force" 2>/dev/null || true
         
+        # Test network connectivity to manager  
+        echo "🔍 Testing network connectivity to manager..."
+        echo "   Testing connectivity to $MANAGER_PRIVATE_IP:2377..."
+        if ssh -o StrictHostKeyChecking=no root@$ip "timeout 5 nc -z $MANAGER_PRIVATE_IP 2377"; then
+            echo "✅ Port 2377 is reachable from worker"
+        else
+            echo "❌ Port 2377 is NOT reachable from worker"
+            echo "🔍 Worker can reach manager on other ports:"
+            ssh -o StrictHostKeyChecking=no root@$ip "timeout 3 nc -z $MANAGER_PRIVATE_IP 22 && echo 'SSH (22): ✅' || echo 'SSH (22): ❌'"
+        fi
+        
         # Join the worker to the swarm
         echo "🔗 Executing join command..."
         if ssh -o StrictHostKeyChecking=no root@$ip "docker swarm join --token $JOIN_TOKEN $MANAGER_PRIVATE_IP:2377"; then
@@ -128,6 +122,8 @@ for ip in $WORKER_IPS; do
             echo "❌ Failed to join worker $worker_count to the swarm"
             echo "🔍 Checking worker Docker status..."
             ssh -o StrictHostKeyChecking=no root@$ip "systemctl status docker --no-pager" || echo "Could not check Docker status"
+            echo "🔍 Checking if join is still in progress..."
+            ssh -o StrictHostKeyChecking=no root@$ip "docker info | grep -E 'Swarm|Node'" || echo "Could not check swarm status"
         fi
     fi
 done
