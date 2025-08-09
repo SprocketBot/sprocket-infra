@@ -2,7 +2,7 @@
 set -e
 
 # SprocketBot Docker Services Deployment Script
-# This script deploys the core Docker services (Traefik, PostgreSQL, Redis, RabbitMQ, Minio)
+# This script deploys the core Docker services (Traefik, Redis, RabbitMQ, Minio)
 # Run this script on your Docker Swarm manager node AFTER deploying DigitalOcean infrastructure
 
 echo "🚀 SprocketBot Infrastructure Deployment"
@@ -55,7 +55,6 @@ echo "🌐 Creating Docker networks..."
 docker network create --driver overlay traefik-ingress || true
 docker network create --driver overlay traefik-proxy || true
 docker network create --driver overlay sprocket-platform || true
-docker network create --driver overlay postgres-network || true
 docker network create --driver overlay monitoring-network || true
 
 echo "✅ Networks created"
@@ -173,16 +172,14 @@ docker stack deploy -c /srv/traefik.yml traefik
 echo "✅ Traefik deployed"
 echo "📊 Traefik dashboard will be available at: https://traefik.$DOMAIN"
 
-# Generate secure passwords
+# Generate secure passwords (managed Postgres password is provided, not generated here)
 echo "🔐 Generating secure passwords..."
-POSTGRES_PASSWORD=$(openssl rand -base64 32)
 REDIS_PASSWORD=$(openssl rand -base64 32)
 RABBITMQ_PASSWORD=$(openssl rand -base64 32)
 MINIO_PASSWORD=$(openssl rand -base64 32)
 
 # Create secrets
-echo "🔑 Creating database secrets..."
-echo "$POSTGRES_PASSWORD" | docker secret create postgres-password - 2>/dev/null || echo "Secret postgres-password already exists"
+echo "🔑 Creating database and service secrets..."
 echo "$REDIS_PASSWORD" | docker secret create redis-password - 2>/dev/null || echo "Secret redis-password already exists"
 echo "$RABBITMQ_PASSWORD" | docker secret create rabbitmq-password - 2>/dev/null || echo "Secret rabbitmq-password already exists"
 echo "$MINIO_PASSWORD" | docker secret create minio-password - 2>/dev/null || echo "Secret minio-password already exists"
@@ -193,13 +190,11 @@ cat > /srv/infrastructure-passwords.txt << EOF
 # Generated on $(date)
 # KEEP THIS FILE SECURE!
 
-PostgreSQL Password: $POSTGRES_PASSWORD
 Redis Password: $REDIS_PASSWORD
 RabbitMQ Password: $RABBITMQ_PASSWORD
 Minio Password: $MINIO_PASSWORD
 
-# Connection strings for application configuration:
-PostgreSQL: postgresql://sprocketbot:$POSTGRES_PASSWORD@postgres:5432/sprocketbot
+# Connection strings for application configuration (Postgres managed, see /srv/managed-db.env):
 Redis: redis://:$REDIS_PASSWORD@redis:6379
 RabbitMQ: amqp://sprocketbot:$RABBITMQ_PASSWORD@rabbitmq:5672
 Minio Access Key: sprocketbot
@@ -210,41 +205,40 @@ chmod 600 /srv/infrastructure-passwords.txt
 
 echo "✅ Passwords saved to /srv/infrastructure-passwords.txt"
 
-# Deploy PostgreSQL
-echo "🐘 Deploying PostgreSQL..."
-cat > /srv/postgres.yml << 'EOF'
-version: '3.8'
-services:
-  postgres:
-    image: postgres:14
-    environment:
-      POSTGRES_DB: sprocketbot
-      POSTGRES_USER: sprocketbot
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
-    volumes:
-      - /mnt/postgres-data:/var/lib/postgresql/data
-    networks:
-      - postgres-network
-    secrets:
-      - postgres-password
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-      labels:
-        - "traefik.enable=false"
+# Configure Managed Postgres (from Pulumi outputs)
+echo "🐘 Configuring Managed PostgreSQL..."
 
-secrets:
-  postgres-password:
-    external: true
+# Try to load from deployment-info.txt if present
+DB_HOST=""; DB_PORT=""; DB_NAME=""; DB_USER=""; DB_PASSWORD=""
+if [[ -f /root/deployment-info.txt ]]; then
+  echo "Found /root/deployment-info.txt, loading DB details..."
+  source <(grep -E '^(DB_HOST|DB_PORT|DB_NAME|DB_USER)=' /root/deployment-info.txt | sed 's/\r$//')
+fi
 
-networks:
-  postgres-network:
-    external: true
+echo "" 
+if [[ -z "$DB_HOST" ]]; then read -p "Enter Managed Postgres Host: " DB_HOST; fi
+if [[ -z "$DB_PORT" ]]; then read -p "Enter Managed Postgres Port [5432]: " DB_PORT; DB_PORT=${DB_PORT:-5432}; fi
+if [[ -z "$DB_NAME" ]]; then read -p "Enter Managed Postgres Database [sprocketbot]: " DB_NAME; DB_NAME=${DB_NAME:-sprocketbot}; fi
+if [[ -z "$DB_USER" ]]; then read -p "Enter Managed Postgres User [sprocketbot]: " DB_USER; DB_USER=${DB_USER:-sprocketbot}; fi
+read -s -p "Enter Managed Postgres Password: " DB_PASSWORD; echo ""
+
+# Create/update secret for DB password using the traditional name used by apps
+if [[ -n "$DB_PASSWORD" ]]; then
+  echo "$DB_PASSWORD" | docker secret create postgres-password - 2>/dev/null || (docker secret rm postgres-password >/dev/null 2>&1 && echo "$DB_PASSWORD" | docker secret create postgres-password -)
+  echo "✅ Stored DB password in docker secret: postgres-password"
+else
+  echo "❌ No DB password provided; services may fail to connect to Postgres"
+fi
+
+# Save managed DB settings (without password)
+cat > /srv/managed-db.env << EOF
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_NAME=$DB_NAME
+DB_USER=$DB_USER
 EOF
-
-docker stack deploy -c /srv/postgres.yml postgres
-echo "✅ PostgreSQL deployed"
+chmod 600 /srv/managed-db.env
+echo "✅ Saved managed DB settings to /srv/managed-db.env"
 
 # Deploy Redis
 echo "🔴 Deploying Redis..."
@@ -394,6 +388,7 @@ echo "• Minio Console: https://minio-console.$DOMAIN"
 echo "• Minio API: https://minio.$DOMAIN"
 echo ""
 echo "🔒 Passwords saved in: /srv/infrastructure-passwords.txt"
+echo "🐘 Managed Postgres settings saved in: /srv/managed-db.env (password in docker secret 'postgres-password')"
 echo ""
 echo "🚀 Ready for application deployment!"
 echo "Run ./deploy-applications.sh to deploy SprocketBot services"

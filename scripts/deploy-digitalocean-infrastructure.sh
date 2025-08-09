@@ -254,9 +254,20 @@ echo "📋 Deployment Information:"
 echo "=========================="
 MANAGER_IP=$(pulumi stack output managerIp)
 LOAD_BALANCER_IP=$(pulumi stack output loadBalancerIp)
+DB_HOST=$(pulumi stack output dbHost 2>/dev/null || echo "")
+DB_PORT=$(pulumi stack output dbPort 2>/dev/null || echo "")
+DB_NAME=$(pulumi stack output dbName 2>/dev/null || echo "")
+DB_USER=$(pulumi stack output dbUser 2>/dev/null || echo "")
+DB_PASSWORD=$(pulumi stack output dbPassword 2>/dev/null || echo "")
 
 echo "Manager IP: $MANAGER_IP"
 echo "Load Balancer IP: $LOAD_BALANCER_IP"
+if [[ -n "$DB_HOST" ]]; then
+  echo "Managed Postgres Host: $DB_HOST:$DB_PORT"
+  echo "Managed Postgres DB: $DB_NAME"
+  echo "Managed Postgres User: $DB_USER"
+  echo "Managed Postgres Password: (stored as Pulumi secret)"
+fi
 
 # Save deployment info for later use (always overwrite to ensure current IPs)
 cat > "$REPO_ROOT/deployment-info.txt" << EOF
@@ -266,6 +277,10 @@ cat > "$REPO_ROOT/deployment-info.txt" << EOF
 MANAGER_IP=$MANAGER_IP
 LOAD_BALANCER_IP=$LOAD_BALANCER_IP
 REGION=$(pulumi config get region)
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_NAME=$DB_NAME
+DB_USER=$DB_USER
 EOF
 
 echo ""

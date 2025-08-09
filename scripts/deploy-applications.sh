@@ -25,6 +25,15 @@ fi
 # Source infrastructure passwords
 source <(grep -E '^[^#]' /srv/infrastructure-passwords.txt | sed 's/: /=/' | sed 's/ /_/g')
 
+# Load managed DB settings
+if [[ -f /srv/managed-db.env ]]; then
+  source /srv/managed-db.env
+else
+  echo "❌ Managed DB settings not found at /srv/managed-db.env"
+  echo "Please run ./deploy-infrastructure.sh and provide managed Postgres details."
+  exit 1
+fi
+
 echo "📝 Application Configuration"
 echo "============================"
 echo ""
@@ -175,10 +184,10 @@ cat > /tmp/core-config.json << EOF
     "secure": false
   },
   "db": {
-    "host": "postgres",
-    "port": 5432,
-    "username": "sprocketbot",
-    "database": "sprocketbot",
+    "host": "$DB_HOST",
+    "port": $DB_PORT,
+    "username": "$DB_USER",
+    "database": "$DB_NAME",
     "enable_logs": false
   },
   "web": {
@@ -279,7 +288,6 @@ services:
       CONFIG_FILE: /app/config/production.json
     networks:
       - sprocket-platform
-      - postgres-network
       - traefik-ingress
     secrets:
       - jwt-secret
@@ -332,8 +340,6 @@ secrets:
 
 networks:
   sprocket-platform:
-    external: true
-  postgres-network:
     external: true
   traefik-ingress:
     external: true
@@ -447,10 +453,14 @@ for i in {1..30}; do
     sleep 10
 done
 
-# Run migrations
+# Run migrations against managed Postgres
 docker run --rm \
-  --network postgres-network \
-  --env-file <(echo "POSTGRES_HOST=postgres"; echo "POSTGRES_USER=sprocketbot"; echo "POSTGRES_PASSWORD=$PostgreSQL_Password"; echo "POSTGRES_DATABASE=sprocketbot") \
+  --secret postgres-password \
+  -e POSTGRES_HOST="$DB_HOST" \
+  -e POSTGRES_PORT="$DB_PORT" \
+  -e POSTGRES_USER="$DB_USER" \
+  -e POSTGRES_DATABASE="$DB_NAME" \
+  -e POSTGRES_PASSWORD_FILE="/run/secrets/postgres-password" \
   ghcr.io/sprocketbot/core:main \
   npm run migration:run || echo "⚠️ Migration failed or already up to date"
 

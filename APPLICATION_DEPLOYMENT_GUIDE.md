@@ -1,5 +1,7 @@
 # SprocketBot Application Deployment Guide
 
+Important: The infrastructure now uses a managed DigitalOcean PostgreSQL cluster. Any sections in this document that deploy a PostgreSQL container inside the swarm are deprecated. Prefer the flow in `DEPLOYMENT_OVERVIEW.md`, which configures managed Postgres and wires the apps to it.
+
 This guide covers deploying the actual SprocketBot applications to your DigitalOcean infrastructure. This assumes you have already completed the [infrastructure deployment](DEPLOYMENT_GUIDE.md).
 
 ## 📋 Prerequisites

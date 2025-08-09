@@ -10,8 +10,13 @@ export class DigitalOceanInfrastructure extends pulumi.ComponentResource {
     public readonly managerDroplet: digitalocean.Droplet;
     public readonly workerDroplets: digitalocean.Droplet[];
     public readonly loadBalancer: digitalocean.LoadBalancer;
+    public readonly database: {
+        cluster: digitalocean.DatabaseCluster;
+        db: digitalocean.DatabaseDb;
+        user: digitalocean.DatabaseUser;
+        firewall: digitalocean.DatabaseFirewall;
+    };
     public readonly volumes: {
-        postgres: digitalocean.Volume;
         minio: digitalocean.Volume;
         influx: digitalocean.Volume;
     };
@@ -28,15 +33,46 @@ export class DigitalOceanInfrastructure extends pulumi.ComponentResource {
             ipRange: vpcCidr,
         }, { parent: this });
 
-        // Create persistent volumes
+        // Create managed Postgres cluster
+        const dbSize = config.get("db-size") || "db-s-1vcpu-1gb";
+        const dbNodeCount = parseInt(config.get("db-node-count") || "1");
+        const dbVersion = config.get("db-version") || "14";
+
+        const dbCluster = new digitalocean.DatabaseCluster(`${name}-postgres`, {
+            engine: "pg",
+            version: dbVersion,
+            region: region,
+            size: dbSize,
+            nodeCount: dbNodeCount,
+            privateNetworkUuid: undefined, // uses VPC via firewall rule
+        }, { parent: this });
+
+        const dbFirewall = new digitalocean.DatabaseFirewall(`${name}-postgres-fw`, {
+            clusterId: dbCluster.id,
+            rules: [
+                { type: "vpc", value: this.vpc.id },
+            ],
+        }, { parent: this });
+
+        const db = new digitalocean.DatabaseDb(`${name}-db`, {
+            clusterId: dbCluster.id,
+            name: "sprocketbot",
+        }, { parent: this });
+
+        const dbUser = new digitalocean.DatabaseUser(`${name}-db-user`, {
+            clusterId: dbCluster.id,
+            name: "sprocketbot",
+        }, { parent: this });
+
+        this.database = {
+            cluster: dbCluster,
+            db,
+            user: dbUser,
+            firewall: dbFirewall,
+        };
+
+        // Create persistent volumes (for self-hosted services)
         this.volumes = {
-            postgres: new digitalocean.Volume(`${name}-postgres-data`, {
-                region: region,
-                size: 100,
-                initialFilesystemType: "ext4",
-                description: "PostgreSQL persistent storage"
-            }, { parent: this }),
-            
             minio: new digitalocean.Volume(`${name}-minio-data`, {
                 region: region, 
                 size: 100,
@@ -86,8 +122,8 @@ PRIVATE_IP=$(curl -s http://169.254.169.254/metadata/v1/interfaces/private/0/ipv
 docker swarm init --advertise-addr $PRIVATE_IP
 
 # Create directories for volume mounts
-mkdir -p /mnt/postgres-data /mnt/minio-data /mnt/influx-data
-chmod 755 /mnt/postgres-data /mnt/minio-data /mnt/influx-data
+mkdir -p /mnt/minio-data /mnt/influx-data
+chmod 755 /mnt/minio-data /mnt/influx-data
 
 echo "Docker Swarm manager initialized"
 `;
@@ -104,7 +140,6 @@ echo "Docker Swarm manager initialized"
             userData: swarmInitScript,
             tags: ["docker-swarm", "manager", "sprocketbot"],
             volumeIds: [
-                this.volumes.postgres.id,
                 this.volumes.minio.id,
                 this.volumes.influx.id
             ],
@@ -249,3 +284,8 @@ export const managerIp = infrastructure.managerDroplet.ipv4Address;
 export const loadBalancerIp = infrastructure.loadBalancer.ip;
 export const managerPrivateIp = infrastructure.managerDroplet.ipv4AddressPrivate;
 export const workerIps = infrastructure.workerDroplets.map(droplet => droplet.ipv4Address);
+export const dbHost = infrastructure.database.cluster.host;
+export const dbPort = infrastructure.database.cluster.port;
+export const dbName = infrastructure.database.db.name;
+export const dbUser = infrastructure.database.user.name;
+export const dbPassword = pulumi.secret(infrastructure.database.user.password);

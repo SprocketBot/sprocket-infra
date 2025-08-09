@@ -1,3 +1,5 @@
+For a cohesive end-to-end deployment overview, see `DEPLOYMENT_OVERVIEW.md`.
+
 Useful snippet for pointing to a remote docker host  
 ```bash
 ssh -L localhost:2377:/var/run/docker.sock user@remotehost
