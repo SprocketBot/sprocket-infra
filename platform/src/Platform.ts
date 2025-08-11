@@ -1,7 +1,8 @@
+import {DigitalOcean} from "./DigitalOcean";
 import * as docker from "@pulumi/docker"
 import * as postgresql from "@pulumi/postgresql"
 import * as pulumi from "@pulumi/pulumi"
-import * as vault from "@pulumi/vault"
+
 import * as minio from "@pulumi/minio"
 import * as random from "@pulumi/random";
 
@@ -13,18 +14,17 @@ import {buildHost} from "global/helpers/buildHost";
 import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME, PRODUCTION_CHATWOOT_WEBSITE_TOKEN} from "global/constants"
 import {PlatformSecrets} from "./PlatformSecrets";
 import {PlatformDatabase} from "./PlatformDatabase";
-import {PlatformVault} from "./PlatformVault";
+import {PlatformDoppler} from "./PlatformVault";
 import {PlatformMinio} from "./PlatformMinio";
 import {EloService} from "./microservices/EloService";
 import {LegacyPlatform} from './legacy/LegacyPlatform';
 
 const config = new pulumi.Config()
 
+import * as doppler from "@pulumi/doppler";
+
 export interface PlatformArgs {
-    vault: {
-        infrastructure: vault.Provider,
-        platform: vault.Provider
-    }
+    dopplerProvider: doppler.Provider;
 
     postgresProvider: postgresql.Provider
     postgresHostname: string | pulumi.Output<string>
@@ -37,6 +37,10 @@ export interface PlatformArgs {
     n8nNetworkId: docker.Network["id"],
 
     configRoot: string
+
+    // DigitalOcean integration
+    useDigitalOcean?: boolean;
+    digitalOceanRegion?: string;
 }
 
 export class Platform extends pulumi.ComponentResource {
@@ -57,7 +61,6 @@ export class Platform extends pulumi.ComponentResource {
         imageGen: SprocketService
     }
 
-
     readonly apiUrl: string
     readonly webUrl: string
     readonly chatwootUrl: string
@@ -65,7 +68,7 @@ export class Platform extends pulumi.ComponentResource {
 
     readonly key: random.RandomUuid
 
-    readonly vaultSync: PlatformVault
+    readonly vaultSync: PlatformDoppler
 
     readonly services: {
         imageGen: SprocketService,
@@ -77,14 +80,41 @@ export class Platform extends pulumi.ComponentResource {
         submissions: SprocketService
     }
 
+    // DigitalOcean infrastructure (optional)
+    readonly digitalOcean?: DigitalOcean
+    readonly dockerProvider?: docker.Provider
+
     constructor(name: string, args: PlatformArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Platform", name, {}, opts)
 
         this.key = new random.RandomUuid(`${name}-key`)
 
+        // Initialize DigitalOcean infrastructure if enabled
+        if (args.useDigitalOcean) {
+            this.digitalOcean = new DigitalOcean(`${name}-do`, {
+                region: args.digitalOceanRegion || "nyc3",
+                managerSize: config.get("do-manager-size") || "s-4vcpu-8gb",
+                workerSize: config.get("do-worker-size") || "s-2vcpu-4gb", 
+                workerCount: parseInt(config.get("do-worker-count") || "2"),
+            }, { parent: this });
+
+            // Configure Docker provider to connect to DigitalOcean manager
+            this.dockerProvider = new docker.Provider(`${name}-docker-provider`, {
+                host: pulumi.interpolate`tcp://${this.digitalOcean.managerIp}:2376`,
+                // Note: In production, you should configure TLS certificates
+                // For now, using insecure connection for initial setup
+            }, { parent: this });
+        }
+
         this.environmentSubdomain = config.require("subdomain")
         this.postgresNetworkId = args.postgresNetworkId
-        this.network = new docker.Network(`${name}-net`, {driver: "overlay"}, {parent: this})
+        
+        // Create Docker network with appropriate provider
+        const networkOptions = { parent: this };
+        if (this.dockerProvider) {
+            (networkOptions as any).provider = this.dockerProvider;
+        }
+        this.network = new docker.Network(`${name}-net`, {driver: "overlay"}, networkOptions)
 
 
         this.objectStorage = new PlatformMinio(`${name}-minio`, {
@@ -378,8 +408,8 @@ export class Platform extends pulumi.ComponentResource {
             })
         };
 
-        this.vaultSync = new PlatformVault(`${name}-vault-sync`, {
-            vaultProvider: args.vault.platform,
+        this.vaultSync = new PlatformDoppler(`${name}-doppler-sync`, {
+            dopplerProvider: args.dopplerProvider,
             environment: this.environmentSubdomain,
             redis: {
                 url: this.datastore.redis.url ?? "",

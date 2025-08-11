@@ -4,3 +4,6 @@ global/node_modules/
 *.iml
 
 scripts/db-sync/.env
+bin/
+lib/
+pyvenv.cfg
