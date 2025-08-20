@@ -29,27 +29,36 @@ export class Vault extends pulumi.ComponentResource {
             filepath: args.configurationPath
         }, { parent: this } )
 
-        const url = `vault.${HOSTNAME}`;
-        this.address = `https://${url}`
+        const url = `vault-init.${HOSTNAME}`;
+        this.address = `http://${url}`
 
 
         this.service = new docker.Service(`${name}-service`, {
             name: name,
             labels: new TraefikLabels(name)
                 .rule(`Host(\`${url}\`)`)
-                .tls("lets-encrypt-tls")
+                .entryPoints("web")
                 .targetPort(8200)
                 .complete,
 
             taskSpec: {
                 containerSpec: {
-                    image: "vault:1.10.0",
+                    image: "hashicorp/vault:1.15.4",
                     configs: [{
                         configName: this.config.name,
                         configId: this.config.id,
                         fileName: "/vault.hcl"
                     }],
-                    commands: ["vault", "server", "-config", "/vault.hcl"]
+                    commands: ["vault", "server", "-config", "/vault.hcl"],
+                    env: {
+                        VAULT_API_ADDR: "http://0.0.0.0:8200"
+                    }
+                },
+                placement: {
+                    platforms: [{ 
+                        architecture: "arm64", 
+                        os: "linux" 
+                    }]
                 },
                 logDriver: DefaultLogDriver(name, true),
                 networks: [

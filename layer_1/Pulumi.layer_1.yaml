@@ -1,12 +1,12 @@
-encryptionsalt: v1:imM0LPy+Pn0=:v1:cbZAM7OXeuOFsG3r:xMj8Umq5hMzmeINpaKAc0zuioZ3Ndg==
+encryptionsalt: v1:xKGXGTckPIg=:v1:zw3D4vfIfFnZO9LW:4suHHuDQPaTTyHIaEAvC+c8UECPlRg==
 config:
-  layer_1:discord-fa-client-secret:
-    secure: v1:jJikJCveqopPM+b8:ROi3hBNnSOSN99eCpAOAumv/l76WJv81+RFMlKUTY5KqQMfMe324N0z2fy1wwxlC
+  layer_1:vault-s3-access-key: DO801RUNKPDWVBCNR2UM
+  layer_1:vault-s3-bucket: vault-secrets
+  layer_1:vault-s3-endpoint: https://nyc3.digitaloceanspaces.com
   layer_1:docker-access-token:
-    secure: v1:GnJG9CE7EY5olJWj:bw96o6j6SMIJzcok92R+U/scDFWdASIwKIPXt33N1ktOc8JAU3J4iD+nMHEcgRWN1pU9UQ==
-  layer_1:docker-username: actualsovietshark
-  layer_1:vault-s3-access-key: YWS9AKY66LS815BUPG6G
-  layer_1:vault-s3-bucket: sprocket
-  layer_1:vault-s3-endpoint: https://us-southeast-1.linodeobjects.com
+    secure: v1:VX+08F8WshiGyFxp:HZw5g1KlLc25r79GrYNNcv+rMcIqIU3UVvsVLwE3zEEXOaxG92ego4Gh13DzEKeL4ej/qA==
+  layer_1:docker-username: asaxplayinghorse@gmail.com
+  layer_1:discord-fa-client-secret:
+    secure: v1:RutMWB700vl/+IHx:B5iDcx96EmjPOFgBtuUl62Whrw21Qb9W9SgsnckmXaVR1GcgExYm3Y1qUTNk2zFh
   layer_1:vault-s3-secret-key:
-    secure: v1:N/lqsnXq5Y+p5XcJ:pyJno6q4d+vUqVlQ+Kw9TyDD7NFebl7RIvIcQVvmSMiA0veOJfGtJyu4ho8CO38djCUNi1SVONE=
+    secure: v1:4UNf4f3sbjA033sM:zcNT/rD3MAoX3YInJk7ecNEie1XxOmAW89r26hJtAEWro2ijtJHpFf1tV10EZgbJj1K7voVUHWBLvUk=

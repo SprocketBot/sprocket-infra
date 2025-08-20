@@ -1,3 +1,0 @@
-name: layer_2
-runtime: nodejs
-description: A minimal TypeScript Pulumi program
