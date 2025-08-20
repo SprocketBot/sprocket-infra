@@ -1,0 +1,98 @@
+version: '3.8'
+
+networks:
+  traefik-ingress:
+    driver: overlay
+    attachable: true
+  socket-proxy:
+    driver: overlay
+    internal: true
+
+volumes:
+  traefik-data:
+  traefik-configs:
+
+configs:
+  traefik-static:
+    file: ./layer_1/src/config/traefik/static.yaml
+  discord-forward-auth:
+    file: ./layer_1/src/config/traefik/discord-forward-auth.yaml
+
+services:
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    environment:
+      CONTAINERS: 1
+      SERVICES: 1
+      SWARM: 1
+      NETWORKS: 1
+      TASKS: 1
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - socket-proxy
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=false"
+
+  traefik:
+    image: traefik:v2.6.1
+    command:
+      - --configFile=/static.yaml
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - traefik-data:/data
+    networks:
+      - traefik-ingress
+      - socket-proxy
+    configs:
+      - source: traefik-static
+        target: /static.yaml
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == ingress
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${HOSTNAME}`)"
+        - "traefik.http.routers.traefik-dashboard.service=api@internal"
+        - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+        - "traefik.http.routers.traefik-dashboard.tls.certresolver=lets-encrypt-tls"
+        - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=9999"
+        - "traefik.http.routers.traefik-dashboard.middlewares=sprocket-admin-auth@docker"
+
+  discord-forward-auth:
+    image: thomseddon/traefik-forward-auth:latest
+    environment:
+      - DEFAULT_ACTION=auth
+      - DEFAULT_PROVIDER=generic-oauth
+      - PROVIDERS_GENERIC_OAUTH_AUTH_URL=https://discord.com/api/oauth2/authorize
+      - PROVIDERS_GENERIC_OAUTH_TOKEN_URL=https://discord.com/api/oauth2/token
+      - PROVIDERS_GENERIC_OAUTH_USER_URL=https://discord.com/api/users/@me
+      - PROVIDERS_GENERIC_OAUTH_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - PROVIDERS_GENERIC_OAUTH_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - PROVIDERS_GENERIC_OAUTH_SCOPE=identify guilds
+      - SECRET=${FORWARD_AUTH_SECRET}
+      - COOKIE_DOMAIN=${HOSTNAME}
+      - AUTH_HOST=auth.${HOSTNAME}
+      - URL_PATH=/_oauth
+      - LOG_LEVEL=info
+      - LOG_FORMAT=text
+      - LIFETIME=86400
+    networks:
+      - traefik-ingress
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.discord-forward-auth.loadbalancer.server.port=4181"
+        - "traefik.http.routers.discord-forward-auth.rule=Host(`auth.${HOSTNAME}`)"
+        - "traefik.http.routers.discord-forward-auth.entrypoints=websecure"
+        - "traefik.http.routers.discord-forward-auth.tls.certresolver=lets-encrypt-tls"
+        - "traefik.http.middlewares.sprocket-admin-auth.forwardauth.address=http://discord-forward-auth:4181"
+        - "traefik.http.middlewares.sprocket-admin-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
