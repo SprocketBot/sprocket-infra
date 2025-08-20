@@ -14,9 +14,9 @@ volumes:
 
 configs:
   traefik-static:
-    file: ./layer_1/src/config/traefik/static.yaml
+    file: ../layer_1/src/config/traefik/static.yaml
   discord-forward-auth:
-    file: ./layer_1/src/config/traefik/discord-forward-auth.yaml
+    file: ../layer_1/src/config/traefik/discord-forward-auth.yaml
 
 services:
   socket-proxy:

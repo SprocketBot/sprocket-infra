@@ -19,13 +19,13 @@ volumes:
 
 configs:
   redis-config:
-    file: ./layer_2/src/config/redis/redis.conf
+    file: ../layer_2/src/config/redis/redis.conf
   gatus-config:
-    file: ./layer_2/src/config/gatus/config.yml
+    file: ../layer_2/src/config/gatus/config.yml
   fluentd-config:
-    file: ./layer_2/src/monitoring/config/fluentd.conf
+    file: ../layer_2/src/monitoring/config/fluentd.conf
   telegraf-config:
-    file: ./layer_2/src/monitoring/config/telegraf.conf
+    file: ../layer_2/src/monitoring/config/telegraf.conf
 
 
 services:

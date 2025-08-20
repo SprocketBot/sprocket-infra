@@ -17,31 +17,31 @@ volumes:
 
 configs:
   platform-redis-config:
-    file: ./platform/src/config/datastores/redis.conf
+    file: ../platform/src/config/datastores/redis.conf
   rabbitmq-config:
-    file: ./platform/src/config/datastores/rabbitmq.conf
+    file: ../platform/src/config/datastores/rabbitmq.conf
   sprocket-core-config:
-    file: ./platform/src/config/services/core.json
+    file: ../platform/src/config/services/core.json
   sprocket-web-config:
-    file: ./platform/src/config/services/web.json
+    file: ../platform/src/config/services/web.json
   discord-bot-config:
-    file: ./platform/src/config/services/discord-bot.json
+    file: ../platform/src/config/services/discord-bot.json
   elo-service-config:
-    file: ./platform/src/config/services/elo-service.json
+    file: ../platform/src/config/services/elo-service.json
   image-generation-frontend-config:
-    file: ./platform/src/config/services/image-generation-frontend.json
+    file: ../platform/src/config/services/image-generation-frontend.json
   image-generation-service-config:
-    file: ./platform/src/config/services/image-generation-service.json
+    file: ../platform/src/config/services/image-generation-service.json
   matchmaking-service-config:
-    file: ./platform/src/config/services/matchmaking-service.json
+    file: ../platform/src/config/services/matchmaking-service.json
   notification-service-config:
-    file: ./platform/src/config/services/notification-service.json
+    file: ../platform/src/config/services/notification-service.json
   replay-parse-service-config:
-    file: ./platform/src/config/services/replay-parse-service.json
+    file: ../platform/src/config/services/replay-parse-service.json
   server-analytics-service-config:
-    file: ./platform/src/config/services/server-analytics-service.json
+    file: ../platform/src/config/services/server-analytics-service.json
   submission-service-config:
-    file: ./platform/src/config/services/submission-service.json
+    file: ../platform/src/config/services/submission-service.json
 
 services:
   # Platform Datastores
@@ -105,7 +105,7 @@ services:
       NODE_ENV: production
       # Database
       DATABASE_HOST: ${POSTGRES_HOSTNAME}
-      DATABASE_PORT: 5432
+      DATABASE_PORT: ${POSTGRES_PORT}
       DATABASE_NAME: ${POSTGRES_DATABASE}
       DATABASE_USER: ${POSTGRES_USER}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
