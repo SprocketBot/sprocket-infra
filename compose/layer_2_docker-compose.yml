@@ -142,7 +142,6 @@ services:
         - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
   fluentd:
-    #image: fluent/fluentd:v1.14-debian-1
     image: grafana/fluent-plugin-loki:main
     volumes:
       - /var/log:/var/log:ro
@@ -174,17 +173,3 @@ services:
       labels:
         - "traefik.enable=false"
 
-  gatus:
-    image: twinproduction/gatus:v5.0.0
-    networks:
-      - layer1_traefik-ingress
-    configs:
-      - source: gatus-config
-        target: /config/config.yaml
-    deploy:
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.gatus.rule=Host(`status.${HOSTNAME}`)"
-        - "traefik.http.routers.gatus.entrypoints=websecure"
-        - "traefik.http.routers.gatus.tls.certresolver=lets-encrypt-tls"
-        - "traefik.http.services.gatus.loadbalancer.server.port=8080"
