@@ -1,7 +1,7 @@
 version: '3.8'
 
 networks:
-  traefik-ingress:
+  layer1_traefik-ingress:
     external: true
   monitoring-network:
     driver: overlay
@@ -38,7 +38,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - traefik-ingress
+      - layer1_traefik-ingress
     configs:
       - source: redis-config
         target: /usr/local/etc/redis/redis.conf
@@ -58,7 +58,7 @@ services:
     volumes:
       - minio-data:/data
     networks:
-      - traefik-ingress
+      - layer1_traefik-ingress
     deploy:
       placement:
         constraints:
@@ -89,7 +89,7 @@ services:
       - influx-data:/var/lib/influxdb2
     networks:
       - monitoring-network
-      - traefik-ingress
+      - layer1_traefik-ingress
     deploy:
       placement:
         constraints:
@@ -128,7 +128,7 @@ services:
       - grafana-data:/var/lib/grafana
     networks:
       - monitoring-network
-      - traefik-ingress
+      - layer1_traefik-ingress
       - postgres-network
     deploy:
       placement:
@@ -142,7 +142,8 @@ services:
         - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
   fluentd:
-    image: fluent/fluentd:v1.14-debian-1
+    #image: fluent/fluentd:v1.14-debian-1
+    image: grafana/fluent-plugin-loki:main
     volumes:
       - /var/log:/var/log:ro
     networks:
@@ -176,7 +177,7 @@ services:
   gatus:
     image: twinproduction/gatus:v5.0.0
     networks:
-      - traefik-ingress
+      - layer1_traefik-ingress
     configs:
       - source: gatus-config
         target: /config/config.yaml

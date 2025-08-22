@@ -57,7 +57,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.role == ingress
+          - node.role == manager
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${HOSTNAME}`)"
