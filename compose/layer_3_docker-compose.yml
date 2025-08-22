@@ -1,11 +1,11 @@
 version: '3.8'
 
 networks:
-  traefik-ingress:
+  layer1_traefik-ingress:
     external: true
-  monitoring-network:
+  layer2_monitoring-network:
     external: true
-  postgres-network:
+  layer2_postgres-network:
     external: true
   platform-network:
     driver: overlay
@@ -55,7 +55,7 @@ services:
       - platform-redis-data:/data
     networks:
       - platform-network
-      - traefik-ingress
+      - layer1_traefik-ingress
     configs:
       - source: platform-redis-config
         target: /usr/local/etc/redis/redis.conf
@@ -79,7 +79,7 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - platform-network
-      - traefik-ingress
+      - layer1_traefik-ingress
     configs:
       - source: rabbitmq-config
         target: /etc/rabbitmq/rabbitmq.conf
@@ -134,8 +134,8 @@ services:
       S3_BUCKET: ${S3_BUCKET}
     networks:
       - platform-network
-      - traefik-ingress
-      - postgres-network
+      - layer1_traefik-ingress
+      - layer2_postgres-network
     configs:
       - source: sprocket-core-config
         target: /app/config/production.json
@@ -155,7 +155,7 @@ services:
       CHATWOOT_HMAC_KEY: ${CHATWOOT_HMAC_KEY}
       API_URL: https://api.${ENVIRONMENT_SUBDOMAIN}.${HOSTNAME}
     networks:
-      - traefik-ingress
+      - layer1_traefik-ingress
     configs:
       - source: sprocket-web-config
         target: /app/config/production.json
@@ -194,7 +194,7 @@ services:
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - platform-network
-      - traefik-ingress
+      - layer1_traefik-ingress
     configs:
       - source: image-generation-frontend-config
         target: /app/src/config.json
@@ -247,7 +247,7 @@ services:
       INFLUX_BUCKET: metrics
     networks:
       - platform-network
-      - monitoring-network
+      - layer2_monitoring-network
     configs:
       - source: server-analytics-service-config
         target: /app/config/production.json
@@ -294,7 +294,7 @@ services:
       REDIS_PASSWORD: ${PLATFORM_REDIS_PASSWORD}
     networks:
       - platform-network
-      - traefik-ingress
+      - layer1_traefik-ingress
     configs:
       - source: elo-service-config
         target: /app/config/production.json
