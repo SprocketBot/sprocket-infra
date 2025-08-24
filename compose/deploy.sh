@@ -57,17 +57,9 @@ echo ""
 echo -e "${YELLOW}🌐 Deploying Layer 1: Ingress & Authentication${NC}"
 docker stack deploy -c layer_1_docker-compose.yml layer1 --detach=false
 
-# Wait a moment for Traefik to be ready
-echo "Waiting 30 seconds for Traefik to initialize..."
-sleep 30
-
 # Deploy Layer 2 (Infrastructure Services)
 echo -e "${YELLOW}🗄️  Deploying Layer 2: Infrastructure Services${NC}"
 docker stack deploy -c layer_2_docker-compose.yml layer2 --detach=false
-
-# Wait for infrastructure services
-echo "Waiting 60 seconds for infrastructure services to initialize..."
-sleep 60
 
 # Deploy Layer 3 (Platform Services)
 echo -e "${YELLOW}🚀 Deploying Layer 3: Platform Services${NC}"
