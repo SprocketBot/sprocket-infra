@@ -96,31 +96,26 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      # Wait for MinIO to be ready
       until mc ping --exit minio:9000; do
         echo 'Waiting for MinIO to be ready...'
         sleep 5
       done
       
-      # Set up MinIO alias
-      mc alias set minio http://minio:9000 \$$MINIO_ROOT_USER \$$MINIO_ROOT_PASSWORD
+      mc alias set minio http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD
       
-      # Create service account for applications
-      if ! mc admin user svcacct info minio \$$MINIO_ACCESS_KEY 2>/dev/null; then
+      if ! mc admin user svcacct info minio $$MINIO_ACCESS_KEY 2>/dev/null; then
         echo 'Creating service account...'
-        mc admin user svcacct add --access-key \$$MINIO_ACCESS_KEY --secret-key \$$MINIO_SECRET_KEY minio \$$MINIO_ROOT_USER
+        mc admin user svcacct add --access-key $$MINIO_ACCESS_KEY --secret-key $$MINIO_SECRET_KEY minio $$MINIO_ROOT_USER
         echo 'Service account created successfully'
       else
         echo 'Service account already exists'
       fi
       
-      # Create buckets
-      mc mb minio/\$$MINIO_REPLAYS_BUCKET --ignore-existing
-      mc mb minio/\$$MINIO_IMAGE_GENERATION_BUCKET --ignore-existing
+      mc mb minio/$$MINIO_REPLAYS_BUCKET --ignore-existing
+      mc mb minio/$$MINIO_IMAGE_GENERATION_BUCKET --ignore-existing
       
-      # Set bucket policies (public read for now, adjust as needed)
-      mc policy set public minio/\$$MINIO_REPLAYS_BUCKET
-      mc policy set public minio/\$$MINIO_IMAGE_GENERATION_BUCKET
+      mc policy set public minio/$$MINIO_REPLAYS_BUCKET
+      mc policy set public minio/$$MINIO_IMAGE_GENERATION_BUCKET
       
       echo 'MinIO setup completed'
       "
