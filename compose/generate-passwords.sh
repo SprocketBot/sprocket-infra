@@ -19,8 +19,16 @@ echo "🔐 Generating infrastructure passwords..."
 
 # Generate passwords for layer 2 services
 REDIS_PASSWORD=$(generate_password)
+REDIS_PORT="6379"
 MINIO_ROOT_USER="admin"
 MINIO_ROOT_PASSWORD=$(generate_password)
+MINIO_ENDPOINT="minio"
+MINIO_PORT="9000"
+MINIO_ACCESS_KEY="sprocketuser"
+MINIO_SECRET_KEY=$(generate_password)
+MINIO_USE_SSL="false"
+MINIO_REPLAYS_BUCKET="replays"
+MINIO_IMAGE_GENERATION_BUCKET="image-generation"
 INFLUX_ADMIN_PASSWORD=$(generate_password)
 INFLUX_ADMIN_TOKEN=$(generate_token)
 GRAFANA_ADMIN_PASSWORD=$(generate_password)
@@ -41,8 +49,16 @@ cat >.env.infra <<EOF
 
 # Layer 2 Infrastructure Services
 REDIS_PASSWORD='${REDIS_PASSWORD}'
+REDIS_PORT='${REDIS_PORT}'
 MINIO_ROOT_USER='${MINIO_ROOT_USER}'
 MINIO_ROOT_PASSWORD='${MINIO_ROOT_PASSWORD}'
+MINIO_ENDPOINT='${MINIO_ENDPOINT}'
+MINIO_PORT='${MINIO_PORT}'
+MINIO_ACCESS_KEY='${MINIO_ACCESS_KEY}'
+MINIO_SECRET_KEY='${MINIO_SECRET_KEY}'
+MINIO_USE_SSL='${MINIO_USE_SSL}'
+MINIO_REPLAYS_BUCKET='${MINIO_REPLAYS_BUCKET}'
+MINIO_IMAGE_GENERATION_BUCKET='${MINIO_IMAGE_GENERATION_BUCKET}'
 INFLUX_ADMIN_PASSWORD='${INFLUX_ADMIN_PASSWORD}'
 INFLUX_ADMIN_TOKEN='${INFLUX_ADMIN_TOKEN}'
 GRAFANA_ADMIN_PASSWORD='${GRAFANA_ADMIN_PASSWORD}'
@@ -53,7 +69,6 @@ RABBITMQ_USER='${RABBITMQ_USER}'
 RABBITMQ_PASSWORD='${RABBITMQ_PASSWORD}'
 
 # Auth Secrets
-JWT_SECRET='${JWT_SECRET}'
 FORWARD_AUTH_SECRET='${FORWARD_AUTH_SECRET}'
 EOF
 
@@ -63,4 +78,3 @@ echo "These passwords will be:"
 echo "  - Used to configure the services when they start"
 echo "  - Used by dependent services to connect"
 echo "  - Combined with your Doppler secrets in the final .env file"
-

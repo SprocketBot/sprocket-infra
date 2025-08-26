@@ -7,6 +7,8 @@ networks:
     external: true
   layer2_postgres-network:
     external: true
+  layer2_dgraph-network:
+    external: true
   platform-network:
     driver: overlay
     attachable: true
@@ -27,7 +29,7 @@ services:
   platform-redis:
     image: redislabs/rejson:2.0.7
     command: >
-      --requirepass ${REDIS_PASSWORD}
+      --requirepass ${PLATFORM_REDIS_PASSWORD}
       --loadmodule /usr/lib/redis/modules/rejson.so
       --loadmodule /usr/lib/redis/modules/redisearch.so
     volumes:
@@ -106,7 +108,7 @@ services:
       # Redis/Cache Configuration
       REDIS_HOST: platform-redis
       REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PASSWORD: ${PLATFORM_REDIS_PASSWORD}
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       CACHE_HOST: ${CACHE_HOST}
@@ -272,7 +274,7 @@ services:
       # Redis/Cache Configuration
       REDIS_HOST: platform-redis
       REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PASSWORD: ${PLATFORM_REDIS_PASSWORD}
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       # Transport/Message Queue
@@ -365,7 +367,7 @@ services:
       # Redis/Cache Configuration
       REDIS_HOST: platform-redis
       REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PASSWORD: ${PLATFORM_REDIS_PASSWORD}
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       # Transport/Message Queue
@@ -426,15 +428,19 @@ services:
       # Redis/Cache Configuration
       REDIS_HOST: platform-redis
       REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PASSWORD: ${PLATFORM_REDIS_PASSWORD}
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       # Transport/Message Queue
       TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      # DGraph Configuration
+      DGRAPH_ALPHA_URL: dgraph-alpha:9080
+      DGRAPH_HTTP_URL: http://dgraph-alpha:8080
     networks:
       - platform-network
       - layer1_traefik-ingress
+      - layer2_dgraph-network
     deploy:
       labels:
         - "traefik.enable=true"
@@ -449,7 +455,7 @@ services:
       # Redis/Cache Configuration
       REDIS_HOST: platform-redis
       REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PASSWORD: ${PLATFORM_REDIS_PASSWORD}
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       # MinIO Object Storage

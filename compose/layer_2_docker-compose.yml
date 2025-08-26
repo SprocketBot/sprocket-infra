@@ -9,6 +9,9 @@ networks:
   postgres-network:
     driver: overlay
     attachable: true
+  dgraph-network:
+    driver: overlay
+    attachable: true
 
 volumes:
   redis-data:
@@ -16,6 +19,8 @@ volumes:
   influx-data:
   loki-data:
   grafana-data:
+  dgraph-zero-data:
+  dgraph-alpha-data:
 
 configs:
   redis-config:
@@ -30,6 +35,7 @@ services:
   redis:
     image: redislabs/rejson:2.0.7
     command: >
+      --port ${REDIS_PORT}
       --requirepass ${REDIS_PASSWORD}
       --loadmodule /usr/lib/redis/modules/rejson.so
       --loadmodule /usr/lib/redis/modules/redisearch.so
@@ -73,6 +79,57 @@ services:
         - "traefik.http.routers.minio-console.entrypoints=websecure"
         - "traefik.http.routers.minio-console.tls.certresolver=lets-encrypt-tls"
         - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+
+  minio-setup:
+    image: minio/mc:RELEASE.2022-04-29T19-46-06Z
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_REPLAYS_BUCKET: ${MINIO_REPLAYS_BUCKET}
+      MINIO_IMAGE_GENERATION_BUCKET: ${MINIO_IMAGE_GENERATION_BUCKET}
+    networks:
+      - layer1_traefik-ingress
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      # Wait for MinIO to be ready
+      until mc ping --exit minio:9000; do
+        echo 'Waiting for MinIO to be ready...'
+        sleep 5
+      done
+      
+      # Set up MinIO alias
+      mc alias set minio http://minio:9000 \$$MINIO_ROOT_USER \$$MINIO_ROOT_PASSWORD
+      
+      # Create service account for applications
+      if ! mc admin user svcacct info minio \$$MINIO_ACCESS_KEY 2>/dev/null; then
+        echo 'Creating service account...'
+        mc admin user svcacct add --access-key \$$MINIO_ACCESS_KEY --secret-key \$$MINIO_SECRET_KEY minio \$$MINIO_ROOT_USER
+        echo 'Service account created successfully'
+      else
+        echo 'Service account already exists'
+      fi
+      
+      # Create buckets
+      mc mb minio/\$$MINIO_REPLAYS_BUCKET --ignore-existing
+      mc mb minio/\$$MINIO_IMAGE_GENERATION_BUCKET --ignore-existing
+      
+      # Set bucket policies (public read for now, adjust as needed)
+      mc policy set public minio/\$$MINIO_REPLAYS_BUCKET
+      mc policy set public minio/\$$MINIO_IMAGE_GENERATION_BUCKET
+      
+      echo 'MinIO setup completed'
+      "
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
 
   influxdb:
     image: influxdb:2.6
@@ -170,4 +227,33 @@ services:
       mode: global
       labels:
         - "traefik.enable=false"
+
+  dgraph-zero:
+    image: dgraph/dgraph:latest
+    command: dgraph zero --my=dgraph-zero:5080
+    volumes:
+      - dgraph-zero-data:/dgraph
+    networks:
+      - dgraph-network
+    deploy:
+      labels:
+        - "traefik.enable=false"
+
+  dgraph-alpha:
+    image: dgraph/dgraph:latest
+    command: dgraph alpha --my=dgraph-alpha:7080 --zero=dgraph-zero:5080
+    volumes:
+      - dgraph-alpha-data:/dgraph
+    networks:
+      - dgraph-network
+      - layer1_traefik-ingress
+    depends_on:
+      - dgraph-zero
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.dgraph.rule=Host(`dgraph.${HOSTNAME}`)"
+        - "traefik.http.routers.dgraph.entrypoints=websecure"
+        - "traefik.http.routers.dgraph.tls.certresolver=lets-encrypt-tls"
+        - "traefik.http.services.dgraph.loadbalancer.server.port=8080"
 
