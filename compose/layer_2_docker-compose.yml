@@ -81,7 +81,7 @@ services:
         - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
 
   minio-setup:
-    image: minio/mc:RELEASE.2022-04-29T19-46-06Z
+    image: minio/mc:RELEASE.2022-04-30T22-23-53Z
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
