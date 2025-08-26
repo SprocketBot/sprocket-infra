@@ -43,6 +43,8 @@ services:
       - redis-data:/data
     networks:
       - layer1_traefik-ingress
+    ports:
+      - "${REDIS_PORT}:6379"
     configs:
       - source: redis-config
         target: /usr/local/etc/redis/redis.conf
