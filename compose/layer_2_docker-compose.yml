@@ -41,9 +41,9 @@ services:
       - source: redis-config
         target: /usr/local/etc/redis/redis.conf
     deploy:
-      placement:
-        constraints:
-          - node.labels.role == storage
+      # placement:
+      #   constraints:
+      #     - node.labels.role == storage
       labels:
         - "traefik.enable=false"
 
@@ -58,9 +58,9 @@ services:
     networks:
       - layer1_traefik-ingress
     deploy:
-      placement:
-        constraints:
-          - node.labels.role == storage
+      # placement:
+      #   constraints:
+      #     - node.labels.role == storage
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.minio-endpoint.rule=Host(`files.${HOSTNAME}`)"
@@ -89,9 +89,9 @@ services:
       - monitoring-network
       - layer1_traefik-ingress
     deploy:
-      placement:
-        constraints:
-          - node.labels.role == storage
+      # placement:
+      #   constraints:
+      #     - node.labels.role == storage
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.influx.rule=Host(`influx.${HOSTNAME}`)"
@@ -107,9 +107,9 @@ services:
     networks:
       - monitoring-network
     deploy:
-      placement:
-        constraints:
-          - node.labels.role == storage
+      # placement:
+      #   constraints:
+      #     - node.labels.role == storage
       labels:
         - "traefik.enable=false"
 
@@ -129,9 +129,9 @@ services:
       - layer1_traefik-ingress
       - postgres-network
     deploy:
-      placement:
-        constraints:
-          - node.labels.role == storage
+      # placement:
+      #   constraints:
+      #     - node.labels.role == storage
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.grafana.rule=Host(`grafana.${HOSTNAME}`)"

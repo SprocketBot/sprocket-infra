@@ -52,7 +52,7 @@ services:
     image: rabbitmq:3.9.14-management-alpine
     hostname: "{{.Node.Hostname}}"
     environment:
-      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
@@ -122,8 +122,8 @@ services:
       MINIO_REPLAYS_BUCKET: ${MINIO_REPLAYS_BUCKET}
       MINIO_IMAGE_GENERATION_BUCKET: ${MINIO_IMAGE_GENERATION_BUCKET}
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
       TRANSPORT_CORE_QUEUE: ${TRANSPORT_CORE_QUEUE}
       TRANSPORT_BOT_QUEUE: ${TRANSPORT_BOT_QUEUE}
@@ -206,8 +206,8 @@ services:
       MINIO_REPLAYS_BUCKET: ${MINIO_REPLAYS_BUCKET}
       MINIO_IMAGE_GENERATION_BUCKET: ${MINIO_IMAGE_GENERATION_BUCKET}
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
       TRANSPORT_BOT_QUEUE: ${TRANSPORT_BOT_QUEUE}
       TRANSPORT_SUBMISSION_QUEUE: ${TRANSPORT_ANALYTICS_QUEUE}
@@ -276,8 +276,8 @@ services:
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
 
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
@@ -312,8 +312,8 @@ services:
       MINIO_USE_SSL: ${MINIO_USE_SSL}
       MINIO_IMAGE_GENERATION_BUCKET: ${MINIO_IMAGE_GENERATION_BUCKET}
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
 
       TRANSPORT_IMAGE_GENERATION_QUEUE: ${TRANSPORT_IMAGE_GENERATION_QUEUE}
@@ -340,9 +340,10 @@ services:
       INFLUX_ORG: sprocket
       INFLUX_BUCKET: metrics
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
+      LOGGER_LEVELS: ${LOGGER_LEVELS}
 
       TRANSPORT_ANALYTICS_QUEUE: ${TRANSPORT_ANALYTICS_QUEUE}
       TRANSPORT_IMAGE_GENERATION_QUEUE: ${TRANSPORT_IMAGE_GENERATION_QUEUE}
@@ -369,8 +370,8 @@ services:
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
 
       TRANSPORT_MATCHMAKING_QUEUE: ${TRANSPORT_MATCHMAKING_QUEUE}
@@ -402,8 +403,8 @@ services:
       # External API Configuration (keeping existing)
       BALLCHASING_API_TOKEN: ${BALLCHASING_API_TOKEN}
       # Transport/Message Queue  
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
       TRANSPORT_SUBMISSION_QUEUE: ${TRANSPORT_SUBMISSION_QUEUE}
       TRANSPORT_ANALYTICS_QUEUE: ${TRANSPORT_ANALYTICS_QUEUE}
@@ -430,8 +431,8 @@ services:
       REDIS_PREFIX: ${REDIS_PREFIX}
       REDIS_SECURE: ${REDIS_SECURE}
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
     networks:
       - platform-network
       - layer1_traefik-ingress
@@ -460,8 +461,8 @@ services:
       MINIO_USE_SSL: ${MINIO_USE_SSL}
       MINIO_REPLAYS_BUCKET: ${MINIO_REPLAYS_BUCKET}
       # Transport/Message Queue
-      TRANSPORT_URL: amqp://rabbitmq:5672
-      CELERY_BROKER: amqp://rabbitmq:5672
+      TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
       TRANSPORT_MATCHMAKING_QUEUE: ${TRANSPORT_MATCHMAKING_QUEUE}
       TRANSPORT_ANALYTICS_QUEUE: ${TRANSPORT_ANALYTICS_QUEUE}
