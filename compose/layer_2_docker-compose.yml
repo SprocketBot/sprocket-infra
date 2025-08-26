@@ -35,7 +35,6 @@ services:
   redis:
     image: redislabs/rejson:2.0.7
     command: >
-      --port ${REDIS_PORT}
       --requirepass ${REDIS_PASSWORD}
       --loadmodule /usr/lib/redis/modules/rejson.so
       --loadmodule /usr/lib/redis/modules/redisearch.so
