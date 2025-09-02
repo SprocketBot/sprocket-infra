@@ -23,6 +23,19 @@ echo "🔗 Step 3: Combining infrastructure passwords with Doppler secrets..."
 # Combine infrastructure passwords with Doppler secrets
 cat .env.infra .env.doppler >.env
 
+# Fix compatibility issues: Copy POSTGRES_HOSTNAME to POSTGRES_HOST for services that expect it
+if grep -q "^POSTGRES_HOSTNAME=" .env && ! grep -q "^POSTGRES_HOST=" .env; then
+    echo "# Compatibility: Copy POSTGRES_HOSTNAME to POSTGRES_HOST" >> .env
+    grep "^POSTGRES_HOSTNAME=" .env | sed 's/POSTGRES_HOSTNAME=/POSTGRES_HOST=/' >> .env
+fi
+
+# Prefer our generated JWT_SECRET over Doppler's (remove Doppler's if it has special chars)
+if grep -q "^JWT_SECRET=" .env.infra && grep -q '[{}#$%<>`]' .env && grep -q "^JWT_SECRET=" .env; then
+    echo "# Replacing complex JWT_SECRET with simple generated one"
+    sed -i '/^JWT_SECRET=/d' .env
+    grep "^JWT_SECRET=" .env.infra >> .env
+fi
+
 # Clean up temporary files
 rm .env.infra .env.doppler
 
@@ -66,6 +79,7 @@ echo ""
 echo "Generated infrastructure passwords:"
 INFRA_VARS=(
   "REDIS_PASSWORD"
+  "REDIS_HOST"
   "REDIS_PORT"
   "MINIO_ROOT_PASSWORD"
   "MINIO_ENDPOINT"
@@ -78,6 +92,10 @@ INFRA_VARS=(
   "PLATFORM_REDIS_PASSWORD"
   "RABBITMQ_USER"
   "RABBITMQ_PASSWORD"
+  "TRANSPORT_EVENTS_QUEUE"
+  "TRANSPORT_CORE_QUEUE"
+  "TRANSPORT_BOT_QUEUE"
+  "CELERY_QUEUE"
   "JWT_SECRET"
   "FORWARD_AUTH_SECRET"
 )

@@ -10,15 +10,16 @@ generate_password() {
   openssl rand -base64 32 | tr -d "=+/" | cut -c1-25
 }
 
-# Function to generate a secure random token (longer)
+# Function to generate a secure random token (longer, single line)
 generate_token() {
-  openssl rand -base64 64 | tr -d "=+/" | cut -c1-50
+  openssl rand -base64 64 | tr -d "=+/\n\r " | tr -d '\n\r' | cut -c1-50
 }
 
 echo "🔐 Generating infrastructure passwords..."
 
 # Generate passwords for layer 2 services
 REDIS_PASSWORD=$(generate_password)
+REDIS_HOST="layer2_redis"
 REDIS_PORT="6379"
 MINIO_ROOT_USER="admin"
 MINIO_ROOT_PASSWORD=$(generate_password)
@@ -39,7 +40,7 @@ RABBITMQ_USER="admin"
 RABBITMQ_PASSWORD=$(generate_password)
 
 # Generate auth secrets
-JWT_SECRET=$(generate_token)
+JWT_SECRET="sprocket-jwt-secret-$(date +%s)"
 FORWARD_AUTH_SECRET=$(generate_token)
 
 # Create infrastructure passwords file
@@ -49,6 +50,7 @@ cat >.env.infra <<EOF
 
 # Layer 2 Infrastructure Services
 REDIS_PASSWORD='${REDIS_PASSWORD}'
+REDIS_HOST='${REDIS_HOST}'
 REDIS_PORT='${REDIS_PORT}'
 MINIO_ROOT_USER='${MINIO_ROOT_USER}'
 MINIO_ROOT_PASSWORD='${MINIO_ROOT_PASSWORD}'
@@ -68,8 +70,21 @@ PLATFORM_REDIS_PASSWORD='${PLATFORM_REDIS_PASSWORD}'
 RABBITMQ_USER='${RABBITMQ_USER}'
 RABBITMQ_PASSWORD='${RABBITMQ_PASSWORD}'
 
+# Transport Queues
+TRANSPORT_CORE_QUEUE='core'
+TRANSPORT_BOT_QUEUE='bot'
+TRANSPORT_ANALYTICS_QUEUE='analytics'
+TRANSPORT_MATCHMAKING_QUEUE='matchmaking'
+TRANSPORT_NOTIFICATION_QUEUE='notifications'
+TRANSPORT_EVENTS_QUEUE='events'
+TRANSPORT_EVENTS_APPLICATION_KEY='sprocket'
+TRANSPORT_IMAGE_GENERATION_QUEUE='image-generation'
+TRANSPORT_SUBMISSION_QUEUE='submission'
+CELERY_QUEUE='celery'
+
 # Auth Secrets
 FORWARD_AUTH_SECRET='${FORWARD_AUTH_SECRET}'
+JWT_SECRET='${JWT_SECRET}'
 EOF
 
 echo "✅ Generated infrastructure passwords in .env.infra"
