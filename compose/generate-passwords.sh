@@ -85,6 +85,25 @@ CELERY_QUEUE='celery'
 # Auth Secrets
 FORWARD_AUTH_SECRET='${FORWARD_AUTH_SECRET}'
 JWT_SECRET='${JWT_SECRET}'
+
+# Additional Configuration for Layer 3 Services
+BOT_PREFIX='!'
+REDIS_PREFIX='sprocket:'
+REDIS_SECURE='false'
+CACHE_HOST='layer2_redis'
+CACHE_PORT='6379'
+CACHE_PASSWORD='${REDIS_PASSWORD}'
+CACHE_SECURE='false'
+JWT_EXPIRY="15m"
+ACCESS_EXPIRY="15m"
+REFRESH_EXPIRY="7d"
+CLIENT_SECURE="true"
+CLIENT_CHATWOOT_ENABLED="false"
+CLIENT_CHATWOOT_URL=""
+CLIENT_CHATWOOT_WEBSITE_TOKEN=""
+GQL_PLAYGROUND="false"
+LOGGER_LEVELS="error,warn,log"
+DEFAULT_ORGANIZATION_ID="1"
 EOF
 
 echo "✅ Generated infrastructure passwords in .env.infra"
