@@ -9,9 +9,8 @@ networks:
     external: true
   layer2_dgraph-network:
     external: true
-  platform-network:
-    driver: overlay
-    attachable: true
+  layer2_platform-network:
+    external: true
 
 
 services:
@@ -19,6 +18,8 @@ services:
   sprocket-core:
     image: asaxplayinghorse/core:${IMAGE_TAG}
     environment:
+      # Configuration
+      SUPPRESS_NO_CONFIG_WARNING: "true"
       # Authentication - Google OAuth
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_SECRET: ${GOOGLE_SECRET}
@@ -91,7 +92,7 @@ services:
       # Default Organization
       DEFAULT_ORGANIZATION_ID: ${DEFAULT_ORGANIZATION_ID}
     networks:
-      - platform-network
+      - layer2_platform-network
       - layer1_traefik-ingress
       - layer2_postgres-network
     deploy:
@@ -162,7 +163,7 @@ services:
       # Logging
       LOGGER_LEVELS: ${LOGGER_LEVELS}
     networks:
-      - platform-network
+      - layer2_platform-network
     deploy:
       labels:
         - "traefik.enable=false"
@@ -194,7 +195,7 @@ services:
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
 
     networks:
-      - platform-network
+      - layer2_platform-network
       - layer1_traefik-ingress
     deploy:
       labels:
@@ -218,6 +219,7 @@ services:
       TRANSPORT_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@layer2_rabbitmq:5672
       CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@layer2_rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
+      TRANSPORT_EVENTS_APPLICATION_KEY: ${TRANSPORT_EVENTS_APPLICATION_KEY}
 
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
       TRANSPORT_MATCHMAKING_QUEUE: ${TRANSPORT_MATCHMAKING_QUEUE}
@@ -229,7 +231,7 @@ services:
       TRANSPORT_SUBMISSION_QUEUE: ${TRANSPORT_SUBMISSION_QUEUE}
 
     networks:
-      - platform-network
+      - layer2_platform-network
     deploy:
       labels:
         - "traefik.enable=false"
@@ -265,7 +267,7 @@ services:
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
 
     networks:
-      - platform-network
+      - layer2_platform-network
     deploy:
       labels:
         - "traefik.enable=false"
@@ -290,10 +292,11 @@ services:
       TRANSPORT_BOT_QUEUE: ${TRANSPORT_BOT_QUEUE}
       TRANSPORT_CORE_QUEUE: ${TRANSPORT_CORE_QUEUE}
       TRANSPORT_EVENTS_QUEUE: ${TRANSPORT_EVENTS_QUEUE}
+      TRANSPORT_EVENTS_APPLICATION_KEY: ${TRANSPORT_EVENTS_APPLICATION_KEY}
       TRANSPORT_SUBMISSION_QUEUE: ${TRANSPORT_SUBMISSION_QUEUE}
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
     networks:
-      - platform-network
+      - layer2_platform-network
       - layer2_monitoring-network
     deploy:
       labels:
@@ -319,10 +322,11 @@ services:
       TRANSPORT_BOT_QUEUE: ${TRANSPORT_BOT_QUEUE}
       TRANSPORT_CORE_QUEUE: ${TRANSPORT_CORE_QUEUE}
       TRANSPORT_EVENTS_QUEUE: ${TRANSPORT_EVENTS_QUEUE}
+      TRANSPORT_EVENTS_APPLICATION_KEY: ${TRANSPORT_EVENTS_APPLICATION_KEY}
       TRANSPORT_SUBMISSION_QUEUE: ${TRANSPORT_SUBMISSION_QUEUE}
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
     networks:
-      - platform-network
+      - layer2_platform-network
     deploy:
       labels:
         - "traefik.enable=false"
@@ -353,7 +357,7 @@ services:
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
 
     networks:
-      - platform-network
+      - layer2_platform-network
     deploy:
       labels:
         - "traefik.enable=false"
@@ -374,7 +378,7 @@ services:
       DGRAPH_ALPHA_URL: dgraph-alpha:9080
       DGRAPH_HTTP_URL: http://dgraph-alpha:8080
     networks:
-      - platform-network
+      - layer2_platform-network
       - layer1_traefik-ingress
       - layer2_dgraph-network
     deploy:
@@ -415,7 +419,7 @@ services:
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
 
     networks:
-      - platform-network
+      - layer2_platform-network
     deploy:
       labels:
        - "traefik.enable=false"

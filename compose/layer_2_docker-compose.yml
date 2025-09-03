@@ -12,6 +12,9 @@ networks:
   dgraph-network:
     driver: overlay
     attachable: true
+  platform-network:
+    driver: overlay
+    attachable: true
 
 volumes:
   redis-data:
@@ -45,6 +48,7 @@ services:
       - redis-data:/data
     networks:
       - layer1_traefik-ingress
+      - platform-network
     ports:
       - "${REDIS_PORT}:6379"
     deploy:
@@ -268,6 +272,7 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - layer1_traefik-ingress
+      - platform-network
     configs:
       - source: rabbitmq-config
         target: /etc/rabbitmq/rabbitmq.conf
