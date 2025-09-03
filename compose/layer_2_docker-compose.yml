@@ -21,12 +21,15 @@ volumes:
   grafana-data:
   dgraph-zero-data:
   dgraph-alpha-data:
+  rabbitmq-data:
 
 configs:
   fluentd-config:
     file: ../layer_2/src/monitoring/config/fluentd.conf
   telegraf-config:
     file: ../layer_2/src/monitoring/config/telegraf.conf
+  rabbitmq-config:
+    file: ../platform/src/config/datastores/rabbitmq.conf
 
 
 services:
@@ -176,6 +179,7 @@ services:
       GF_DATABASE_NAME: grafana
       GF_DATABASE_USER: ${POSTGRES_USERNAME}
       GF_DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      GF_DATABASE_SSL_MODE: require
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
@@ -253,4 +257,31 @@ services:
         - "traefik.http.routers.dgraph.entrypoints=websecure"
         - "traefik.http.routers.dgraph.tls.certresolver=lets-encrypt-tls"
         - "traefik.http.services.dgraph.loadbalancer.server.port=8080"
+
+  rabbitmq:
+    image: rabbitmq:3.9.14-management-alpine
+    hostname: "{{.Node.Hostname}}"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - layer1_traefik-ingress
+    configs:
+      - source: rabbitmq-config
+        target: /etc/rabbitmq/rabbitmq.conf
+    deploy:
+      # placement:
+      #   constraints:
+      #     - node.labels.role == storage
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.rabbitmq-management.rule=Host(`management.rabbitmq.${ENVIRONMENT_SUBDOMAIN}.${HOSTNAME}`)"
+        - "traefik.http.routers.rabbitmq-management.entrypoints=websecure"
+        - "traefik.http.routers.rabbitmq-management.tls.certresolver=lets-encrypt-tls"
+        - "traefik.http.services.rabbitmq-management.loadbalancer.server.port=15672"
+        - "traefik.tcp.routers.rabbitmq-amqp.rule=HostSNI(`rabbitmq.${ENVIRONMENT_SUBDOMAIN}.${HOSTNAME}`)"
+        - "traefik.tcp.routers.rabbitmq-amqp.tls.certresolver=lets-encrypt-tls"
+        - "traefik.tcp.services.rabbitmq-amqp.loadbalancer.server.port=5672"
 

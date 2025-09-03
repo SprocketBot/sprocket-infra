@@ -61,6 +61,20 @@ docker stack deploy -c layer_1_docker-compose.yml layer1 --detach=false
 echo -e "${YELLOW}🗄️  Deploying Layer 2: Infrastructure Services${NC}"
 docker stack deploy -c layer_2_docker-compose.yml layer2 --detach=false
 
+# Wait for RabbitMQ to be ready and setup admin user
+echo -e "${YELLOW}🐰 Setting up RabbitMQ admin user...${NC}"
+sleep 30  # Wait for RabbitMQ to fully start
+RABBITMQ_CONTAINER=$(docker ps -q --filter "name=layer2_rabbitmq" | head -1)
+if [ -n "$RABBITMQ_CONTAINER" ]; then
+  echo "Creating RabbitMQ admin user..."
+  docker exec $RABBITMQ_CONTAINER rabbitmqctl add_user admin ${RABBITMQ_PASSWORD} || echo "User might already exist"
+  docker exec $RABBITMQ_CONTAINER rabbitmqctl set_user_tags admin administrator
+  docker exec $RABBITMQ_CONTAINER rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
+  echo -e "${GREEN}✅ RabbitMQ admin user configured${NC}"
+else
+  echo -e "${RED}❌ RabbitMQ container not found - admin user setup skipped${NC}"
+fi
+
 # Deploy Layer 3 (Platform Services)
 echo -e "${YELLOW}🚀 Deploying Layer 3: Platform Services${NC}"
 docker stack deploy -c layer_3_docker-compose.yml layer3 --detach=false
