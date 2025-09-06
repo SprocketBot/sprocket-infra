@@ -75,6 +75,26 @@ else
   echo -e "${RED}❌ RabbitMQ container not found - admin user setup skipped${NC}"
 fi
 
+# Generate runtime config files with actual secret values
+echo -e "${YELLOW}📝 Generating runtime configuration files...${NC}"
+mkdir -p ../platform/src/config/services/
+cat > ../platform/src/config/services/production.json << EOF
+{
+  "minio": {
+    "hostname": "${MINIO_ENDPOINT}",
+    "port": "${MINIO_PORT}",
+    "access_key": "${MINIO_ACCESS_KEY}",
+    "secret_key": "${MINIO_SECRET_KEY}",
+    "secure": ${MINIO_USE_SSL},
+    "bucket": "${MINIO_REPLAYS_BUCKET}"
+  }
+}
+EOF
+
+mkdir -p ../platform/src/secret/
+echo "${S3_SECRET_KEY}" > ../platform/src/secret/s3-secret
+echo -e "${GREEN}✅ Runtime configuration files generated${NC}"
+
 # Deploy Layer 3 (Platform Services)
 echo -e "${YELLOW}🚀 Deploying Layer 3: Platform Services${NC}"
 docker stack deploy -c layer_3_docker-compose.yml layer3 --detach=false

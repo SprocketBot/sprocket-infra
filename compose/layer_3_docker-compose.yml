@@ -12,6 +12,14 @@ networks:
   layer2_platform-network:
     external: true
 
+configs:
+  replay-parse-production-config-v4:
+    file: ../platform/src/config/services/production.json
+
+secrets:
+  s3-secret:
+    file: ../platform/src/secret/s3-secret
+
 
 services:
   # Core Platform Services
@@ -150,12 +158,13 @@ services:
       CELERY_BROKER: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@layer2_rabbitmq:5672
       CELERY_QUEUE: ${CELERY_QUEUE}
       TRANSPORT_BOT_QUEUE: ${TRANSPORT_BOT_QUEUE}
-      TRANSPORT_SUBMISSION_QUEUE: ${TRANSPORT_ANALYTICS_QUEUE}
+      TRANSPORT_SUBMISSION_QUEUE: ${TRANSPORT_SUBMISSION_QUEUE}
       TRANSPORT_MATCHMAKING_QUEUE: ${TRANSPORT_MATCHMAKING_QUEUE}
       TRANSPORT_ANALYTICS_QUEUE: ${TRANSPORT_ANALYTICS_QUEUE}
       TRANSPORT_IMAGE_GENERATION_QUEUE: ${TRANSPORT_IMAGE_GENERATION_QUEUE}
       TRANSPORT_CORE_QUEUE: ${TRANSPORT_CORE_QUEUE}
       TRANSPORT_EVENTS_QUEUE: ${TRANSPORT_EVENTS_QUEUE}
+      TRANSPORT_EVENTS_APPLICATION_KEY: ${TRANSPORT_EVENTS_APPLICATION_KEY}
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
 
       # GraphQL Configuration
@@ -334,6 +343,10 @@ services:
   replay-parse-service:
     image: asaxplayinghorse/replay-parse-service:${IMAGE_TAG}
     environment:
+      # Environment Configuration
+      ENV: production
+      ENVIRONMENT: production
+      PYTHONPATH: /app/src
       # MinIO Object Storage
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_PORT: ${MINIO_PORT}
@@ -354,8 +367,15 @@ services:
       TRANSPORT_BOT_QUEUE: ${TRANSPORT_BOT_QUEUE}
       TRANSPORT_CORE_QUEUE: ${TRANSPORT_CORE_QUEUE}
       TRANSPORT_EVENTS_QUEUE: ${TRANSPORT_EVENTS_QUEUE}
+      TRANSPORT_EVENTS_APPLICATION_KEY: ${TRANSPORT_EVENTS_APPLICATION_KEY}
       TRANSPORT_NOTIFICATION_QUEUE: ${TRANSPORT_NOTIFICATION_QUEUE}
 
+    configs:
+      - source: replay-parse-production-config-v4
+        target: /app/config/production.json
+    secrets:
+      - source: s3-secret
+        target: /app/secret/s3-secret
     networks:
       - layer2_platform-network
     deploy:

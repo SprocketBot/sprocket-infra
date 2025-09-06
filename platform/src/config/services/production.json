@@ -1,0 +1,10 @@
+{
+  "minio": {
+    "hostname": "minio",
+    "port": "9000",
+    "access_key": "sprocketuser",
+    "secret_key": "hRZeIF5pNGub7537UEDfUbQi5",
+    "secure": false,
+    "bucket": "replays"
+  }
+}
