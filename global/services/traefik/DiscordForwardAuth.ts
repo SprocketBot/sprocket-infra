@@ -29,7 +29,7 @@ export class DiscordForwardAuth extends pulumi.ComponentResource {
             },
             taskSpec: {
                 containerSpec: {
-                    image: getImageSha("actualsovietshark", "discord-forward-auth", "latest"),
+                    image: getImageSha("asaxplayinghorse", "discord-forward-auth", "latest"),
                     env: {
                         CONFIG_FILE: "/app/config.yaml",
                         CLIENT_SECRET: config.requireSecret("discord-fa-client-secret")

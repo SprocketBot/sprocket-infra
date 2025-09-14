@@ -24,7 +24,7 @@ certificatesResolvers:
 #        delayBeforeCheck: 0
   lets-encrypt-tls:
     acme:
-      email: actualsovietshark@gmail.com
+      email: nigel@mlesports.gg
       storage: /data/le-tls.json
       tlsChallenge: {}
 

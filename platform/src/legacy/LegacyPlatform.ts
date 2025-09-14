@@ -61,7 +61,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
       },
       taskSpec: {
         containerSpec: {
-          image: getImageSha('actualsovietshark', 'worker', 'master'),
+          image: getImageSha('asaxplayinghorse', 'worker', 'master'),
           env: {
             NODE_ENV: 'production',
             REDIS_HOST: this.redis.hostname,
@@ -111,7 +111,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
       },
       taskSpec: {
         containerSpec: {
-          image: getImageSha('actualsovietshark', 'bot', 'master'),
+          image: getImageSha('asaxplayinghorse', 'bot', 'master'),
           env: {
             NODE_ENV: 'production',
             REDIS_HOST: this.redis.hostname,
@@ -147,7 +147,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
       },
       taskSpec: {
         containerSpec: {
-          image: getImageSha('actualsovietshark', 'bot', 'master'),
+          image: getImageSha('asaxplayinghorse', 'bot', 'master'),
           env: {
             NODE_ENV: 'production',
             REDIS_HOST: this.redis.hostname,
@@ -187,7 +187,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
       },
       taskSpec: {
         containerSpec: {
-          image: getImageSha('actualsovietshark', 'bot', 'master'),
+          image: getImageSha('asaxplayinghorse', 'bot', 'master'),
           env: {
             NODE_ENV: 'production',
             REDIS_HOST: this.redis.hostname,

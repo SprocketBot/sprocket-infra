@@ -421,7 +421,7 @@ export class Platform extends pulumi.ComponentResource {
     }
 
     buildDefaultConfiguration = (name: string, configRoot: string): SprocketServiceArgs => ({
-        image: {namespace: "actualsovietshark", repository: name, tag: config.require("image-tag")},
+        image: {namespace: "asaxplayinghorse", repository: name, tag: config.require("image-tag")},
         platformNetworkId: this.network.id,
         configFile: {sourceFilePath: `${configRoot}/services/${name}.json`},
         configValues: {
