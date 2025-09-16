@@ -9,7 +9,7 @@ export class SprocketStackDefinition {
 
     get stack() {
         if (!this._stack)
-            this._stack = new pulumi.StackReference(`${this.name}_ref`, {name: this.name})
+            this._stack = new pulumi.StackReference(`gankoji-org/${this.name}/${this.name}`)
         return this._stack
     }
 }
