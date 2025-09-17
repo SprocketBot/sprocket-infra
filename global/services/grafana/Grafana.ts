@@ -66,8 +66,8 @@ export class Grafana extends pulumi.ComponentResource {
                         GF_SMTP_HOST: "smtp.sendgrid.net:465",
                         GF_FROM_ADDRESS: "noreply@sprocket.gg",
                         GF_FROM_NAME: "Sprocket Noreply",
-                        GF_SMTP_PASSWORD: s.data['password'],
-                        GF_SMTP_USER: s.data['username'],
+                        GF_SMTP_PASSWORD: "nopassword", //s.data['password'],
+                        GF_SMTP_USER: "nobody", //s.data['username'],
                         GF_INSTALL_PLUGINS: "grafana-github-datasource,ryantxu-annolist-panel,neocat-cal-heatmap-panel,grafana-polystat-panel,fifemon-graphql-datasource,redis-datasource,marcusolsson-treemap-panel,digiapulssi-breadcrumb-panel"
                     })),
                 },

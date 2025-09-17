@@ -38,11 +38,11 @@ export class SocketProxy extends pulumi.ComponentResource {
                 networks: [
                     this.network.id
                 ],
-                placement: {
-                    constraints: [
-                        "node.role==manager"
-                    ]
-                }
+                // placement: {
+                //     constraints: [
+                //         "node.role==manager"
+                //     ]
+                // }
             }
         }, { parent: this })
 

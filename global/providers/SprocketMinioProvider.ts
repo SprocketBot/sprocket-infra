@@ -22,8 +22,8 @@ export class SprocketMinioProvider extends minio.Provider {
             }, {
                 provider: vaultProvider
             })
-            username = secret.data.apply(d => d.username)
-            password = secret.data.apply(d => d.password)
+            username = secret.data.apply(d => { if (d && d.username) { return d.username } else { return "none"; } })
+            password = secret.data.apply(d => { if (d && d.password) { return d.password } else { return "none"; } })
         }
 
         super("SprocketMinioProvider", {

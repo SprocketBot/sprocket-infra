@@ -85,11 +85,11 @@ export class Traefik extends pulumi.ComponentResource {
                 // Alternatively, using an NFS system this could be changed to a
                 // ../.. service, which would mitigate this and ensure we don't
                 // overprovision certificates
-                placement: {
-                    constraints: [
-                        "node.labels.role==ingress"
-                    ]
-                },
+                // placement: {
+                //     constraints: [
+                //         "node.labels.role==ingress"
+                //     ]
+                // },
                 // Ensure we are on the ingress network, along with the socket proxy network
                 networks: [
                     this.network.id,
