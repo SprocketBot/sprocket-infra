@@ -30,17 +30,20 @@ export class Vault extends pulumi.ComponentResource {
         }, { parent: this } )
 
         const url = `vault.${HOSTNAME}`;
-        this.address = `https://${url}`
+        this.address = HOSTNAME === "localhost" ? `http://${url}` : `https://${url}`
 
+
+        const labels = new TraefikLabels(name)
+            .rule(`Host(\`${url}\`)`)
+            .targetPort(8200);
+
+        if (HOSTNAME !== "localhost") {
+            labels.tls("lets-encrypt-tls");
+        }
 
         this.service = new docker.Service(`${name}-service`, {
             name: name,
-            labels: new TraefikLabels(name)
-                .rule(`Host(\`${url}\`)`)
-                .tls("lets-encrypt-tls")
-                .targetPort(8200)
-                .complete,
-
+            labels: labels.complete,
             taskSpec: {
                 containerSpec: {
                     image: "vault:1.10.0",

@@ -128,6 +128,17 @@ export class Traefik extends pulumi.ComponentResource {
     private updateDockerSocketPath(data: string) {
         const doc = yaml.parse(data)
 
+        // If HOSTNAME is localhost, remove the redirections for web entryPoint
+        if (HOSTNAME === "localhost") {
+            if (doc.entryPoints?.web?.http?.redirections) {
+                delete doc.entryPoints.web.http.redirections;
+            }
+            // Check if http section is now empty
+            if (Object.keys(doc.entryPoints.web.http).length === 0) {
+                delete doc.entryPoints.web.http;
+            }
+        }
+
         return this.socketProxy.serviceName.apply(name => {
             if (doc?.providers?.docker) {
                 doc.providers.docker.endpoint = `tcp://${name}:2375`
