@@ -27,7 +27,7 @@ export class Vault extends pulumi.ComponentResource {
         this.config = new ConfigFile(`${name}-config`, {
             transformation: this.transformConfiguration.bind(this),
             filepath: args.configurationPath
-        }, { parent: this } )
+        }, { parent: this })
 
         const url = `vault.${HOSTNAME}`;
         this.address = HOSTNAME === "localhost" ? `http://${url}` : `https://${url}`
@@ -52,12 +52,20 @@ export class Vault extends pulumi.ComponentResource {
                         configId: this.config.id,
                         fileName: "/vault.hcl"
                     }],
-                    mounts: [{
-                        type: "bind",
-                        source: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/scripts/auto-initialize.sh",
-                        target: "/auto-initialize.sh",
-                        readOnly: true
-                    }],
+                    mounts: [
+                        {
+                            type: "bind",
+                            source: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/scripts/auto-initialize.sh",
+                            target: "/auto-initialize.sh",
+                            readOnly: true
+                        },
+                        {
+                            type: "bind",
+                            source: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/unseal-tokens",
+                            target: "/vault/unseal-tokens",
+                            readOnly: false
+                        }
+                    ],
                     commands: ["/auto-initialize.sh"]
                 },
                 logDriver: DefaultLogDriver(name, true),
@@ -67,10 +75,11 @@ export class Vault extends pulumi.ComponentResource {
                 ],
             }
         }, { parent: this })
-        
+
         this.networkId = this.network.id;
         this.registerOutputs({
-            networkId: this.networkId
+            networkId: this.networkId,
+            unsealTokensPath: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/unseal-tokens/unseal_tokens.txt"
         })
 
     }

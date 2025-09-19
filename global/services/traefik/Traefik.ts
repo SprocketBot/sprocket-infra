@@ -7,7 +7,7 @@ import { HOSTNAME } from "../../constants";
 import { ConfigFile } from "../../helpers/docker/ConfigFile";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 import { SocketProxy } from "./SocketProxy";
-import {DiscordForwardAuth} from "./DiscordForwardAuth";
+import { DiscordForwardAuth } from "./DiscordForwardAuth";
 
 
 export interface TraefikArgs {
@@ -32,7 +32,7 @@ export class Traefik extends pulumi.ComponentResource {
         super("SprocketBot:Services:Traefik", name, {}, opts)
 
         // Ensure we declare the socket proxy first so it can be subtituted in properly
-        this.socketProxy = new SocketProxy("traefik-socket", {parent: this})
+        this.socketProxy = new SocketProxy("traefik-socket", { parent: this })
 
         this.staticConfig = new ConfigFile(`${name}-config`, {
             transformation: this.updateDockerSocketPath.bind(this),
@@ -52,13 +52,13 @@ export class Traefik extends pulumi.ComponentResource {
             // Build out the rules for the traefik dashboard
             // TODO: Add forward authentication here
             labels: new TraefikLabels(`${name}-dashboard`)
-                        .rule(`Host(\`traefik.${HOSTNAME}\`)`)
-                        .service("api@internal")
-                        .entryPoints("websecure")
-                        .tls("lets-encrypt-tls")
-                        .targetPort(9999)
-                        .forwardAuthRule("SprocketAdmin")
-                        .complete,
+                .rule(`Host(\`traefik.${HOSTNAME}\`)`)
+                .service("api@internal")
+                .entryPoints("websecure")
+                .tls("lets-encrypt-tls")
+                .targetPort(9999)
+                .forwardAuthRule("SprocketAdmin")
+                .complete,
             taskSpec: {
                 containerSpec: {
                     // Pin the version to prevent unwanted updates
@@ -134,7 +134,7 @@ export class Traefik extends pulumi.ComponentResource {
                 delete doc.entryPoints.web.http.redirections;
             }
             // Check if http section is now empty
-            if (Object.keys(doc.entryPoints.web.http).length === 0) {
+            if (doc.entryPoints?.web?.http !== null && typeof doc.entryPoints.web.http === 'object' && Object.keys(doc.entryPoints.web.http).length === 0) {
                 delete doc.entryPoints.web.http;
             }
         }

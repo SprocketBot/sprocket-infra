@@ -1,6 +1,7 @@
 #!/bin/sh
 
 apk add curl jq;
+mkdir -p ../unseal-tokens
 
 export VAULT_ADDR=http://localhost:8200
 vault server --config /vault.hcl & echo "Server Starting";
@@ -24,8 +25,10 @@ if [ "$sealed" = "true" ]; then
       exit 1
     fi
     echo "Init output: $init_output"
-    echo "$init_output" | grep 'Unseal Key' | sed 's/.*: //' > unseal_tokens.txt
-    cat unseal_tokens.txt | while read -r t; do
+    echo "$init_output" | grep 'Unseal Key' | sed 's/.*: //' > ../unseal-tokens/unseal_tokens.txt
+    echo "$init_output" | grep 'Initial Root Token' | sed 's/.*: //' > ../unseal-tokens/root_token.txt
+cat ../unseal-tokens/root_token.txt
+    cat ../unseal-tokens/unseal_tokens.txt | while read -r t; do
       echo "Unsealing with key: $t"
       vault operator unseal "$t"
       sealed=$(vault status -format=json | jq -r '.sealed')
@@ -34,9 +37,9 @@ if [ "$sealed" = "true" ]; then
       fi
     done
   else
-    if [ -f unseal_tokens.txt ]; then
+    if [ -f ../unseal-tokens/unseal_tokens.txt ]; then
       echo "Vault is initialized but sealed. Unsealing..."
-      cat unseal_tokens.txt | while read -r t; do
+      cat ../unseal-tokens/unseal_tokens.txt | while read -r t; do
         echo "Unsealing with key: $t"
         vault operator unseal "$t"
         sealed=$(vault status -format=json | jq -r '.sealed')

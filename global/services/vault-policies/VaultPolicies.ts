@@ -1,9 +1,9 @@
 import * as vault from "@pulumi/vault"
 import * as pulumi from "@pulumi/pulumi"
-import {readFileSync} from "fs";
-import {LayerOne, LayerOneExports} from "../../refs";
-import {VaultGithubAuth} from "./VaultGithubAuth";
-import {VaultBackend} from "./VaultBackend";
+import { readFileSync } from "fs";
+import { LayerOne, LayerOneExports } from "../../refs";
+import { VaultGithubAuth } from "./VaultGithubAuth";
+import { VaultBackend } from "./VaultBackend";
 
 const config = new pulumi.Config()
 
@@ -25,7 +25,7 @@ export class VaultPolicies extends pulumi.ComponentResource {
 
         this.vaultProvider = new vault.Provider(`${name}-root-vault-provider`, {
             address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
-            token: config.requireSecret("root-vault-token")
+            token: readFileSync('/home/jacbaile/Workspace/sprocket-infra/global/services/vault/unseal-tokens/root_token.txt', 'utf8').trim()
         })
 
         this.infraBackend = new VaultBackend(`${name}-infra`, {
@@ -33,7 +33,7 @@ export class VaultPolicies extends pulumi.ComponentResource {
             description: "Contains secrets needed for bootstrapping infrastructure auth elsewhere.",
             path: "infrastructure",
             policyContent: readFileSync(`${__dirname}/policies/infrastructure.hcl`).toString()
-        }, { provider: this.vaultProvider})
+        }, { provider: this.vaultProvider })
 
         this.infraToken = this.infraBackend.token
 
@@ -52,12 +52,12 @@ export class VaultPolicies extends pulumi.ComponentResource {
             description: "Contains secrets that are manually created by developers. Should not be used by applications directly.",
             path: "misc",
             type: "kv"
-        }, {provider: this.vaultProvider, parent: this})
+        }, { provider: this.vaultProvider, parent: this })
 
 
         this.databaseBackend = new vault.Mount(`${name}-mount`, {
             type: "database", path: "database"
-        }, { parent: this, provider: this.vaultProvider})
+        }, { parent: this, provider: this.vaultProvider })
 
         this.githubAuth = new VaultGithubAuth(`${name}-gh`, {
             vaultProvider: this.vaultProvider
