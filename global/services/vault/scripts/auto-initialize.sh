@@ -4,35 +4,51 @@ apk add curl jq;
 
 export VAULT_ADDR=http://localhost:8200
 vault server --config /vault.hcl & echo "Server Starting";
-sleep 5
+while ! curl -s http://localhost:8200 > /dev/null 2>&1; do sleep 1; done
+sleep 5  # Give Vault extra time to initialize internally
 
-vault_configured=$(vault status | grep Initialized | sed 's/^Initialized[ ]*//')
-if [ "$vault_configured" == "false" ]; then
-  echo "Initializing Vault"
+status=$(vault status -format=json)
+echo "Vault status: $status"
+sealed=$(echo "$status" | jq -r '.sealed')
+initialized=$(echo "$status" | jq -r '.initialized')
+echo "Sealed: $sealed"
+echo "Initialized: $initialized"
 
-  # If the vault has not been stood up, initialize it
-  vault operator init > top_sneaky
-
-  # Parse the output into the root token and the unseal tokens
-  grep 'Initial Root Token: ' top_sneaky | sed 's/^.*: //' > root_token.txt
-  grep 'Unseal Key ' top_sneaky | sed 's/^.*: //' > unseal_tokens.txt
-
-  # Remove the temp file
-  rm top_sneaky;
-
-  # Unseal the vault
-  cat unseal_token | while read -r t; do
-    result=$(vault operator unseal "$t" | grep Sealed)
-    # Check if the vault has been successfully unsealed
-    if [ $(vault status | grep Sealed | sed 's/^Sealed[ ]*//') == "false" ]; then
-      break;
-    fi;
-  done;
-
-  # If the vault is sealed... ???
-elif [ $(vault status | grep Sealed | sed 's/^Sealed[ ]*//') == "true" ]; then
-  echo "Vault is sealed!"
-fi;
-
+if [ "$sealed" = "true" ]; then
+  if [ "$initialized" = "false" ]; then
+    echo "Initializing Vault"
+    init_output=$(vault operator init 2>&1)
+    exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+      echo "Error initializing Vault: $init_output"
+      exit 1
+    fi
+    echo "Init output: $init_output"
+    echo "$init_output" | grep 'Unseal Key' | sed 's/.*: //' > unseal_tokens.txt
+    cat unseal_tokens.txt | while read -r t; do
+      echo "Unsealing with key: $t"
+      vault operator unseal "$t"
+      sealed=$(vault status -format=json | jq -r '.sealed')
+      if [ "$sealed" = "false" ]; then
+        break
+      fi
+    done
+  else
+    if [ -f unseal_tokens.txt ]; then
+      echo "Vault is initialized but sealed. Unsealing..."
+      cat unseal_tokens.txt | while read -r t; do
+        echo "Unsealing with key: $t"
+        vault operator unseal "$t"
+        sealed=$(vault status -format=json | jq -r '.sealed')
+        if [ "$sealed" = "false" ]; then
+          break
+        fi
+      done
+    else
+      echo "Error: unseal_tokens.txt not found. Vault must be reinitialized."
+      exit 1
+    fi
+  fi
+fi
 
 echo "Done!"

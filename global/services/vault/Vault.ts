@@ -52,7 +52,13 @@ export class Vault extends pulumi.ComponentResource {
                         configId: this.config.id,
                         fileName: "/vault.hcl"
                     }],
-                    commands: ["vault", "server", "-config", "/vault.hcl"]
+                    mounts: [{
+                        type: "bind",
+                        source: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/scripts/auto-initialize.sh",
+                        target: "/auto-initialize.sh",
+                        readOnly: true
+                    }],
+                    commands: ["/auto-initialize.sh"]
                 },
                 logDriver: DefaultLogDriver(name, true),
                 networks: [
