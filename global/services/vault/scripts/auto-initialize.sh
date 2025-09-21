@@ -27,7 +27,7 @@ if [ "$sealed" = "true" ]; then
     echo "Init output: $init_output"
     echo "$init_output" | grep 'Unseal Key' | sed 's/.*: //' > ../unseal-tokens/unseal_tokens.txt
     echo "$init_output" | grep 'Initial Root Token' | sed 's/.*: //' > ../unseal-tokens/root_token.txt
-cat ../unseal-tokens/root_token.txt
+    cat ../unseal-tokens/root_token.txt
     cat ../unseal-tokens/unseal_tokens.txt | while read -r t; do
       echo "Unsealing with key: $t"
       vault operator unseal "$t"

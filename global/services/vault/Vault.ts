@@ -55,13 +55,13 @@ export class Vault extends pulumi.ComponentResource {
                     mounts: [
                         {
                             type: "bind",
-                            source: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/scripts/auto-initialize.sh",
+                            source: `${__dirname}/scripts/auto-initialize.sh`,
                             target: "/auto-initialize.sh",
                             readOnly: true
                         },
                         {
                             type: "bind",
-                            source: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/unseal-tokens",
+                            source: `${__dirname}/unseal-tokens`,
                             target: "/vault/unseal-tokens",
                             readOnly: false
                         }
@@ -79,7 +79,7 @@ export class Vault extends pulumi.ComponentResource {
         this.networkId = this.network.id;
         this.registerOutputs({
             networkId: this.networkId,
-            unsealTokensPath: "/home/jacbaile/Workspace/sprocket-infra/global/services/vault/unseal-tokens/unseal_tokens.txt"
+            unsealTokensPath: `${__dirname}/unseal-tokens/unseal_tokens.txt`
         })
 
     }
