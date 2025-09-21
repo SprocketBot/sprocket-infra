@@ -3,7 +3,7 @@
 apk update && apk add curl jq;
 
 export VAULT_ADDR=http://localhost:8200
-vault server --config /vault.hcl & echo "Server Starting";
+vault server --config /vault.hcl & server_pid=$!; echo "Server Starting";
 while ! curl -s http://localhost:8200 > /dev/null 2>&1; do sleep 1; done
 sleep 5  # Give Vault extra time to initialize internally
 
@@ -54,3 +54,4 @@ if [ "$sealed" = "true" ]; then
 fi
 
 echo "Done!"
+wait $server_pid
