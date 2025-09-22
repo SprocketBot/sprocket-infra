@@ -1,5 +1,5 @@
 import * as src from "./src";
-import {LayerTwoExports} from "global/refs"
+import { LayerTwoExports } from "global/refs"
 
 module.exports = {
     [LayerTwoExports.MonitoringNetworkId]: src.monitoring.network.id,

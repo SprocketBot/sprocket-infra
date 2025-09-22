@@ -1,10 +1,10 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import {VaultCredentials} from "../../helpers/vault/VaultCredentials";
+import { VaultCredentials } from "../../helpers/vault/VaultCredentials";
 import * as vault from "@pulumi/vault";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
-import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
-import {HOSTNAME} from "../../constants";
+import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
+import { HOSTNAME } from "../../constants";
 
 export interface MinioArgs {
     vaultProvider: vault.Provider
@@ -30,12 +30,12 @@ export class Minio extends pulumi.ComponentResource {
         this.credentials = new VaultCredentials(`${name}-root-credentials`, {
             username: "minio_admin",
             vault: {
-                path: "infrastructure/minio/root",
+                path: "infrastructure/data/minio/root",
                 provider: args.vaultProvider
             }
-        }, {parent: this})
+        }, { parent: this })
 
-        this.volume = new docker.Volume(`${name}-volume`, {}, {parent: this, retainOnDelete: true})
+        this.volume = new docker.Volume(`${name}-volume`, {}, { parent: this, retainOnDelete: true })
 
         this.service = new docker.Service(`${name}-service`, {
             taskSpec: {

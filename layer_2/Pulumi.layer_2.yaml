@@ -3,3 +3,8 @@ config:
     secure: AAABAI27T803iexTd7nu6RKQABL2Xdd2Q9/HZ5sB2EOfsIRu20IxCJs=
   layer_2:smtp-password:
     secure: AAABAGRDwx3baZt88iZ4k0j66hGlbwmQ/hgwT0BSU5lMmmBdiOMwQv2L/nPstrU94FDYxxI=
+  layer_2:postgres-username: sprocketbot
+  layer_2:postgres-port: "25060"
+  layer_2:postgres-password:
+    secure: AAABALNdsDABSLnZE2zEcn3lIrB6Gwm+4ngyRtmymJQaknv91j4N5JBTkmbo1wFNKQ7fi1uIAis=
+  layer_2:postgres-host: sprocketbot-postgres-d5033d2-do-user-24528890-0.j.db.ondigitalocean.com

@@ -3,9 +3,9 @@ import * as docker from "@pulumi/docker";
 import * as vault from "@pulumi/vault"
 
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
-import {ConfigFile} from "../../helpers/docker/ConfigFile"
-import {VaultCredentials} from "../../helpers/vault/VaultCredentials"
-import {TraefikLabels} from "../../helpers/docker/TraefikLabels"
+import { ConfigFile } from "../../helpers/docker/ConfigFile"
+import { VaultCredentials } from "../../helpers/vault/VaultCredentials"
+import { TraefikLabels } from "../../helpers/docker/TraefikLabels"
 
 
 export interface RedisArgs {
@@ -33,17 +33,17 @@ export class Redis extends pulumi.ComponentResource {
         this.credentials = new VaultCredentials(`${name}-root-credentials`, {
             username: "",
             vault: {
-                path: "infrastructure/redis",
+                path: "infrastructure/data/redis",
                 provider: args.vaultProvider
             }
-        }, {parent: this})
+        }, { parent: this })
 
 
         this.config = new ConfigFile(`${name}-config`, {
             filepath: args.configFilepath
-        }, {parent: this})
+        }, { parent: this })
 
-        this.volume = new docker.Volume(`${name}-volume`, {}, {parent: this, retainOnDelete: true})
+        this.volume = new docker.Volume(`${name}-volume`, {}, { parent: this, retainOnDelete: true })
 
         const networks: docker.Network["id"][] = []
         if (args.platformNetworkId) networks.push(args.platformNetworkId)
@@ -86,7 +86,7 @@ export class Redis extends pulumi.ComponentResource {
                 .targetPort(6379)
                 .complete : []
 
-        }, {parent: this})
+        }, { parent: this })
 
         this.hostname = this.service.name
     }

@@ -1,6 +1,6 @@
 import * as vault from "@pulumi/vault"
 import * as pulumi from "@pulumi/pulumi"
-import {readFileSync} from "fs";
+import { readFileSync } from "fs";
 
 export interface VaultBackendArgs {
     description: string,
@@ -22,7 +22,10 @@ export class VaultBackend extends pulumi.ComponentResource {
         this.backend = new vault.Mount(`${name}-backend`, {
             description: args.description,
             path: args.path,
-            type: "kv"
+            type: "kv",
+            options: {
+                version: "2"
+            }
         }, {
             provider: args.vaultProvider, parent: this, import: args.import?.backend
         })

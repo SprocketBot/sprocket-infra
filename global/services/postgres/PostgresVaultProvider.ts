@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as postgresql from "@pulumi/postgresql";
 import * as vault from "@pulumi/vault";
 import * as random from "@pulumi/random"
-import {PostgresUser} from "../../helpers/datastore/PostgresUser";
+import { PostgresUser } from "../../helpers/datastore/PostgresUser";
 
 export interface PostgresVaultProviderArgs {
     pg: {
@@ -30,7 +30,7 @@ export class PostgresVaultProvider extends pulumi.ComponentResource {
             name: `${args.environment}-dynamic-role-creator`,
             superuser: true,
             login: true,
-            password: new random.RandomPassword(`${name}-base-role-password`, {length: 64}, {parent: this}).result
+            password: new random.RandomPassword(`${name}-base-role-password`, { length: 64 }, { parent: this }).result
         }, { parent: this, provider: args.pg.provider })
 
         this.connection = new vault.database.SecretBackendConnection(`${name}-backend-conn`, {
@@ -43,10 +43,10 @@ export class PostgresVaultProvider extends pulumi.ComponentResource {
             postgresql: {
                 username: this.connRole.name,
                 password: this.connRole.password as pulumi.Output<string>,
-                connectionUrl: pulumi.all([args.pg.hostname, args.pg.dbName]).apply(([h,db]) => `postgresql://{{username}}:{{password}}@${h}:5432/${db}?sslmode=disable`),
+                connectionUrl: pulumi.all([args.pg.hostname, args.pg.dbName]).apply(([h, db]) => `postgresql://{{username}}:{{password}}@${h}:5432/${db}?sslmode=require`),
                 usernameTemplate: "{{.RoleName}}-{{.DisplayName}}-{{unix_time}}",
             }
-        }, { parent: this, provider: args.vaultProvider})
+        }, { parent: this, provider: args.vaultProvider })
 
         const makeRole = (roleName: string, suffix: string) => new vault.database.SecretBackendRole(`${name}-${roleName}`, {
             name: `${suffix}_${args.environment}`,

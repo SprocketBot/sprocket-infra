@@ -1,8 +1,8 @@
 import * as vault from "@pulumi/vault";
-import {VaultCredentials} from "../helpers/vault/VaultCredentials";
+import { VaultCredentials } from "../helpers/vault/VaultCredentials";
 import * as minio from "@pulumi/minio";
 import * as pulumi from "@pulumi/pulumi";
-import {HOSTNAME} from "../constants";
+import { HOSTNAME } from "../constants";
 
 export interface SprocketMinioProviderArgs extends Omit<minio.ProviderArgs, "minioAccessKey" | "minioSecretKey" | "minioServer" | "minioInsecure"> {
     vaultProvider: vault.Provider,
@@ -11,14 +11,14 @@ export interface SprocketMinioProviderArgs extends Omit<minio.ProviderArgs, "min
 }
 
 export class SprocketMinioProvider extends minio.Provider {
-    constructor({vaultProvider, minioCredentials, minioHostname, ...args}: SprocketMinioProviderArgs, opts?: pulumi.ResourceOptions) {
+    constructor({ vaultProvider, minioCredentials, minioHostname, ...args }: SprocketMinioProviderArgs, opts?: pulumi.ResourceOptions) {
         let username, password;
         if (minioCredentials) {
             username = minioCredentials.username;
             password = minioCredentials.password;
         } else {
             const secret = vault.generic.getSecretOutput({
-                path: "infrastructure/minio/root"
+                path: "infrastructure/data/minio/root"
             }, {
                 provider: vaultProvider
             })

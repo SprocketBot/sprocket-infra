@@ -74,7 +74,11 @@ export class LegacyPlatform extends pulumi.ComponentResource {
               args.database.host,
               args.database.database.name
             ])
-              .apply(([dbUser, dbPass, host, db]) => `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=disable`),
+              .apply(([dbUser, dbPass, host, db]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
+                console.log(`Bot Emilia connstring: ${connStr}`);
+                return connStr;
+              }),
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.minioUser.name,
             file_token_secret: args.minio.minioUser.secret,
@@ -125,7 +129,11 @@ export class LegacyPlatform extends pulumi.ComponentResource {
               args.database.host,
               args.database.database.name
             ])
-              .apply(([dbUser, dbPass, host, db]) => `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=disable`),
+              .apply(([dbUser, dbPass, host, db]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
+                console.log(`Worker connstring: ${connStr}`);
+                return connStr;
+              }),
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.minioUser.name,
             file_token_secret: args.minio.minioUser.secret,
@@ -161,7 +169,11 @@ export class LegacyPlatform extends pulumi.ComponentResource {
               args.database.host,
               args.database.database.name
             ])
-              .apply(([dbUser, dbPass, host, db]) => `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=disable`),
+              .apply(([dbUser, dbPass, host, db]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
+                console.log(`Bot Emilio connstring: ${connStr}`);
+                return connStr;
+              }),
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.minioUser.name,
             file_token_secret: args.minio.minioUser.secret,
@@ -201,7 +213,11 @@ export class LegacyPlatform extends pulumi.ComponentResource {
               args.database.host,
               args.database.database.name
             ])
-              .apply(([dbUser, dbPass, host, db]) => `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=disable`),
+              .apply(([dbUser, dbPass, host, db]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
+                console.log(`Staging Bot connstring: ${connStr}`);
+                return connStr;
+              }),
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.minioUser.name,
             file_token_secret: args.minio.minioUser.secret,
