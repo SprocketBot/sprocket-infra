@@ -3,10 +3,10 @@ import * as docker from "@pulumi/docker";
 import * as postgres from "@pulumi/postgresql";
 import * as vault from "@pulumi/vault"
 
-import {HOSTNAME} from "../../constants";
-import {TraefikLabels} from "../../helpers/docker/TraefikLabels"
+import { HOSTNAME } from "../../constants";
+import { TraefikLabels } from "../../helpers/docker/TraefikLabels"
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
-import {PostgresUser} from "../../helpers/datastore/PostgresUser"
+import { PostgresUser } from "../../helpers/datastore/PostgresUser"
 
 
 export interface GrafanaArgs {
@@ -55,7 +55,7 @@ export class Grafana extends pulumi.ComponentResource {
                 },
                 containerSpec: {
                     image: "grafana/grafana:main",
-                    env: vault.generic.getSecretOutput({ path: "infrastructure/smtp"}, {provider: args.providers.vault}).apply(s => ({
+                    env: vault.generic.getSecretOutput({ path: "infrastructure/data/smtp" }, { provider: args.providers.vault }).apply(s => ({
                         GF_SERVER_ROOT_URL: `https://grafana.${HOSTNAME}`,
                         GF_DATABASE_TYPE: "postgres",
                         GF_DATABASE_HOST: args.postgresHostname,

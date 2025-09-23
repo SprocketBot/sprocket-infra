@@ -14,6 +14,24 @@ initialized=$(echo "$status" | jq -r '.initialized')
 echo "Sealed: $sealed"
 echo "Initialized: $initialized"
 
+# Diagnostic logs for lookup-self endpoint
+if [ "$sealed" = "false" ] && [ "$initialized" = "true" ]; then
+    echo "Testing /v1/auth/token/lookup-self endpoint with root token..."
+    root_token=$(cat /vault/unseal-tokens/root_token.txt)
+    export VAULT_TOKEN="$root_token"
+    lookup_response=$(vault token lookup -format=json 2>&1)
+    lookup_exit_code=$?
+    echo "Lookup-self test exit code: $lookup_exit_code"
+    echo "Lookup-self response: $lookup_response"
+    if [ $lookup_exit_code -eq 0 ]; then
+        echo "Lookup-self endpoint accessible with root token."
+    else
+        echo "Lookup-self endpoint failed with root token. Possible issue with permissions or auth method."
+    fi
+else
+    echo "Vault not ready for endpoint testing (sealed or not initialized)."
+fi
+
 if [ "$sealed" = "true" ]; then
   if [ "$initialized" = "false" ] || [ ! -f /vault/unseal-tokens/unseal_tokens.txt ]; then
     echo "Initializing Vault"
