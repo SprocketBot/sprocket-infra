@@ -3,15 +3,16 @@ import * as vault from "@pulumi/vault";
 import * as docker from "@pulumi/docker";
 import * as postgres from "@pulumi/postgresql"
 
-import {PostgresUser} from "../../helpers/datastore/PostgresUser"
-import {ConfigFile} from "../../helpers/docker/ConfigFile"
+import { PostgresUser } from "../../helpers/datastore/PostgresUser"
+import { ConfigFile } from "../../helpers/docker/ConfigFile"
+
+const config = new pulumi.Config();
 
 export interface TelegrafArgs {
     configFilePath: string,
     monitoringNetworkId: docker.Network["id"],
     additionalNetworkIds: docker.Network["id"][],
     additionalEnvironmentVariables: Record<string, string | pulumi.Output<string>>,
-    postgresHost: string | pulumi.Output<string>,
     providers: {
         vault: vault.Provider,
         postgres: postgres.Provider
@@ -44,9 +45,9 @@ export class Telegraf extends pulumi.ComponentResource {
                     image: "telegraf:1.22-alpine",
                     env: {
                         ...args.additionalEnvironmentVariables,
-                        POSTGRES_HOST: args.postgresHost,
-                        POSTGRES_USER: this.credentials.username,
-                        POSTGRES_PASSWORD: this.credentials.password,
+                        POSTGRES_HOST: config.require('postgres-host'),
+                        POSTGRES_USER: config.require('postgres-username'),
+                        POSTGRES_PASSWORD: config.requireSecret('postgres-password'),
                         HOSTNAME: "{{.Node.Hostname}}",
                         INFLUX_HOSTNAME: "influx",
                         INFLUX_TOKEN: args.influxToken,

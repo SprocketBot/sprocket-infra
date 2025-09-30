@@ -5,18 +5,26 @@ import * as pulumi from "@pulumi/pulumi";
 import { HOSTNAME } from "../constants";
 
 export interface SprocketMinioProviderArgs extends Omit<minio.ProviderArgs, "minioAccessKey" | "minioSecretKey" | "minioServer" | "minioInsecure"> {
-    vaultProvider: vault.Provider,
+    vaultProvider?: vault.Provider,
     minioCredentials?: VaultCredentials,
-    minioHostname: pulumi.Output<string> | string
+    minioHostname: pulumi.Output<string> | string,
+    useSsl?: boolean,
+    accessKey?: pulumi.Output<string> | string,
+    secretKey?: pulumi.Output<string> | string
 }
 
 export class SprocketMinioProvider extends minio.Provider {
-    constructor({ vaultProvider, minioCredentials, minioHostname, ...args }: SprocketMinioProviderArgs, opts?: pulumi.ResourceOptions) {
+    constructor({ vaultProvider, minioCredentials, minioHostname, useSsl = true, accessKey, secretKey, ...args }: SprocketMinioProviderArgs, opts?: pulumi.ResourceOptions) {
         let username, password;
-        if (minioCredentials) {
+
+        if (accessKey && secretKey) {
+            // Use provided credentials directly
+            username = accessKey;
+            password = secretKey;
+        } else if (minioCredentials) {
             username = minioCredentials.username;
             password = minioCredentials.password;
-        } else {
+        } else if (vaultProvider) {
             const secret = vault.generic.getSecretOutput({
                 path: "infrastructure/data/minio/root"
             }, {
@@ -24,6 +32,8 @@ export class SprocketMinioProvider extends minio.Provider {
             })
             username = secret.data.apply(d => { if (d && d.username) { return d.username } else { return "none"; } })
             password = secret.data.apply(d => { if (d && d.password) { return d.password } else { return "none"; } })
+        } else {
+            throw new Error("Must provide either accessKey/secretKey, minioCredentials, or vaultProvider");
         }
 
         super("SprocketMinioProvider", {
@@ -31,7 +41,7 @@ export class SprocketMinioProvider extends minio.Provider {
             minioAccessKey: username,
             minioSecretKey: password,
             minioServer: minioHostname,
-            minioSsl: true
+            minioSsl: useSsl
         }, opts);
     }
 }

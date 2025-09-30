@@ -8,14 +8,12 @@ import { TraefikLabels } from "../../helpers/docker/TraefikLabels"
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
 import { PostgresUser } from "../../helpers/datastore/PostgresUser"
 
+const config = new pulumi.Config();
 
 export interface GrafanaArgs {
     monitoringNetworkId: docker.Network["id"],
     ingressNetworkId: docker.Network["id"],
-    postgresNetworkId: docker.Network["id"],
     additionalNetwokIds?: docker.Network["id"][],
-    postgresHostname: docker.Service["name"]
-
     providers: {
         vault: vault.Provider,
         postgres: postgres.Provider
@@ -58,10 +56,10 @@ export class Grafana extends pulumi.ComponentResource {
                     env: vault.generic.getSecretOutput({ path: "infrastructure/data/smtp" }, { provider: args.providers.vault }).apply(s => ({
                         GF_SERVER_ROOT_URL: `https://grafana.${HOSTNAME}`,
                         GF_DATABASE_TYPE: "postgres",
-                        GF_DATABASE_HOST: args.postgresHostname,
+                        GF_DATABASE_HOST: config.require('postgres-host'),
                         GF_DATABASE_NAME: this.db.name,
-                        GF_DATABASE_USER: this.dbUser.username,
-                        GF_DATABASE_PASSWORD: this.dbUser.password,
+                        GF_DATABASE_USER: config.require('postgres-username'),
+                        GF_DATABASE_PASSWORD: config.requireSecret('postgres-password'),
                         GF_SMTP_ENABLED: "true",
                         GF_SMTP_HOST: "smtp.sendgrid.net:465",
                         GF_FROM_ADDRESS: "noreply@sprocket.gg",
@@ -75,7 +73,6 @@ export class Grafana extends pulumi.ComponentResource {
                 networks: [
                     args.monitoringNetworkId,
                     args.ingressNetworkId,
-                    args.postgresNetworkId,
                     ...args.additionalNetwokIds ?? []
                 ]
             },

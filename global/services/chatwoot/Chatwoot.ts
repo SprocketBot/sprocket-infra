@@ -4,12 +4,14 @@ import * as vault from "@pulumi/vault"
 import * as random from "@pulumi/random"
 import * as minio from "@pulumi/minio"
 import * as docker from "@pulumi/docker"
-import {CHATWOOT_SUBDOMAIN, HOSTNAME} from "../../constants";
-import {PostgresUser} from "../../helpers/datastore/PostgresUser";
-import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
-import {SprocketMinioProvider} from "../../providers/SprocketMinioProvider";
+import { CHATWOOT_SUBDOMAIN, HOSTNAME } from "../../constants";
+import { PostgresUser } from "../../helpers/datastore/PostgresUser";
+import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
+import { SprocketMinioProvider } from "../../providers/SprocketMinioProvider";
 import defaultLogDriver from "../../helpers/docker/DefaultLogDriver";
-import {readFileSync} from "fs";
+import { readFileSync } from "fs";
+
+const config = new pulumi.Config();
 
 export interface ChatwootArgs {
     ingressNetworkId: docker.Network["id"],
@@ -58,36 +60,36 @@ export class Chatwoot extends pulumi.ComponentResource {
             lower: true,
             special: true,
             number: true, length: 128
-        }, {parent: this})
+        }, { parent: this })
 
         this.postgresUser = new PostgresUser(`${name}-db-user`, {
             username: "chatwoot",
             providers: args.providers
-        }, {parent: this})
+        }, { parent: this })
 
         this.postgresDb = new postgres.Database(`${name}-db`, {
             name: name,
             owner: this.postgresUser.username
-        }, {parent: this, provider: args.providers.postgres})
+        }, { parent: this, provider: args.providers.postgres })
 
         this.bucket = new minio.S3Bucket(`${name}-s3-bucket`, {
             bucket: name
-        }, {parent: this, provider: args.providers.minio})
+        }, { parent: this, provider: args.providers.minio })
 
         this.s3User = new minio.IamUser(`${name}-s3-user`, {
             name: name
-        }, {parent: this, provider: args.providers.minio})
+        }, { parent: this, provider: args.providers.minio })
 
         const policyContent = readFileSync(`${__dirname}/minio-policy.txt`).toString().replace(/\{\{\s*bucket\s*\}\}/g, name)
 
         this.s3Policy = new minio.IamPolicy(`${name}-s3-policy`, {
             policy: policyContent
-        }, {parent: this, provider: args.providers.minio})
+        }, { parent: this, provider: args.providers.minio })
 
         this.s3PolicyAttachment = new minio.IamUserPolicyAttachment(`${name}-s3-policy-attachment`, {
             userName: this.s3User.name,
             policyName: this.s3Policy.name
-        }, {parent: this, provider: args.providers.minio})
+        }, { parent: this, provider: args.providers.minio })
 
         this.url = `${CHATWOOT_SUBDOMAIN}.${HOSTNAME}`
 
@@ -104,8 +106,8 @@ export class Chatwoot extends pulumi.ComponentResource {
                 REDIS_PASSWORD: args.redis.password,
                 POSTGRES_HOST: args.postgres.host,
                 POSTGRES_DATABASE: this.postgresDb.name,
-                POSTGRES_USERNAME: this.postgresUser.username,
-                POSTGRES_PASSWORD: this.postgresUser.password,
+                POSTGRES_USERNAME: config.require('postgres-username'),
+                POSTGRES_PASSWORD: config.requireSecret('postgres-password'),
                 RAILS_MAX_THREADS: "5",
                 MAILER_SENDER_EMAIL: "Sprocket Support <support@sprocket.gg>",
 
@@ -123,7 +125,7 @@ export class Chatwoot extends pulumi.ComponentResource {
                 STORAGE_ACCESS_KEY_ID: this.s3User.name,
                 STORAGE_SECRET_ACCESS_KEY: this.s3User.secret,
                 STORAGE_REGION: "local",
-                STORAGE_ENDPOINT: `https://files.${HOSTNAME}`,
+                STORAGE_ENDPOINT: 'https://mle-chatwoot.nyc3.digitaloceanspaces.com',//`https://files.${HOSTNAME}`,
                 STORAGE_FORCE_PATH_STYLE: "true",
                 NODE_ENV: "production",
                 RAILS_ENV: "production",
@@ -165,6 +167,6 @@ export class Chatwoot extends pulumi.ComponentResource {
                 .rule(`Host(\`${this.url}\`)`)
                 .targetPort(3000)
                 .complete
-        }, {parent: this})
+        }, { parent: this })
     }
 }

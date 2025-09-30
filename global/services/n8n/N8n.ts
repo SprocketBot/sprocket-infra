@@ -9,6 +9,8 @@ import { TraefikLabels } from '../../helpers/docker/TraefikLabels';
 import { buildHost } from '../../helpers/buildHost';
 import { UTIL_HOSTNAME } from '../../constants';
 
+const config = new pulumi.Config();
+
 export interface N8nArgs {
   providers: {
     vault: vault.Provider,
@@ -58,10 +60,10 @@ export class N8n extends pulumi.ComponentResource {
             DB_TYPE: 'postgresdb',
             DB_POSTGRESDB_DATABASE: this.database.name,
             DB_POSTGRESDB_HOST: args.postgresHostname,
-            DB_POSTGRESDB_PORT: '5432',
-            DB_POSTGRESDB_USER: this.dbUser.username,
+            DB_POSTGRESDB_PORT: config.require('postgres-port'),
+            DB_POSTGRESDB_USER: config.require('postgres-username'),
             DB_POSTGRESDB_SCHEMA: 'public',
-            DB_POSTGRESDB_PASSWORD: this.dbUser.password,
+            DB_POSTGRESDB_PASSWORD: config.requireSecret('postgres-password'),
             N8N_BASIC_AUTH_ACTIVE: 'false',
             WEBHOOK_URL: hostname,
             N8N_HOST: hostname,
@@ -69,7 +71,8 @@ export class N8n extends pulumi.ComponentResource {
 
             N8N_ENCRYPTION_KEY: this.encryptionKey.result,
 
-            N8N_USER_MANAGEMENT_DISABLED: 'true'
+            N8N_USER_MANAGEMENT_DISABLED: 'true',
+            N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'true'
           }
         },
         placement: {

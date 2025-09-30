@@ -52,11 +52,6 @@ export class Gatus extends pulumi.ComponentResource {
                     }],
                 },
                 networks: [args.ingressNetworkId],
-                placement: {
-                    constraints: [
-                        "node.labels.role==ingress"
-                    ]
-                },
                 logDriver: DefaultLogDriver(name, true),
             },
             labels: traefikLabels,

@@ -38,7 +38,8 @@ export class SprocketPostgresProvider extends postgres.Provider {
             host: host,
             sslmode: 'require',
             port: port,
-            database: 'sprocketbot'
+            database: 'sprocketbot',
+            superuser: false
         }, opts);
 
         this.hostname = host;
