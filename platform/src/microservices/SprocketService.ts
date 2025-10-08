@@ -37,7 +37,7 @@ export type SprocketServiceConfigTemplateValues = {
         passwordSecret: docker.Secret,
         username: string | pulumi.Output<string>,
         database: string | pulumi.Output<string>,
-        networkId: string | pulumi.Output<string>
+        networkId?: string | pulumi.Output<string>
     },
     s3: {
         endpoint: string | pulumi.Output<string>,
@@ -147,9 +147,11 @@ export class SprocketService extends pulumi.ComponentResource {
                 secretId: args.configValues.database.passwordSecret.id,
                 secretName: args.configValues.database.passwordSecret.name
             })
-            networks.push(
-                pulumi.output(args.configValues.database.networkId)
-            )
+            if (args.configValues.database.networkId) {
+                networks.push(
+                    pulumi.output(args.configValues.database.networkId)
+                )
+            }
         }
 
         this.service = new docker.Service(`${name}-service`, {

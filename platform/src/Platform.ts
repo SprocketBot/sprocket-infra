@@ -2,21 +2,21 @@ import * as docker from "@pulumi/docker"
 import * as postgresql from "@pulumi/postgresql"
 import * as pulumi from "@pulumi/pulumi"
 import * as vault from "@pulumi/vault"
-import * as minio from "@pulumi/minio"
+import * as aws from "@pulumi/aws"
 import * as random from "@pulumi/random";
 
-import {SprocketService, SprocketServiceArgs} from "./microservices/SprocketService";
-import {PlatformDatastore} from "./PlatformDatastore";
+import { SprocketService, SprocketServiceArgs } from "./microservices/SprocketService";
+import { PlatformDatastore } from "./PlatformDatastore";
 
-import {TraefikLabels} from "global/helpers/docker/TraefikLabels";
-import {buildHost} from "global/helpers/buildHost";
-import {CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME, PRODUCTION_CHATWOOT_WEBSITE_TOKEN} from "global/constants"
-import {PlatformSecrets} from "./PlatformSecrets";
-import {PlatformDatabase} from "./PlatformDatabase";
-import {PlatformVault} from "./PlatformVault";
-import {PlatformMinio} from "./PlatformMinio";
-import {EloService} from "./microservices/EloService";
-import {LegacyPlatform} from './legacy/LegacyPlatform';
+import { TraefikLabels } from "global/helpers/docker/TraefikLabels";
+import { buildHost } from "global/helpers/buildHost";
+import { CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME, PRODUCTION_CHATWOOT_WEBSITE_TOKEN } from "global/constants"
+import { PlatformSecrets } from "./PlatformSecrets";
+import { PlatformDatabase } from "./PlatformDatabase";
+import { PlatformVault } from "./PlatformVault";
+import { PlatformS3 } from "./PlatformS3";
+import { EloService } from "./microservices/EloService";
+import { LegacyPlatform } from './legacy/LegacyPlatform';
 
 const config = new pulumi.Config()
 
@@ -29,26 +29,25 @@ export interface PlatformArgs {
     postgresProvider: postgresql.Provider
     postgresHostname: string | pulumi.Output<string>
 
-    minioProvider: minio.Provider
+    s3Provider: aws.Provider
+    s3Endpoint: string | pulumi.Output<string>
 
     ingressNetworkId: docker.Network["id"],
     monitoringNetworkId: docker.Network["id"],
-    postgresNetworkId: docker.Network["id"],
-    n8nNetworkId: docker.Network["id"],
+    //n8nNetworkId: docker.Network["id"],
 
     configRoot: string
 }
 
 export class Platform extends pulumi.ComponentResource {
     readonly environmentSubdomain: string
-    readonly postgresNetworkId: string | pulumi.Output<string>
 
     readonly datastore: PlatformDatastore
     readonly network: docker.Network
 
     readonly secrets: PlatformSecrets
     readonly database: PlatformDatabase
-    readonly objectStorage: PlatformMinio
+    readonly objectStorage: PlatformS3
 
     readonly core: SprocketService
     readonly clients: {
@@ -83,14 +82,15 @@ export class Platform extends pulumi.ComponentResource {
         this.key = new random.RandomUuid(`${name}-key`)
 
         this.environmentSubdomain = config.require("subdomain")
-        this.postgresNetworkId = args.postgresNetworkId
-        this.network = new docker.Network(`${name}-net`, {driver: "overlay"}, {parent: this})
+        this.network = new docker.Network(`${name}-net`, { driver: "overlay" }, { parent: this })
 
 
-        this.objectStorage = new PlatformMinio(`${name}-minio`, {
+        this.objectStorage = new PlatformS3(`${name}-s3`, {
             environment: this.environmentSubdomain,
-            minioProvider: args.minioProvider
-        })
+            s3Provider: args.s3Provider,
+            s3Endpoint: args.s3Endpoint,
+            vaultProvider: args.vault.infrastructure
+        }, { parent: this })
 
         this.datastore = new PlatformDatastore(`${name}-datastores`, {
             environmentSubdomain: this.environmentSubdomain,
@@ -98,22 +98,22 @@ export class Platform extends pulumi.ComponentResource {
             vaultProvider: args.vault.infrastructure,
             platformNetworkId: this.network.id,
             configRoot: `${args.configRoot}/datastores`
-        }, {parent: this})
+        }, { parent: this })
 
         this.database = new PlatformDatabase(`${name}-database`, {
             environmentSubdomain: this.environmentSubdomain,
             postgresHostname: args.postgresHostname,
             postgresProvider: args.postgresProvider,
             vaultProvider: args.vault.infrastructure
-        }, {parent: this})
+        }, { parent: this })
 
         this.secrets = new PlatformSecrets(`${name}-secrets`, {
             datastore: this.datastore,
             database: this.database,
-            minioUser: this.objectStorage.minioUser,
+            s3AccessKey: this.objectStorage.s3AccessKey,
             vault: args.vault.platform,
             environment: this.environmentSubdomain
-        }, {parent: this})
+        }, { parent: this })
 
 
         /////////////////
@@ -133,9 +133,9 @@ export class Platform extends pulumi.ComponentResource {
             .rule(`Host(\`${this.webUrl}\`)`)
             .targetPort(3000)
         const imageGenLabels = new TraefikLabels(`sprocket-image-gen-${this.environmentSubdomain}`)
-          .tls("lets-encrypt-tls")
-          .rule(`Host(\`${this.igUrl}\`)`)
-          .targetPort(3000)
+            .tls("lets-encrypt-tls")
+            .rule(`Host(\`${this.igUrl}\`)`)
+            .targetPort(3000)
 
         if (config.getBoolean("alpha-restrictions")) {
             webLabels.forwardAuthRule("AlphaTesters")
@@ -146,7 +146,7 @@ export class Platform extends pulumi.ComponentResource {
             labels: [
                 ...coreLabels.complete
             ],
-            flags: {database: true},
+            flags: { database: true },
             secrets: [{
                 secretId: this.secrets.jwtSecret.id,
                 secretName: this.secrets.jwtSecret.name,
@@ -195,7 +195,7 @@ export class Platform extends pulumi.ComponentResource {
             networks: [
                 args.ingressNetworkId
             ]
-        }, {parent: this})
+        }, { parent: this })
 
         this.clients = {
             web: new SprocketService(`${name}-sprocket-web`, {
@@ -219,7 +219,7 @@ export class Platform extends pulumi.ComponentResource {
                 networks: [
                     args.ingressNetworkId
                 ],
-            }, {parent: this}),
+            }, { parent: this }),
 
             imageGen: new SprocketService(`${name}-sprocket-image-generation-frontend`, {
                 ...this.buildDefaultConfiguration("image-generation-frontend", args.configRoot),
@@ -266,7 +266,7 @@ export class Platform extends pulumi.ComponentResource {
                     secretName: this.secrets.s3AccessKey.name,
                     fileName: "/app/secret/minio-access.txt"
                 }]
-            }, {parent: this})
+            }, { parent: this })
         }
 
 
@@ -290,7 +290,7 @@ export class Platform extends pulumi.ComponentResource {
                     secretId: this.secrets.s3SecretKey.id,
                     secretName: this.secrets.s3SecretKey.name,
                     fileName: "/app/secret/minio-secret.txt"
-                },{
+                }, {
                     secretId: this.secrets.s3AccessKey.id,
                     secretName: this.secrets.s3AccessKey.name,
                     fileName: "/app/secret/minio-access.txt"
@@ -299,7 +299,7 @@ export class Platform extends pulumi.ComponentResource {
                     secretName: this.secrets.postgresPassword.name,
                     fileName: "/app/secret/db-secret.txt"
                 }]
-            }, {parent: this}),
+            }, { parent: this }),
 
             analytics: new SprocketService(`${name}-server-analytics-service`, {
                 ...this.buildDefaultConfiguration("server-analytics-service", args.configRoot),
@@ -311,7 +311,7 @@ export class Platform extends pulumi.ComponentResource {
                     secretName: this.secrets.influxToken.name,
                     fileName: "/app/secret/influx-token"
                 }]
-            }, {parent: this}),
+            }, { parent: this }),
 
             matchmaking: new SprocketService(`${name}-matchmaking-service`, {
                 ...this.buildDefaultConfiguration("matchmaking-service", args.configRoot),
@@ -320,7 +320,7 @@ export class Platform extends pulumi.ComponentResource {
                     secretName: this.secrets.redisPassword.name,
                     fileName: "/app/secret/redis-password.txt"
                 }]
-            }, {parent: this}),
+            }, { parent: this }),
 
             replayParse: new SprocketService(`${name}-replay-parse-service`, {
                 ...this.buildDefaultConfiguration("replay-parse-service", args.configRoot),
@@ -336,7 +336,7 @@ export class Platform extends pulumi.ComponentResource {
                     secretName: this.secrets.ballchasingApiToken.name,
                     fileName: "/app/secret/ballchasing-token"
                 }]
-            }, {parent: this}),
+            }, { parent: this }),
 
             elo: new EloService(`${name}-elo-service`, {
                 vault: args.vault.platform,
@@ -354,8 +354,8 @@ export class Platform extends pulumi.ComponentResource {
                     }
                 ],
                 ingressNetworkId: args.ingressNetworkId,
-                n8nNetworkId: args.n8nNetworkId
-            }, {parent: this}),
+                // n8nNetworkId: args.n8nNetworkId
+            }, { parent: this }),
 
             submissions: new SprocketService(`${name}-submission-service`, {
                 ...this.buildDefaultConfiguration("submission-service", args.configRoot),
@@ -400,9 +400,9 @@ export class Platform extends pulumi.ComponentResource {
                 database: this.database.database.name
             },
             minio: {
-                url: this.objectStorage.minioUrl,
-                accessKey: this.objectStorage.minioUser.name,
-                secretKey: this.objectStorage.minioUser.secret,
+                url: this.objectStorage.s3Url,
+                accessKey: this.objectStorage.s3AccessKey.id,
+                secretKey: this.objectStorage.s3AccessKey.secret,
                 bucket: this.objectStorage.bucket.bucket,
                 imageGenerationBucket: this.objectStorage.imageGenBucket.bucket,
                 replayBucket: this.objectStorage.replayBucket.bucket
@@ -414,16 +414,15 @@ export class Platform extends pulumi.ComponentResource {
         new LegacyPlatform(`${name}-legacy`, {
             database: this.database,
             minio: this.objectStorage,
-            postgresNetworkId: this.postgresNetworkId,
             postgresProvider: args.postgresProvider,
             vaultProvider: args.vault.infrastructure
         }, { parent: this })
     }
 
     buildDefaultConfiguration = (name: string, configRoot: string): SprocketServiceArgs => ({
-        image: {namespace: "asaxplayinghorse", repository: name, tag: config.require("image-tag")},
+        image: { namespace: "asaxplayinghorse", repository: name, tag: config.require("image-tag") },
         platformNetworkId: this.network.id,
-        configFile: {sourceFilePath: `${configRoot}/services/${name}.json`},
+        configFile: { sourceFilePath: `${configRoot}/services/${name}.json` },
         configValues: {
             transport: pulumi.all([this.datastore.rabbitmq.hostname, this.key.result]).apply(([rmqHost, key]) => JSON.stringify({
                 url: `amqp://${rmqHost}:5672`,
@@ -446,8 +445,7 @@ export class Platform extends pulumi.ComponentResource {
                 port: 5432,
                 passwordSecret: this.secrets.postgresPassword,
                 username: this.database.credentials.username,
-                database: this.database.database.name,
-                networkId: this.postgresNetworkId
+                database: this.database.database.name
             },
             redis: {
                 port: 6379,
@@ -463,10 +461,10 @@ export class Platform extends pulumi.ComponentResource {
                 bucket: "sprocket_" + this.environmentSubdomain,
             },
             s3: {
-                endpoint: this.objectStorage.minioUrl,
+                endpoint: this.objectStorage.s3Url,
                 port: 443,
                 ssl: true,
-                accessKey: this.objectStorage.minioUser.name,
+                accessKey: this.objectStorage.s3AccessKey.id,
                 bucket: this.objectStorage.bucket.bucket,
                 buckets: {
                     imageGeneration: this.objectStorage.imageGenBucket.bucket,
@@ -475,7 +473,7 @@ export class Platform extends pulumi.ComponentResource {
             },
             celery: {
                 broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}`) ?? "",
-                backend: pulumi.all([this.datastore.redis?.hostname, this.datastore.redis?.credentials.password]).apply(([h,p]) => `redis://:${p}@${h}`) ?? "",
+                backend: pulumi.all([this.datastore.redis?.hostname, this.datastore.redis?.credentials.password]).apply(([h, p]) => `redis://:${p}@${h}`) ?? "",
                 queue: `${this.environmentSubdomain}-celery`
             },
             bot: {
@@ -483,8 +481,7 @@ export class Platform extends pulumi.ComponentResource {
             },
             gql: {
                 internal: this.core?.hostname ? this.core.hostname.apply(h => `${h}:3001/graphql`) : "",
-                public: this.apiUrl,
-                playground: pulumi.getStack() === "main" ? false : true, 
+                public: this.apiUrl
             },
             frontend: {
                 url: this.webUrl

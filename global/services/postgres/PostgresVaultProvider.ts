@@ -26,11 +26,22 @@ export class PostgresVaultProvider extends pulumi.ComponentResource {
     constructor(name: string, args: PostgresVaultProviderArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Postgres:VaultProvider", name, {}, opts);
 
+        const rolePassword = new random.RandomPassword(`${name}-base-role-password`, {
+            length: 64,
+            keepers: {
+                role_name: `${args.environment}-dynamic-role-creator`
+            }
+        }, { parent: this });
+
         this.connRole = new postgresql.Role(`${name}-base-role`, {
             name: `${args.environment}-dynamic-role-creator`,
-            superuser: true,
+            superuser: false,
+            createRole: true,
+            createDatabase: true,
             login: true,
-            password: new random.RandomPassword(`${name}-base-role-password`, { length: 64 }, { parent: this }).result
+            password: rolePassword.result,
+            skipReassignOwned: true,
+            skipDropRole: true
         }, { parent: this, provider: args.pg.provider })
 
         this.connection = new vault.database.SecretBackendConnection(`${name}-backend-conn`, {

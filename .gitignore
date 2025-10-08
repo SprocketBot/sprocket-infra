@@ -4,5 +4,6 @@ global/node_modules/
 *.iml
 
 scripts/db-sync/.env
+scripts/vault-secrets.env
 
 global/services/vault/unseal-tokens/*.txt

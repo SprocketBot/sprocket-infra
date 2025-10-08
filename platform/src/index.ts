@@ -1,14 +1,14 @@
 import * as pulumi from "@pulumi/pulumi"
 import * as postgres from "@pulumi/postgresql"
 import * as vault from '@pulumi/vault'
-import * as minio from "@pulumi/minio"
+import * as aws from "@pulumi/aws"
 
-import {LayerOne, LayerOneExports, LayerTwo, LayerTwoExports} from "global/refs"
-import {SprocketPostgresProvider} from "global/providers/SprocketPostgresProvider"
-import {SprocketMinioProvider} from "global/providers/SprocketMinioProvider"
+import { LayerOne, LayerOneExports, LayerTwo, LayerTwoExports } from "global/refs"
+import { SprocketPostgresProvider } from "global/providers/SprocketPostgresProvider"
+import { SprocketS3Provider } from "global/providers/SprocketS3Provider"
 
 
-import {Platform} from "./Platform";
+import { Platform } from "./Platform";
 
 const infrastructureVaultProvider = new vault.Provider("InfrastructureVaultProvider", {
     address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
@@ -21,17 +21,15 @@ const platformVaultProvider = new vault.Provider("PlatformVaultProvider", {
 })
 
 const postgresProvider = new SprocketPostgresProvider({
-    vaultProvider: infrastructureVaultProvider,
-    postgresHostname: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresUrl) as pulumi.Output<string>
+    vaultProvider: infrastructureVaultProvider
 })
 
-const minioProvider = new SprocketMinioProvider({
+const s3Provider = new SprocketS3Provider({
     vaultProvider: infrastructureVaultProvider,
-    minioHostname: LayerTwo.stack.requireOutput(LayerTwoExports.MinioUrl) as pulumi.Output<string>
+    s3Endpoint: LayerTwo.stack.requireOutput(LayerTwoExports.MinioUrl) as pulumi.Output<string>
 })
 
-const postgresNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.PostgresNetworkId) as pulumi.Output<string>
-const n8nNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.N8nNetwork) as pulumi.Output<string>
+//const n8nNetworkId = LayerTwo.stack.requireOutput(LayerTwoExports.N8nNetwork) as pulumi.Output<string>
 
 export const platform = new Platform(pulumi.getStack(), {
     vault: {
@@ -39,11 +37,11 @@ export const platform = new Platform(pulumi.getStack(), {
         platform: platformVaultProvider
     },
     postgresProvider: postgresProvider as postgres.Provider,
-    postgresNetworkId,
-    n8nNetworkId,
+    //n8nNetworkId,
     postgresHostname: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresHostname) as pulumi.Output<string>,
 
-    minioProvider: minioProvider as minio.Provider,
+    s3Provider: s3Provider as aws.Provider,
+    s3Endpoint: LayerTwo.stack.requireOutput(LayerTwoExports.MinioUrl) as pulumi.Output<string>,
 
     configRoot: `${__dirname}/config`,
 

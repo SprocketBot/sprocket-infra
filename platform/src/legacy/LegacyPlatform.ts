@@ -8,15 +8,13 @@ import { PostgresUser } from 'global/helpers/datastore/PostgresUser';
 import defaultLogDriver from 'global/helpers/docker/DefaultLogDriver';
 import { getImageSha } from 'global/helpers/docker/getImageSha';
 import { PlatformDatabase } from '../PlatformDatabase';
-import { PlatformMinio } from '../PlatformMinio';
+import { PlatformS3 } from '../PlatformS3';
 
 const config = new pulumi.Config();
 
 export interface LegacyPlatformArgs {
-  postgresNetworkId: docker.Network['id'],
-
   database: PlatformDatabase,
-  minio: PlatformMinio
+  minio: PlatformS3
 
   vaultProvider: vault.Provider,
   postgresProvider: postgres.Provider
@@ -80,14 +78,14 @@ export class LegacyPlatform extends pulumi.ComponentResource {
                 return connStr;
               }),
             file_bucket: args.minio.bucket.bucket,
-            file_token: args.minio.minioUser.name,
-            file_token_secret: args.minio.minioUser.secret,
+            file_token: args.minio.s3AccessKey.id,
+            file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
           }
         },
         logDriver: defaultLogDriver(`${name}-worker`, false),
         networks: [
-          args.postgresNetworkId,
+          // args.postgresNetworkId,
           this.network.id
         ]
       }
@@ -135,13 +133,13 @@ export class LegacyPlatform extends pulumi.ComponentResource {
                 return connStr;
               }),
             file_bucket: args.minio.bucket.bucket,
-            file_token: args.minio.minioUser.name,
-            file_token_secret: args.minio.minioUser.secret,
+            file_token: args.minio.s3AccessKey.id,
+            file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
           }
         },
         networks: [
-          args.postgresNetworkId,
+          // args.postgresNetworkId,
           this.network.id
         ],
         logDriver: defaultLogDriver(`${name}-emilio`, false)
@@ -175,13 +173,13 @@ export class LegacyPlatform extends pulumi.ComponentResource {
                 return connStr;
               }),
             file_bucket: args.minio.bucket.bucket,
-            file_token: args.minio.minioUser.name,
-            file_token_secret: args.minio.minioUser.secret,
+            file_token: args.minio.s3AccessKey.id,
+            file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
           }
         },
         networks: [
-          args.postgresNetworkId,
+          // args.postgresNetworkId,
           this.network.id
         ],
         logDriver: defaultLogDriver(`${name}-emilia`, false)
@@ -219,13 +217,13 @@ export class LegacyPlatform extends pulumi.ComponentResource {
                 return connStr;
               }),
             file_bucket: args.minio.bucket.bucket,
-            file_token: args.minio.minioUser.name,
-            file_token_secret: args.minio.minioUser.secret,
+            file_token: args.minio.s3AccessKey.id,
+            file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
           }
         },
         networks: [
-          args.postgresNetworkId,
+          // args.postgresNetworkId,
           this.network.id
         ],
         logDriver: defaultLogDriver(`${name}-bot`, false)
