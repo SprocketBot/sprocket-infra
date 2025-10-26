@@ -13,3 +13,6 @@ config:
   platform:image-tag: main
   platform:legacy-bot-token:
     secure: AAABAMchClz7punUxGAJP7lzVSTcprfuSAzdZUIFUCqEWdi7KK0xXC0kfBvZsElD1+RIyn1wPW/ITelVTTRF5OGZZ5YzQgzhglWnQ/9eMG7T4HgzFG4Q5KBnvC4lw5pfDs3msi02uHM=
+  platform:hostname: localhost
+  platform:server-ip: 192.168.4.39
+  platform:tailscale-ip: 100.110.185.84

@@ -124,13 +124,22 @@ export class Platform extends pulumi.ComponentResource {
         this.chatwootUrl = buildHost(CHATWOOT_SUBDOMAIN, HOSTNAME)
         this.igUrl = buildHost("image-generation", this.environmentSubdomain, HOSTNAME)
 
+        // Allow access via IP address for remote browsers (optional)
+        const serverIp = config.get("server-ip") || ""
+        const tailscaleIp = config.get("tailscale-ip") || ""
+        const ipRule = [serverIp, tailscaleIp]
+            .filter(Boolean)
+            .map(ip => `Host(\`${ip}\`)`)
+            .join(" || ")
+        const fullIpRule = ipRule ? ` || ${ipRule}` : ""
+
         const coreLabels = new TraefikLabels(`sprocket-core-${this.environmentSubdomain}`)
             .tls("lets-encrypt-tls")
             .rule(`Host(\`${this.apiUrl}\`)`)
             .targetPort(3001)
         const webLabels = new TraefikLabels(`sprocket-web-${this.environmentSubdomain}`)
             .tls("lets-encrypt-tls")
-            .rule(`Host(\`${this.webUrl}\`)`)
+            .rule(`Host(\`${this.webUrl}\`)${fullIpRule}`)
             .targetPort(3000)
         const imageGenLabels = new TraefikLabels(`sprocket-image-gen-${this.environmentSubdomain}`)
             .tls("lets-encrypt-tls")
@@ -147,6 +156,10 @@ export class Platform extends pulumi.ComponentResource {
                 ...coreLabels.complete
             ],
             flags: { database: true },
+            env: {
+                CACHE_HOST: this.datastore.redis.hostname,
+                CACHE_PORT: "6379",
+            },
             secrets: [{
                 secretId: this.secrets.jwtSecret.id,
                 secretName: this.secrets.jwtSecret.name,

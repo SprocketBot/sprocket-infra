@@ -1,10 +1,10 @@
 import * as pulumi from "@pulumi/pulumi"
-import {ComponentResourceOptions} from "@pulumi/pulumi"
+import { ComponentResourceOptions } from "@pulumi/pulumi"
 import * as docker from "@pulumi/docker"
 
-import {DockerProvider} from "global/providers/DockerProvider"
-import {ConfigFile, ConfigFileArgs} from "global/helpers/docker/ConfigFile"
-import {getImageSha} from "global/helpers/docker/getImageSha"
+import { DockerProvider } from "global/providers/DockerProvider"
+import { ConfigFile, ConfigFileArgs } from "global/helpers/docker/ConfigFile"
+import { getImageSha } from "global/helpers/docker/getImageSha"
 import * as handlebars from "handlebars";
 import defaultLogDriver from "global/helpers/docker/DefaultLogDriver"
 const config = new pulumi.Config();
@@ -176,9 +176,6 @@ export class SprocketService extends pulumi.ComponentResource {
                 },
                 placement: {
                     maxReplicas: args.instanceCount ?? 2,
-                    constraints: [
-                      "node.role!=manager"
-                    ]
                 },
                 networks: [
                     args.platformNetworkId,
@@ -188,7 +185,7 @@ export class SprocketService extends pulumi.ComponentResource {
                 logDriver: defaultLogDriver(name, false)
             },
             labels: args.labels
-        }, {parent: this, provider: DockerProvider})
+        }, { parent: this, provider: DockerProvider })
         this.hostname = this.service.name
     }
 
@@ -199,15 +196,15 @@ export class SprocketService extends pulumi.ComponentResource {
 
         return configs.map<ConfigSpec>(
             ({
-                 sourceFilePath,
-                 destFilePath,
-                 transformation
-             }) => {
+                sourceFilePath,
+                destFilePath,
+                transformation
+            }) => {
                 const filename = sourceFilePath.split("/").pop()
                 const config = new ConfigFile(`${name}-${filename}`, {
                     filepath: sourceFilePath,
                     transformation: (x) => transformation ? this.applyConfigurationValues(x).apply(transformation) : this.applyConfigurationValues(x)
-                }, {parent: this})
+                }, { parent: this })
 
                 return {
                     configId: config.id,
