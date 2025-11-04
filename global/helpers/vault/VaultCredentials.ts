@@ -44,7 +44,7 @@ export class VaultCredentials extends pulumi.ComponentResource {
             }))
         }, {parent: this, provider: args.vault.provider})
 
-        this.username = this.vaultSecret.data.username as pulumi.Output<string>
+        this.username = pulumi.output(args.username)
         this.password = this.passwordResource.result as pulumi.Output<string>
 
     }

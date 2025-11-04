@@ -7,12 +7,12 @@ config:
   platform:postgres-host: sprocketbot-postgres-d5033d2-do-user-24528890-0.j.db.ondigitalocean.com
   platform:postgres-password:
     secure: AAABACbBsrxEDT139w4GBAOopEgHd403W3TfsWPTthI16JsX+2Tnlj1Vg81ad3GQQS0Ud8Fg3E4=
-  platform:subdomain: sprocket
+  platform:subdomain: "main"
   platform:discord-bot-token:
     secure: AAABAIsSHMtR4wlanxgjF/YjCYaGnlpUE5kuiPF5uPWAZbPKlEaxiLIwafRZhaYEk9WvtWnHwOd01h5mnzjvmXiv/wR7/JwUaDyjhJYPCeTl3UhMW0ldq54XA9YbhsB/jv3FUl86uoQ=
   platform:image-tag: main
   platform:legacy-bot-token:
     secure: AAABAMchClz7punUxGAJP7lzVSTcprfuSAzdZUIFUCqEWdi7KK0xXC0kfBvZsElD1+RIyn1wPW/ITelVTTRF5OGZZ5YzQgzhglWnQ/9eMG7T4HgzFG4Q5KBnvC4lw5pfDs3msi02uHM=
-  platform:hostname: localhost
+  platform:hostname: sprocket.mlesports.gg
   platform:server-ip: 192.168.4.39
   platform:tailscale-ip: 100.110.185.84

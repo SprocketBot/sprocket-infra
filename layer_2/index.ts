@@ -7,6 +7,7 @@ const config = new pulumi.Config();
 module.exports = {
     [LayerTwoExports.MonitoringNetworkId]: src.monitoring.network.id,
     [LayerTwoExports.PostgresHostname]: src.pg.hostname,
+    [LayerTwoExports.PostgresPort]: src.pg.port,
     [LayerTwoExports.PostgresNetworkId]: src.pg.networkId,
     [LayerTwoExports.PostgresUrl]: src.pg.url,
     [LayerTwoExports.InfrastructureVaultToken]: src.policies.infraToken.clientToken,

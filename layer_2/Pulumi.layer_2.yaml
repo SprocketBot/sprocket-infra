@@ -12,3 +12,4 @@ config:
     secure: AAABAE7N6kehSUy4xuYiPtm/kAkQwayBeH37odw+qygvWZoi/hGigja/B8544dvBdwsf36KnEGZtoGtp2cOFJGNg5b25aa196/Cn
   layer_2:s3-access-key: DO004ZHPV38R8C9Q46XG
   layer_2:s3-endpoint: nyc3.digitaloceanspaces.com
+  layer_2:hostname: sprocket.mlesports.gg

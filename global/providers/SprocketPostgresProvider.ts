@@ -12,6 +12,7 @@ export class SprocketPostgresProvider extends postgres.Provider {
     readonly hostname: string;
     readonly networkId: string;
     readonly url: string;
+    readonly port: number;
 
     constructor({ vaultProvider, ...args }: SprocketPostgresProviderArgs, opts?: pulumi.ResourceOptions) {
         const secret = vault.generic.getSecretOutput({
@@ -44,6 +45,7 @@ export class SprocketPostgresProvider extends postgres.Provider {
 
         this.hostname = host;
         this.url = host;
+        this.port = port;
         this.networkId = '12345';
     }
 }

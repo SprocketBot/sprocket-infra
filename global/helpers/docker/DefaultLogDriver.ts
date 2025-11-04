@@ -1,7 +1,7 @@
 export default (serviceName: string, isUtil: boolean) => ({
-    name: "fluentd",
+    name: "json-file",
     options: {
-        "fluentd-async": "true",
-        tag: `docker.${isUtil ? "utils" : "microservices"}.${serviceName}`
+        "max-size": "10m",
+        "max-file": "3"
     }
 })

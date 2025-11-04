@@ -33,7 +33,7 @@ export type SprocketServiceConfigTemplateValues = {
     },
     database: {
         host: string | pulumi.Output<string>,
-        port: number,
+        port: number | pulumi.Output<number>,
         passwordSecret: docker.Secret,
         username: string | pulumi.Output<string>,
         database: string | pulumi.Output<string>,

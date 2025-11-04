@@ -39,6 +39,7 @@ export const platform = new Platform(pulumi.getStack(), {
     postgresProvider: postgresProvider as postgres.Provider,
     //n8nNetworkId,
     postgresHostname: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresHostname) as pulumi.Output<string>,
+    postgresPort: LayerTwo.stack.requireOutput(LayerTwoExports.PostgresPort) as pulumi.Output<number>,
 
     s3Provider: s3Provider as aws.Provider,
     s3Endpoint: LayerTwo.stack.requireOutput(LayerTwoExports.MinioUrl) as pulumi.Output<string>,

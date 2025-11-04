@@ -4,6 +4,7 @@ import {SprocketStackDefinition} from "./types";
 export enum LayerTwoExports {
     MonitoringNetworkId = "MonitoringNetworkId",
     PostgresHostname = "PostgresHostname",
+    PostgresPort = "PostgresPort",
     PostgresNetworkId = "PostgresNetworkId",
     PostgresUrl = "PostgresUrl",
 

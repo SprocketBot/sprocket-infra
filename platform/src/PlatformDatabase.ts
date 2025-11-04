@@ -42,7 +42,7 @@ interface PlatformGrants {
 }
 
 export class PlatformDatabase extends pulumi.ComponentResource {
-    readonly database: postgresql.Database
+    readonly database: { name: string }
     readonly host: string | pulumi.Output<string>
     readonly credentials: PostgresUser
     readonly dataScienceCredentials: PostgresUser
@@ -89,10 +89,8 @@ export class PlatformDatabase extends pulumi.ComponentResource {
             username: dsUsername
         })
 
-        this.database = new postgresql.Database(`${name}-database`, {
-            name: `sprocket_${args.environmentSubdomain}`,
-            owner: this.credentials.username
-        }, { parent: this, provider: args.postgresProvider })
+        // Reference the existing sprocketbot database instead of creating a new one
+        this.database = { name: 'sprocketbot' }
 
         this.mledbSchema = new postgresql.Schema(`${name}-mledb-schema`, {
             database: this.database.name,

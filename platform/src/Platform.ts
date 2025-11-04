@@ -28,6 +28,7 @@ export interface PlatformArgs {
 
     postgresProvider: postgresql.Provider
     postgresHostname: string | pulumi.Output<string>
+    postgresPort: number | pulumi.Output<number>
 
     s3Provider: aws.Provider
     s3Endpoint: string | pulumi.Output<string>
@@ -48,6 +49,7 @@ export class Platform extends pulumi.ComponentResource {
     readonly secrets: PlatformSecrets
     readonly database: PlatformDatabase
     readonly objectStorage: PlatformS3
+    readonly postgresPort: number | pulumi.Output<number>
 
     readonly core: SprocketService
     readonly clients: {
@@ -82,6 +84,7 @@ export class Platform extends pulumi.ComponentResource {
         this.key = new random.RandomUuid(`${name}-key`)
 
         this.environmentSubdomain = config.require("subdomain")
+        this.postgresPort = args.postgresPort
         this.network = new docker.Network(`${name}-net`, { driver: "overlay" }, { parent: this })
 
 
@@ -119,10 +122,10 @@ export class Platform extends pulumi.ComponentResource {
         /////////////////
         // Create Clients / Core
         /////////////////
-        this.apiUrl = buildHost("api", this.environmentSubdomain, HOSTNAME)
-        this.webUrl = buildHost(this.environmentSubdomain, HOSTNAME)
+        this.apiUrl = buildHost("api", HOSTNAME)
+        this.webUrl = buildHost(HOSTNAME)
         this.chatwootUrl = buildHost(CHATWOOT_SUBDOMAIN, HOSTNAME)
-        this.igUrl = buildHost("image-generation", this.environmentSubdomain, HOSTNAME)
+        this.igUrl = buildHost("image-generation", HOSTNAME)
 
         // Allow access via IP address for remote browsers (optional)
         const serverIp = config.get("server-ip") || ""
@@ -217,7 +220,7 @@ export class Platform extends pulumi.ComponentResource {
                     ...webLabels.complete
                 ],
                 configFile: {
-                    destFilePath: "/app/config/production.json",
+                    destFilePath: "/app/clients/web/config/production.json",
                     sourceFilePath: `${args.configRoot}/services/web.json`,
                 },
                 secrets: [{
@@ -228,6 +231,7 @@ export class Platform extends pulumi.ComponentResource {
                 env: {
                     ENV: "production",
                     NODE_ENV: "production",
+                    NODE_CONFIG_DIR: "/app/clients/web/config",
                 },
                 networks: [
                     args.ingressNetworkId
@@ -455,7 +459,7 @@ export class Platform extends pulumi.ComponentResource {
             },
             database: {
                 host: this.database.host,
-                port: 5432,
+                port: this.postgresPort,
                 passwordSecret: this.secrets.postgresPassword,
                 username: this.database.credentials.username,
                 database: this.database.database.name

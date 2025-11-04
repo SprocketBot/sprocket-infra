@@ -26,7 +26,7 @@ export class VaultPolicies extends pulumi.ComponentResource {
 
         this.vaultProvider = new vault.Provider(`${name}-root-vault-provider`, {
             address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
-            token: readFileSync('/home/jacbaile/Workspace/sprocket-infra/global/services/vault/unseal-tokens/root_token.txt', 'utf8').trim()
+            token: readFileSync('/root/sprocket-infra/global/services/vault/unseal-tokens/root_token.txt', 'utf8').trim()
         })
 
         this.infraBackend = new VaultBackend(`${name}-infra`, {

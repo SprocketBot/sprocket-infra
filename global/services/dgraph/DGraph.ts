@@ -77,11 +77,6 @@ export class DGraph extends pulumi.ComponentResource {
                     }],
                 },
                 logDriver: DefaultLogDriver(`${name}-zero`, true),
-                placement: {
-                    constraints: [
-                        "node.labels.role==storage",
-                    ]
-                },
                 networks: args.platformNetworkId ? [
                     args.platformNetworkId,
                     args.ingressNetworkId,
@@ -111,11 +106,6 @@ export class DGraph extends pulumi.ComponentResource {
                     ],
                 },
                 logDriver: DefaultLogDriver(`${name}-alpha`, true),
-                placement: {
-                    constraints: [
-                        "node.labels.role==storage",
-                    ]
-                },
                 networks: args.platformNetworkId ? [
                     args.platformNetworkId,
                     args.ingressNetworkId,

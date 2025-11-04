@@ -73,11 +73,6 @@ export class Redis extends pulumi.ComponentResource {
                     }]
                 },
                 logDriver: DefaultLogDriver(name, true),
-                placement: {
-                    constraints: [
-                        "node.labels.role==storage",
-                    ]
-                },
                 networks: networks
             },
             labels: args.url ? new TraefikLabels(`${name}`, "tcp")

@@ -57,11 +57,9 @@ export class RabbitMq extends pulumi.ComponentResource {
                     args.ingressNetworkId
                 ],
                 logDriver: DefaultLogDriver("rabbitmq", true),
-                placement: {
-                    constraints: [
-                        "node.labels.role==storage",
-                    ]
-                },
+            },
+            endpointSpec: {
+                mode: "dnsrr"
             },
             labels: args.url
                 ? [

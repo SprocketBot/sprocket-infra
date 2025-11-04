@@ -41,19 +41,30 @@ create_secret() {
 
     echo -e "${YELLOW}Creating/updating secret at: ${mount}/${path}${NC}"
 
-    # Parse JSON data and build vault kv put command arguments
-    local kv_args=""
-    while IFS='=' read -r key value; do
-        if [ -n "$key" ] && [ -n "$value" ]; then
-            kv_args="$kv_args ${key}=\"${value}\""
-        fi
-    done < <(echo "$json_data" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+    # Use the HTTP API directly via curl to avoid CLI parsing issues
+    local vault_addr="${VAULT_ADDR}"
+    local vault_token="${VAULT_TOKEN}"
 
-    # Use vault CLI to write the secret (KV v2)
-    if eval "vault kv put ${mount}/${path} ${kv_args}"; then
+    # Prepare the data payload for KV v2 (needs to be wrapped in "data" field)
+    local payload=$(echo "$json_data" | jq -c '{data: .}')
+
+    # Use Vault HTTP API directly
+    local response=$(curl -s -w "\n%{http_code}" \
+        --header "X-Vault-Token: ${vault_token}" \
+        --header "Content-Type: application/json" \
+        --request POST \
+        --data "$payload" \
+        "${vault_addr}/v1/${mount}/data/${path}")
+
+    local http_code=$(echo "$response" | tail -n1)
+    local body=$(echo "$response" | sed '$d')
+
+    if [ "$http_code" = "200" ] || [ "$http_code" = "204" ]; then
         echo -e "${GREEN}✓ Successfully created/updated: ${mount}/${path}${NC}"
     else
         echo -e "${RED}✗ Failed to create/update: ${mount}/${path}${NC}"
+        echo "HTTP Status: $http_code"
+        echo "Response: $body"
         return 1
     fi
 }
@@ -98,46 +109,46 @@ create_secret "platform" "${ENVIRONMENT}/manual/oauth/google" \
     "$(jq -n \
         --arg clientId "$GOOGLE_CLIENT_ID" \
         --arg clientSecret "$GOOGLE_CLIENT_SECRET" \
-        '{clientId: $clientId, clientSecret: $clientSecret}')"
+        '{clientId: ($clientId | tostring), clientSecret: ($clientSecret | tostring)}')"
 
 # Discord OAuth
 create_secret "platform" "${ENVIRONMENT}/manual/oauth/discord" \
     "$(jq -n \
         --arg client_id "$DISCORD_CLIENT_ID" \
         --arg client_secret "$DISCORD_CLIENT_SECRET" \
-        '{client_id: $client_id, client_secret: $client_secret}')"
+        '{client_id: ($client_id | tostring), client_secret: ($client_secret | tostring)}')"
 
 # Epic OAuth
 create_secret "platform" "${ENVIRONMENT}/manual/oauth/epic" \
     "$(jq -n \
         --arg clientId "$EPIC_CLIENT_ID" \
         --arg clientSecret "$EPIC_CLIENT_SECRET" \
-        '{clientId: $clientId, clientSecret: $clientSecret}')"
+        '{clientId: ($clientId | tostring), clientSecret: ($clientSecret | tostring)}')"
 
 # Steam API
 create_secret "platform" "${ENVIRONMENT}/manual/oauth/steam" \
     "$(jq -n \
         --arg apiKey "$STEAM_API_KEY" \
-        '{apiKey: $apiKey}')"
+        '{apiKey: ($apiKey | tostring)}')"
 
 # Ballchasing API (note: no environment prefix based on the error)
 create_secret "platform" "ballchasing" \
     "$(jq -n \
         --arg token "$BALLCHASING_API_TOKEN" \
-        '{token: $token}')"
+        '{token: ($token | tostring)}')"
 
 # Chatwoot HMAC
 create_secret "platform" "${ENVIRONMENT}/chatwoot" \
     "$(jq -n \
         --arg hmacKey "$CHATWOOT_HMAC_KEY" \
-        '{hmacKey: $hmacKey}')"
+        '{hmacKey: ($hmacKey | tostring)}')"
 
 # MinIO root credentials (infrastructure mount, not platform)
 create_secret "infrastructure" "data/minio/root" \
     "$(jq -n \
         --arg username "$MINIO_ACCESS_KEY" \
         --arg password "$MINIO_SECRET_KEY" \
-        '{username: $username, password: $password}')"
+        '{username: ($username | tostring), password: ($password | tostring)}')"
 
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

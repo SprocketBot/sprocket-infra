@@ -1,12 +1,11 @@
 // Handles self
-import { Gatus, N8n, Redis, VaultPolicies } from 'global/services';
+import { Gatus, Redis, VaultPolicies } from 'global/services';
 import { Monitoring } from './monitoring';
 import * as pulumi from '@pulumi/pulumi';
 import * as vault from '@pulumi/vault';
 import * as postgres from '@pulumi/postgresql';
 import * as docker from '@pulumi/docker';
 import { LayerOne, LayerOneExports } from 'global/refs';
-import { HOSTNAME } from "../../global/constants";
 
 import { SprocketPostgresProvider } from 'global/providers/SprocketPostgresProvider';
 
@@ -20,9 +19,6 @@ const vaultProvider = new vault.Provider('VaultProvider', {
   token: policies.infraToken.clientToken
 });
 
-// Using cloud S3-compatible storage instead of local Minio
-// export const minio = new Minio('minio', { ingressNetworkId, vaultProvider });
-
 const chatwootNetwork = new docker.Network('chatwoot-network', {
   driver: 'overlay'
 });
@@ -33,22 +29,11 @@ export const pg = new SprocketPostgresProvider({
 
 export const postgresProvider: postgres.Provider = pg as postgres.Provider;
 
-// export const n8n = new N8n('n8n', {
-//   ingressNetworkId: ingressNetworkId,
-//   postgresHostname: HOSTNAME,
-//   postgresNetworkId: ingressNetworkId,
-//   providers: {
-//     vault: vaultProvider,
-//     postgres: postgresProvider
-//   },
-// });
-
 export const monitoring = new Monitoring('monitoring', {
   exposeInfluxUi: true,
   ingressNetworkId,
   providers: {
-    vault: vaultProvider,
-    postgres: postgresProvider
+    vault: vaultProvider, postgres: postgresProvider
   }
 });
 
