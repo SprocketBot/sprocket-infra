@@ -37,12 +37,7 @@ export class SocketProxy extends pulumi.ComponentResource {
                 logDriver: DefaultLogDriver("socketProxy", true),
                 networks: [
                     this.network.id
-                ],
-                // placement: {
-                //     constraints: [
-                //         "node.role==manager"
-                //     ]
-                // }
+                ]
             }
         }, { parent: this })
 

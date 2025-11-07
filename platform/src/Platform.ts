@@ -142,7 +142,7 @@ export class Platform extends pulumi.ComponentResource {
             .targetPort(3001)
         const webLabels = new TraefikLabels(`sprocket-web-${this.environmentSubdomain}`)
             .tls("lets-encrypt-tls")
-            .rule(`Host(\`${this.webUrl}\`)${fullIpRule}`)
+            .rule(`Host(\`${this.webUrl}\`)`)
             .targetPort(3000)
         const imageGenLabels = new TraefikLabels(`sprocket-image-gen-${this.environmentSubdomain}`)
             .tls("lets-encrypt-tls")
@@ -159,9 +159,11 @@ export class Platform extends pulumi.ComponentResource {
                 ...coreLabels.complete
             ],
             flags: { database: true },
+            commands: ["node", "/app/core/dist/main.js"],
             env: {
                 CACHE_HOST: this.datastore.redis.hostname,
                 CACHE_PORT: "6379",
+                LOGGER_LEVELS: '["error","warn","log","debug"]',
             },
             secrets: [{
                 secretId: this.secrets.jwtSecret.id,
@@ -455,7 +457,7 @@ export class Platform extends pulumi.ComponentResource {
                 notification_queue: `${pulumi.getStack()}-notifications`
             }, null, 2)),
             logger: {
-                levels: pulumi.getStack() === "main" ? JSON.stringify(["error", "warn", "log"]) : JSON.stringify(["error", "warn", "log", "debug"])
+                levels: pulumi.getStack() === "main" ? '["error", "warn", "log"]' : '["error", "warn", "log", "debug"]'
             },
             database: {
                 host: this.database.host,
@@ -498,7 +500,7 @@ export class Platform extends pulumi.ComponentResource {
             },
             gql: {
                 internal: this.core?.hostname ? this.core.hostname.apply(h => `${h}:3001/graphql`) : "",
-                public: this.apiUrl
+                public: `https://${this.apiUrl}`
             },
             frontend: {
                 url: this.webUrl

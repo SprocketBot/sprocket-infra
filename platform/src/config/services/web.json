@@ -1,6 +1,6 @@
 {
   "client": {
-    "gqlUrl": "{{ gql.public }}",
+    "gqlUrl": "{{ api.url }}",
     "secure": true,
     "chatwoot": {
       "enabled": true,

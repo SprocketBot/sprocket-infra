@@ -108,6 +108,7 @@ export type SprocketServiceArgs = {
     additionalConfigs?: AdditionalConfigInput[]
     labels?: LabelSpec[],
     instanceCount?: number
+    commands?: string[]
 }
 
 export class SprocketService extends pulumi.ComponentResource {
@@ -163,6 +164,7 @@ export class SprocketService extends pulumi.ComponentResource {
             taskSpec: {
                 containerSpec: {
                     image: getImageSha(args.image.namespace, args.image.repository, args.image.tag),
+                    commands: args.commands,
                     secrets: [
                         ...secrets,
                         ...(args.secrets ?? [])
