@@ -39,7 +39,7 @@ export class SprocketPostgresProvider extends postgres.Provider {
             host: host,
             sslmode: 'require',
             port: port,
-            database: 'sprocketbot',
+            database: 'sprocket_main',
             superuser: false
         }, opts);
 

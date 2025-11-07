@@ -89,8 +89,8 @@ export class PlatformDatabase extends pulumi.ComponentResource {
             username: dsUsername
         })
 
-        // Reference the existing sprocketbot database instead of creating a new one
-        this.database = { name: 'sprocketbot' }
+        // Reference the existing database for this environment
+        this.database = { name: `sprocket_${args.environmentSubdomain}` }
 
         this.mledbSchema = new postgresql.Schema(`${name}-mledb-schema`, {
             database: this.database.name,
