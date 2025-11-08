@@ -10,6 +10,7 @@
     "bucket": "{{s3.buckets.replayParse}}",
     "parsed_object_prefix": "dev",
     "accessKey": "{{ s3.accessKey }}",
+    "secretKey": "/app/secret/minio-secret.txt",
     "secure": true
   },
   "ballchasing": {

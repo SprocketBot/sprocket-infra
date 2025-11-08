@@ -349,7 +349,7 @@ export class Platform extends pulumi.ComponentResource {
                 secrets: [{
                     secretId: this.secrets.s3SecretKey.id,
                     secretName: this.secrets.s3SecretKey.name,
-                    fileName: "/app/secret/s3-secret"
+                    fileName: "/app/secret/minio-secret.txt"
                 }, {
                     secretId: this.secrets.ballchasingApiToken.id,
                     secretName: this.secrets.ballchasingApiToken.name,
