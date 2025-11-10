@@ -19,29 +19,28 @@ That's what we're here to talk about.
 
 ### What We Lost
 - Complete platform outage (web, API, Discord bot)
-- All tournament infrastructure
+- All league play and scrim infrastructure
 - Player stats and rankings
 - Community features
 - 22 different services offline
 
 ### The Reality
-Without someone stepping up to fix this, the organization as we know it would have ceased to exist.
+This exposed a fundamental weakness in our organization: we had no infrastructure team, no backup plans, and no clear ownership of critical systems.
 
 ---
 
-## The Volunteer Effort
+## The Response Effort
 
-### Who Fixed It?
-**One person. Working nights and weekends. Unpaid. For 8 weeks straight.**
+### What It Took to Recover
+**An emergency volunteer effort spanning 8 weeks of intensive work.**
 
-- **56 days** of volunteer work
-- **20+ major commits** rebuilding infrastructure
-- **5 breakthrough moments** solving critical problems
+- **56 days** of concentrated rebuilding
+- **20+ major infrastructure commits** 
+- **5 critical technical breakthroughs** solving systemic problems
 - **Hundreds of hours** of volunteer time
 
-### The Cost
-**Zero dollars** to the organization.
-**Priceless time** from a volunteer who refused to let this community die.
+### The Cost to the Organization
+**Zero dollars** - but this highlights our first problem: we had no budget, no process, and no team structure for handling infrastructure crises.
 
 ---
 
@@ -157,7 +156,7 @@ This isn't overengineering - **this is what it takes to run a modern gaming plat
 
 ## The 8-Week Journey
 
-### Timeline of Pain and Persistence
+### Timeline of Recovery and Lessons Learned
 
 **Week 1 (Sept 14-19)**: Foundation Rebuild
 - Layer 1 infrastructure working again
@@ -242,26 +241,19 @@ This isn't overengineering - **this is what it takes to run a modern gaming plat
 
 ---
 
-## Why This Matters: Without This Work...
+## The Real Problem: Organizational Failure
 
-### The Alternative Timeline
+### What This Crisis Revealed
 
-**If this volunteer work hadn't happened**:
-- Platform would still be offline
-- Organization would be effectively dead
-- Community would have scattered
-- Years of player data would be inaccessible
-- No tournaments, no rankings, no stats
-- All the work everyone else put in would be wasted
+**This wasn't just a technical failure - it was an organizational one:**
 
-### The Value Created
+1. **No Infrastructure Team**: We had nobody responsible for maintaining production systems
+2. **No Knowledge Transfer**: Critical system knowledge lived in one person's head
+3. **No Backup Plans**: When things broke, we had no procedures for recovery
+4. **No Budget Allocation**: We weren't investing in the foundation that powers everything else
+5. **No Succession Planning**: We assumed volunteers would always be available and willing
 
-**By one volunteer**:
-- Saved the organization from extinction
-- Restored 22 services to production
-- Created maintainable infrastructure
-- Documented everything for future maintainers
-- Made it possible for this community to continue
+**The uncomfortable truth**: We got lucky. One person happened to have the skills and availability to fix this. Next time, we might not be so fortunate.
 
 ---
 
@@ -297,9 +289,62 @@ This isn't overengineering - **this is what it takes to run a modern gaming plat
 
 ## What We're Doing About Complexity
 
-### Active Simplification Efforts
+### The Over-Engineering Reality Check
 
-**My department is working hard to make this easier**:
+**We need to be honest about how we got here.**
+
+The current Sprocket platform was designed for a scale that never materialized:
+- **Designed for**: 10s to 100s of thousands of users across dozens of organizations
+- **Reality**: Much smaller scale, single organization focus
+- **Cost**: Massive complexity overhead that made everything harder
+
+**We paid a hefty price for this over-engineering:**
+- 22 services to maintain instead of 5-6
+- Complex multi-tenancy architecture that nobody needed
+- Infrastructure complexity that required specialist knowledge
+- Longer development cycles due to system complexity
+- Higher barrier to entry for new volunteers
+
+### The New Direction: Simplified by Design
+
+**We're fundamentally changing our approach.**
+
+**Old Model**: One master deployment for all organizations simultaneously
+- Massive centralized infrastructure
+- Complex multi-tenancy requirements
+- Scale that never materialized
+- One-size-fits-all architecture
+
+**New Model**: One simplified deployment per organization
+- Tailored infrastructure for actual needs
+- Simple, focused architecture
+- Each organization scales independently
+- Vastly reduced complexity
+
+### Sprocket v2: A Simpler Future
+
+**The new platform direction eliminates the complexity that plagued us:**
+
+**Infrastructure Simplification**:
+- From 22+ services to ~6 core services
+- Single-organization focus eliminates multi-tenancy overhead
+- Standard deployment patterns that are easy to understand
+- Reduced dependency on complex orchestration
+
+**Code Simplification**:
+- Remove unused scaling features
+- Focus on actual user needs, not theoretical scale
+- Simpler deployment and maintenance
+- Lower barrier to entry for contributors
+
+**Timeline**:
+- **2025**: Continue stabilizing current platform while building v2
+- **2026**: Early tests of Sprocket v2 with simplified architecture
+- **Future**: Gradual migration to the new, sustainable model
+
+### Active Simplification Efforts (Current Platform)
+
+**We're working hard to make the current system easier while we build its replacement**:
 
 1. **Better Documentation**
    - Comprehensive architecture docs
@@ -323,7 +368,7 @@ This isn't overengineering - **this is what it takes to run a modern gaming plat
    - Consolidated configuration
    - Simplified routing where we can
 
-**But**: Some complexity is unavoidable. This is a modern, production-grade platform. It requires expertise.
+**But**: Some complexity is unavoidable in the current system. This is why we're building Sprocket v2 - to eliminate this complexity at the architectural level.
 
 ---
 
@@ -331,23 +376,23 @@ This isn't overengineering - **this is what it takes to run a modern gaming plat
 
 ### This Cannot Happen Again
 
-**One volunteer carrying the entire infrastructure on their back is not sustainable.**
+**Relying on emergency volunteer efforts is not sustainable.**
 
 **What happens if**:
-- That volunteer gets burned out?
-- They get a new job with less free time?
-- They move on to other interests?
-- They simply can't handle the stress anymore?
+- Our next crisis hits during a busy period?
+- The people with knowledge aren't available?
+- We face a problem nobody knows how to solve?
+- Someone gets burned out from carrying too much?
 
-**The answer**: The platform goes down again, possibly for good.
+**The answer**: We risk everything falling apart again, possibly for good.
 
 ---
 
 ## We Need Your Help
 
-### The Call to Action
+### Building a Sustainable Infrastructure Team
 
-**We desperately need more volunteers with technical skills.**
+**We need to transition from crisis response to sustainable operations.**
 
 **Specifically, we need people who can**:
 - Help maintain infrastructure
@@ -431,16 +476,19 @@ This isn't overengineering - **this is what it takes to run a modern gaming plat
 4. Document common issues and solutions
 
 **Medium Term (Next 6 Months)**:
-1. Simplify where possible (ongoing effort)
+1. Build our infrastructure team (ongoing effort)
 2. Train new volunteers on the system
 3. Improve automation and tooling
 4. Reduce dependency on single individuals
 
 **Long Term (Next Year)**:
 1. Consider managed service alternatives
-2. Migrate to Kubernetes if it simplifies operations
+2. Evaluate if Kubernetes simplifies operations
 3. Build a sustainable operations team
 4. Ensure no single point of failure (human or technical)
+
+---
+
 
 ---
 
@@ -449,7 +497,7 @@ This isn't overengineering - **this is what it takes to run a modern gaming plat
 ### Join the Infrastructure Team
 
 **Contact Information**:
-- Talk to me after this session
+- Talk to us after this session
 - Join #infrastructure channel on Discord
 - Attend weekly infrastructure meetings
 - Review docs and ask questions
@@ -479,10 +527,10 @@ A: Modern gaming platforms require this architecture. We're running at scale wit
 A: If you know of one that does everything we need, we're all ears. Simplification is ongoing, but some complexity is inherent.
 
 **Q: Why did it take so long?**
-A: Because I was doing this alone, in my free time, while also having a full-time job and personal life. And it's genuinely difficult work.
+A: Because we had no team, no process, and no budget for infrastructure. When everything broke, we had to start from scratch.
 
-**Q: What happens if you leave?**
-A: That's why we need more volunteers. No single person should be critical infrastructure.
+**Q: What happens if the people with knowledge leave?**
+A: That's why we're building a team. No single person should be critical infrastructure.
 
 **Q: How much time commitment are we talking about?**
 A: Flexible. Even 2-4 hours a month helps. More is better, but something is better than nothing.
@@ -496,15 +544,15 @@ A: Yes! We need documentation, testing, and QA too. And we can teach you the tec
 
 ### What You Need to Remember
 
-1. **Your platform was dead.** One volunteer brought it back to life.
+1. **Your platform was dead.** We recovered it through an emergency volunteer effort that revealed serious organizational gaps.
 
 2. **This system is complex** because running a modern gaming platform at scale IS complex. We're simplifying where we can.
 
-3. **We need your help.** Volunteers are critical to keeping this alive.
+3. **We need to build sustainable processes.** Volunteers are essential, but we need structure, not heroics.
 
-4. **This is an opportunity** to learn valuable skills while helping your community.
+4. **This is an opportunity** to learn valuable skills while helping your community build something that lasts.
 
-5. **Without more help**, we risk repeating this cycle when the next crisis hits.
+5. **Without systemic changes**, we risk repeating this cycle when the next crisis hits.
 
 ---
 
@@ -514,11 +562,11 @@ A: Yes! We need documentation, testing, and QA too. And we can teach you the tec
 
 **To the community**: Thank you for your patience during the outage.
 
-**To the volunteers who stepped up**: You kept the dream alive.
+**To everyone who contributed to the recovery**: Your effort bought us time to build something better.
 
-**To those who will volunteer**: You're ensuring this never happens again.
+**To those who will join us**: You're helping ensure this never happens again.
 
-**Let's build a sustainable infrastructure team together.**
+**Let's build sustainable infrastructure together.**
 
 ---
 
@@ -528,9 +576,9 @@ A: Yes! We need documentation, testing, and QA too. And we can teach you the tec
 
 This is your platform. You deserve to understand:
 - What happened
-- Why it was hard
-- What we're doing about it
-- How you can help
+- Why our organization wasn't prepared
+- What we're doing to fix the systemic issues
+- How you can be part of the solution
 
 **The floor is yours.**
 
@@ -575,6 +623,6 @@ Let's talk.
 
 **Questions? Comments? Want to volunteer?**
 
-**Talk to me after this session or reach out on Discord.**
+**Talk to us after this session or reach out on Discord.**
 
-Your platform is back. Let's keep it that way.
+Your platform is back. Let's build the team to keep it that way.
