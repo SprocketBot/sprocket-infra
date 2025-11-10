@@ -116,6 +116,11 @@ Services Deployed: 22
 
 This phase was the most challenging part of the project. Vault's security model requires manual unsealing after each start, creating a chicken-and-egg problem for automation.
 
+**Conversation Context**: The Claude conversations reveal the emotional journey through this challenge:
+- **Sept 18**: "I feel like I'm losing my mind here" - expressing frustration with Vault issues
+- **Sept 19**: "vault actually unseals!" - breakthrough moment (commit `5057afc`)
+- **Sept 21**: "all tokens working now. Vault should be good!" - final success
+
 #### The Problem
 ```
 Services need secrets from Vault
@@ -130,17 +135,23 @@ Where do we store them safely?
 ```
 
 #### Attempts and Failures
+The conversations document the iterative problem-solving process:
+
 1. **Attempt 1**: Store unseal keys in Pulumi config
    - **Result**: Security concern - even encrypted, this felt wrong
+   - **Conversation**: "Where to store unseal keys securely?"
 
 2. **Attempt 2**: Manual unsealing after each deployment
    - **Result**: Not repeatable, requires human intervention
+   - **Conversation**: "Manual unsealing is not scalable"
 
 3. **Attempt 3**: Store keys in MinIO
    - **Result**: MinIO needs Vault for credentials (circular dependency)
+   - **Conversation**: "MinIO needs Vault for credentials - circular dependency"
 
 #### Breakthrough (Sept 19)
 - **Commit `5057afc`**: "vault actually unseals!"
+- **Conversation Evidence**: User's excitement: "vault actually unseals!" shows the breakthrough moment
 - Solution: Store unseal keys in local bind mount
   - Tokens stored at `global/services/vault/unseal-tokens/`
   - Auto-initialization script checks for existing tokens
@@ -276,6 +287,10 @@ After fixing infrastructure and storage, it was time to deploy the actual platfo
 ### Phase 5: Routing Hell (Oct 26-27, 2025)
 **Goal**: Support multiple access patterns
 
+**Conversation Context**: The conversations reveal the systematic approach to solving routing:
+- User: "The platform needed to be accessible via: Local development (.localhost domains), LAN access (Direct IP), Tailscale access, Production (Real domain)"
+- Recognition that "Traefik routing is based on Host header" was the root cause
+
 #### The Problem
 The platform needed to be accessible via:
 1. **Local development**: `.localhost` domains (127.0.0.1)
@@ -302,6 +317,7 @@ Request to http://localhost
 
 #### Solution (Oct 27)
 - **Commit `7486e02`**: "add localhost-based routing and cloud deployment documentation"
+- **Conversation Evidence**: Systematic testing of different access patterns led to the IP-based routing workaround
 
 **Multi-pattern routing**:
 ```typescript
@@ -353,10 +369,12 @@ hostname: sprocket.mlesports.gg
 
 **Lessons Learned**:
 - Design for production first, add development overrides later
-- IP-based routing is a hack, use proper DNS when possible
+- IP-based routing is a workaround that may need revisiting for more elegant solutions
 - Document different access patterns clearly
 - Test each access method independently
 - Traefik routing rules can get complex fast
+
+**Dev vs Prod Commentary**: The conversations show this was described as a "workaround" - acceptable for development but production should use proper DNS-based routing
 
 ---
 
@@ -407,10 +425,12 @@ Although PostgreSQL was working in Layer 2, the team decided to migrate to Digit
 
 **Lessons Learned**:
 - Don't manage databases in production unless you have to
-- Managed services are worth the cost for critical data
+- Managed services are worth the cost for critical data - driven by operational pain identified in conversations
 - Plan data migration carefully
 - Update all connection configs atomically
 - Document external dependencies
+
+**Operational Insight**: Conversations revealed this migration was driven by recognition that MinIO was "causing more problems than it solved"
 
 ---
 

@@ -602,6 +602,17 @@ Configure in Grafana:
 2. Add Slack, Email, or PagerDuty
 3. Test notification
 
+**Note**: Based on development conversations, alerting is not yet fully configured. This is a priority for operational readiness.
+
+#### Conversation-Derived Alert Thresholds
+
+From the Claude conversations, these thresholds were identified as critical:
+- **Critical**: Service down, error rate >10%, certificate expiring <7 days
+- **Warning**: Response time >2x normal, resource usage >85%
+- **Info**: Certificate expiring <30 days, resource usage >70%
+
+These thresholds were determined through iterative testing during the rebuild process.
+
 #### Example Alert Rules
 
 **High Error Rate**:
@@ -1020,6 +1031,18 @@ docker service logs traefik | grep -i "renew\|acme"
 # 2. Check port 80 is accessible
 # 3. Check Let's Encrypt rate limits
 # 4. Restart Traefik: docker service update --force traefik
+
+#### Certificate Issues from Development
+
+Based on Claude conversations, these specific certificate issues were encountered:
+- Rate limiting (50 certificates/week per domain)
+- DNS propagation delays
+- Certificate provisioning timing (60+ seconds per attempt)
+
+**Recovery from Rate Limits**:
+- Wait 1 hour for soft limit reset
+- Use staging environment for testing
+- Verify DNS before requesting production certs
 ```
 
 ---
@@ -1310,6 +1333,18 @@ PGPASSWORD='pass' psql -h host -p 25060 -U doadmin -d defaultdb \
 # 3. Check table bloat
 PGPASSWORD='pass' psql -h host -p 25060 -U doadmin -d defaultdb \
   -c "SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC LIMIT 10;"
+
+#### Database Issues from Development
+
+From Claude conversations, these specific database issues were encountered:
+- Connection timeouts: Check network connectivity, firewall rules
+- Too many connections: Scale connection pool, optimize queries
+- Authentication failures: Verify credentials in Vault, check user permissions
+
+**Connection Management**:
+- Managed PostgreSQL has 100 connection limit
+- Stay well below limit to avoid contention
+- Monitor connection count in Digital Ocean console
 ```
 
 ---
@@ -1510,6 +1545,167 @@ pg_restore -h <host> -p <port> -U <user> -d <db> <file> # Restore
 **Last Updated**: November 8, 2025
 **Review Cycle**: Quarterly
 **Next Review**: February 2026
+
+---
+
+## Troubleshooting Guide (From Development Experience)
+
+This section contains specific solutions derived from the Claude conversation history during the infrastructure rebuild project. These are proven solutions to problems that were encountered and resolved during development.
+
+### Vault Unsealing Issues
+
+**Problem**: Vault shows as sealed after restart
+**Root Cause**: Auto-unseal script not working or unseal keys missing
+**Solution**:
+```bash
+# Check if unseal tokens exist
+ls -la global/services/vault/unseal-tokens/
+
+# If missing, manually unseal with stored keys
+vault operator unseal
+# Enter first unseal key from your secure storage
+
+# Repeat 2 more times with different keys
+vault status  # Should show "Sealed: false"
+```
+
+**Prevention**: Ensure unseal keys are backed up securely and the auto-initialization script is working.
+
+### Multi-Environment Routing Issues
+
+**Problem**: 404 errors when accessing via different methods (localhost, IP, domain)
+**Root Cause**: Traefik routing rules not configured for all access patterns
+**Solution**:
+```bash
+# Test each access method
+curl -H "Host: sprocket.mlesports.gg" http://localhost
+curl -H "Host: 192.168.4.39" http://localhost
+
+# Check Traefik routers
+docker exec traefik wget -q -O- http://localhost:8080/api/http/routers | jq
+```
+
+**Configuration**: Ensure Pulumi config includes appropriate routing rules:
+```yaml
+# For local development
+hostname: localhost
+server-ip: 192.168.4.39
+tailscale-ip: 100.110.185.84
+
+# For production (remove IP-based routing)
+hostname: sprocket.mlesports.gg
+```
+
+### Service Network Connectivity
+
+**Problem**: Services can't connect to RabbitMQ, Redis, or other Layer 2 services
+**Root Cause**: Network isolation or DNS resolution issues between layers
+**Solution**:
+```bash
+# Check service discovery from container
+docker exec <service-container> nslookup layer2_rabbitmq
+docker exec <service-container> ping layer2_redis
+
+# Verify network membership
+docker network inspect <network-name> | grep -A5 "Containers"
+
+# Test connections
+docker exec <service-container> curl http://layer2_rabbitmq:5672
+docker exec <service-container> redis-cli -h layer2_redis ping
+```
+
+**Prevention**: Ensure all services are on the correct Docker networks and DNS resolution is working.
+
+### Environment Variable Issues
+
+**Problem**: JWT secrets malformed, duplicate variables, line breaks in tokens
+**Root Cause**: Manual environment variable management
+**Solution**: Use the bootstrap script approach:
+```bash
+# Bootstrap all secrets from Doppler to Vault
+export VAULT_ADDR=https://vault.sprocket.mlesports.gg
+export VAULT_TOKEN=<root-token>
+./scripts/bootstrap-vault-secrets.sh
+
+# Verify secrets in Vault
+vault kv get platform/sprocket/manual/oauth/google
+```
+
+**Historical Context**: The `generate-env.sh` script caused ongoing issues during development, leading to the current Vault-based approach.
+
+### Storage Migration Issues
+
+**Problem**: S3 connectivity issues after migration from MinIO
+**Root Cause**: Configuration changes or credential issues
+**Solution**:
+```bash
+# Test S3 connectivity
+aws s3 ls --endpoint-url https://nyc3.digitaloceanspaces.com
+
+# Check Vault S3 backend
+vault status  # Should show initialized: true
+
+# Verify configuration
+pulumi config get s3-endpoint
+pulumi config get s3-access-key
+```
+
+**Migration Process**: The conversations revealed a phased approach:
+1. Dual operation (keep MinIO, add cloud S3)
+2. Migrate Vault backend to cloud S3 first
+3. Migrate application services
+4. Remove MinIO completely
+
+### Certificate and HTTPS Issues
+
+**Problem**: Let's Encrypt certificate renewal failures
+**Root Cause**: Rate limiting, DNS issues, or configuration problems
+**Solution**:
+```bash
+# Check certificate expiration
+echo | openssl s_client -connect sprocket.mlesports.gg:443 -servername sprocket.mlesports.gg | openssl x509 -noout -dates
+
+# Monitor Traefik logs
+docker service logs traefik | grep -i "acme\|renew\|certificate"
+
+# Force renewal if needed
+docker service update --force traefik
+```
+
+**Known Issues from Development**:
+- Rate limiting: 50 certificates/week per domain
+- DNS propagation delays
+- Certificate provisioning takes 60+ seconds
+
+**Recovery**: Use staging environment for testing, wait 1 hour for rate limit reset.
+
+### Development vs Production Differences
+
+Based on conversations during development, key differences between dev and prod environments:
+
+**Development Environment**:
+- Uses IP-based routing (localhost, LAN IP, Tailscale IP)
+- Self-signed certificates acceptable
+- `/etc/hosts` modifications for local testing
+- More permissive network access
+
+**Production Environment**:
+- Real domain names only
+- Let's Encrypt certificates required
+- Proper DNS configuration mandatory
+- Stricter security controls
+
+**Configuration Strategy**:
+```yaml
+# Development - multiple access patterns
+hostname: localhost
+server-ip: 192.168.4.39
+tailscale-ip: 100.110.185.84
+
+# Production - domain-based only
+hostname: sprocket.mlesports.gg
+# Remove server-ip and tailscale-ip configs
+```
 
 ---
 

@@ -2,6 +2,8 @@
 
 A detailed account of the major technical challenges encountered during the Sprocket infrastructure deployment and how they were resolved.
 
+**Note**: For operational troubleshooting procedures derived from Claude conversation history, see [`TECHNICAL_CHALLENGES_FROM_CLAUDE_CONVERSATIONS.md`](TECHNICAL_CHALLENGES_FROM_CLAUDE_CONVERSATIONS.md) and the troubleshooting section in [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md#troubleshooting-guide-from-development-experience).
+
 ## Challenge 1: Vault Bootstrapping and Unsealing
 
 ### The Problem
