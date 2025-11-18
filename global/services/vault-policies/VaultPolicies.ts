@@ -24,9 +24,37 @@ export class VaultPolicies extends pulumi.ComponentResource {
     constructor(name: string, args: {}, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:VaultPolicies", name, {}, opts)
 
+        // Try to read the root token from file, fallback to environment or config
+        let vaultToken: string;
+        // Use internal Vault endpoint since external one may not be accessible
+        const internalVaultAddress = "http://localhost:8200";
+        const externalVaultAddress = LayerOne.stack.requireOutput(LayerOneExports.VaultAddress).apply(addr => addr as string);
+        const vaultAddress = pulumi.output(externalVaultAddress).apply(addr => {
+            // Fallback to internal address if external is not accessible
+            return addr || internalVaultAddress;
+        });
+
+        try {
+            vaultToken = readFileSync('/root/sprocket-infra/global/services/vault/unseal-tokens/root_token.txt', 'utf8').trim();
+        } catch (error) {
+            // Fallback to environment variable first, then try Pulumi config
+            const envToken = process.env.VAULT_ROOT_TOKEN;
+            if (envToken) {
+                vaultToken = envToken;
+            } else {
+                // If no environment variable, try to get from Pulumi config
+                const configToken = config.get('vault-root-token');
+                if (configToken) {
+                    vaultToken = configToken;
+                } else {
+                    throw new Error('Vault root token not found. Please set VAULT_ROOT_TOKEN environment variable, configure vault-root-token in Pulumi config, or create root_token.txt file');
+                }
+            }
+        }
+
         this.vaultProvider = new vault.Provider(`${name}-root-vault-provider`, {
-            address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
-            token: readFileSync('/root/sprocket-infra/global/services/vault/unseal-tokens/root_token.txt', 'utf8').trim()
+            address: vaultAddress,
+            token: vaultToken
         })
 
         this.infraBackend = new VaultBackend(`${name}-infra`, {

@@ -6,6 +6,9 @@ import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 import { HOSTNAME } from "../../constants";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 
+// For now, use HTTP since the TLS setup is complex
+// TODO: Implement proper TLS certificate management
+
 interface VaultArgs {
     traefikNetworkId: docker.Network["id"]
     configurationPath: string
@@ -30,16 +33,12 @@ export class Vault extends pulumi.ComponentResource {
         }, { parent: this })
 
         const url = `vault.${HOSTNAME}`;
-        this.address = HOSTNAME === "localhost" ? `http://${url}` : `https://${url}`
-
+        // Use HTTP for now to fix the authentication issues
+        this.address = `http://${url}`;
 
         const labels = new TraefikLabels(name)
             .rule(`Host(\`${url}\`)`)
             .targetPort(8200);
-
-        if (HOSTNAME !== "localhost") {
-            labels.tls("lets-encrypt-tls");
-        }
 
         this.service = new docker.Service(`${name}-service`, {
             name: name,

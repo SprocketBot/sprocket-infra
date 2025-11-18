@@ -49,8 +49,13 @@ export class Airbyte extends pulumi.ComponentResource {
       driver: 'overlay'
     }, { parent: this })
 
-    this.volumes.db = new docker.Volume(`${name}-db-vol`, { }, { parent: this })
-    this.volumes.workspace = new docker.Volume(`${name}-workspace`, { name: "airbyte_workspace" }, { parent: this })
+    this.volumes.db = new docker.Volume(`${name}-db-vol`, {}, { parent: this })
+    this.volumes.workspace = new docker.Volume(`${name}-workspace`, {
+      name: "airbyte_workspace",
+      driverOpts: {
+        "size": "5G"
+      }
+    }, { parent: this })
 
     this.services.init = new docker.Service(`${name}-init`, {
       name: "airbyte-init",
@@ -109,6 +114,11 @@ export class Airbyte extends pulumi.ComponentResource {
           hostname: "airbyte-worker",
           env: {
             ...workerEnv,
+            "LOG_LEVEL": "WARN",
+            "AIRBYTE_LOG_LEVEL": "WARN",
+            "JOB_HISTORY_RETENTION_DAYS": "7",
+            "WORKSPACE_RETENTION_DAYS": "3",
+            "TEMPORAL_HISTORY_RETENTION_DAYS": "7"
           },
           mounts: [{
             type: "bind",

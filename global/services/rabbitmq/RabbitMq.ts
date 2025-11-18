@@ -41,6 +41,13 @@ export class RabbitMq extends pulumi.ComponentResource {
                 containerSpec: {
                     image: "rabbitmq:3.9.14-management-alpine",
                     hostname: "{{.Node.Hostname}}",
+                    healthcheck: {
+                        tests: ["CMD", "rabbitmq-diagnostics", "-q", "ping"],
+                        interval: "10s",
+                        timeout: "5s",
+                        retries: 3,
+                        startPeriod: "30s"
+                    },
                     configs: [{
                         configName: this.config.name,
                         configId: this.config.id,

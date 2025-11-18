@@ -35,7 +35,11 @@ export class Minio extends pulumi.ComponentResource {
             }
         }, { parent: this })
 
-        this.volume = new docker.Volume(`${name}-volume`, {}, { parent: this, retainOnDelete: true })
+        this.volume = new docker.Volume(`${name}-volume`, {
+            driverOpts: {
+                "size": "10G"
+            }
+        }, { parent: this, retainOnDelete: true })
 
         this.service = new docker.Service(`${name}-service`, {
             taskSpec: {
@@ -49,8 +53,10 @@ export class Minio extends pulumi.ComponentResource {
                     args: [`server`, `/data`, `--console-address`, `:9001`],
                     env: {
                         MINIO_ROOT_USER: this.credentials.username,
-                        MINIO_ROOT_PASSWORD: this.credentials.password
-                    }
+                        MINIO_ROOT_PASSWORD: this.credentials.password,
+                        "MINIO_LOG_LEVEL": "WARN",
+                        "LOG_LEVEL": "WARN"
+                    },
                 },
                 logDriver: DefaultLogDriver("minio", true),
                 networks: [
