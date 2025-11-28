@@ -7,6 +7,7 @@ import { HOSTNAME } from "../../constants";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels"
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
 import { PostgresUser } from "../../helpers/datastore/PostgresUser"
+import { ConfigFile } from "../../helpers/docker/ConfigFile"
 
 const config = new pulumi.Config();
 
@@ -14,6 +15,7 @@ export interface GrafanaArgs {
     monitoringNetworkId: docker.Network["id"],
     ingressNetworkId: docker.Network["id"],
     additionalNetwokIds?: docker.Network["id"][],
+    influxToken: pulumi.Output<string>,
     providers: {
         vault: vault.Provider,
         postgres: postgres.Provider
@@ -22,6 +24,7 @@ export interface GrafanaArgs {
 
 export class Grafana extends pulumi.ComponentResource {
     private readonly dbUser: PostgresUser
+    private readonly datasourcesConfig: ConfigFile
 
     private readonly db: postgres.Database
     private readonly service: docker.Service
@@ -39,6 +42,10 @@ export class Grafana extends pulumi.ComponentResource {
             owner: this.dbUser.username
         }, { parent: this, provider: args.providers.postgres, dependsOn: [this.dbUser] })
 
+        this.datasourcesConfig = new ConfigFile(`${name}-datasources`, {
+            filepath: `${__dirname}/config/datasources.yaml`
+        }, { parent: this })
+
         this.service = new docker.Service(`${name}-service`, {
             labels: new TraefikLabels(name)
                 .rule(`Host(\`grafana.${HOSTNAME}\`)`)
@@ -53,21 +60,31 @@ export class Grafana extends pulumi.ComponentResource {
                 },
                 containerSpec: {
                     image: "grafana/grafana:main",
-                    env: vault.generic.getSecretOutput({ path: "infrastructure/data/smtp" }, { provider: args.providers.vault }).apply(s => ({
+                    env: pulumi.all([
+                        vault.generic.getSecretOutput({ path: "infrastructure/data/smtp" }, { provider: args.providers.vault }),
+                        args.influxToken
+                    ]).apply(([s, influxToken]) => ({
                         GF_SERVER_ROOT_URL: `https://grafana.${HOSTNAME}`,
                         GF_DATABASE_TYPE: "postgres",
-                        GF_DATABASE_HOST: config.require('postgres-host'),
+                        GF_DATABASE_HOST: `${config.require('postgres-host')}:${config.require('postgres-port')}`,
                         GF_DATABASE_NAME: this.db.name,
                         GF_DATABASE_USER: config.require('postgres-username'),
                         GF_DATABASE_PASSWORD: config.requireSecret('postgres-password'),
+                        GF_DATABASE_SSL_MODE: "require",
                         GF_SMTP_ENABLED: "true",
                         GF_SMTP_HOST: "smtp.sendgrid.net:465",
                         GF_FROM_ADDRESS: "noreply@sprocket.gg",
                         GF_FROM_NAME: "Sprocket Noreply",
                         GF_SMTP_PASSWORD: "nopassword", //s.data['password'],
                         GF_SMTP_USER: "nobody", //s.data['username'],
-                        GF_INSTALL_PLUGINS: "grafana-github-datasource,ryantxu-annolist-panel,neocat-cal-heatmap-panel,grafana-polystat-panel,fifemon-graphql-datasource,redis-datasource,marcusolsson-treemap-panel,digiapulssi-breadcrumb-panel"
+                        GF_INSTALL_PLUGINS: "grafana-github-datasource,ryantxu-annolist-panel,neocat-cal-heatmap-panel,grafana-polystat-panel,fifemon-graphql-datasource,redis-datasource,marcusolsson-treemap-panel,digiapulssi-breadcrumb-panel",
+                        INFLUX_TOKEN: influxToken
                     })),
+                    configs: [{
+                        configId: this.datasourcesConfig.id,
+                        configName: this.datasourcesConfig.name,
+                        fileName: "/etc/grafana/provisioning/datasources/datasources.yaml"
+                    }]
                 },
                 logDriver: DefaultLogDriver(name, true),
                 networks: [

@@ -14,7 +14,10 @@ const config = new pulumi.Config();
 
 export interface LegacyPlatformArgs {
   database: PlatformDatabase,
-  minio: PlatformS3
+  minio: PlatformS3,
+  postgresPort: number | pulumi.Output<number>
+
+  ingressNetworkId: docker.Network["id"],
 
   vaultProvider: vault.Provider,
   postgresProvider: postgres.Provider
@@ -48,7 +51,8 @@ export class LegacyPlatform extends pulumi.ComponentResource {
     this.redis = new Redis(`${name}-redis`, {
       configFilepath: `${__dirname}/../config/datastores/redis.conf`,
       vaultProvider: args.vaultProvider,
-      platformNetworkId: this.network.id
+      platformNetworkId: this.network.id,
+      ingressNetworkId: args.ingressNetworkId
     }, { parent: this });
 
     this.worker = new docker.Service(`${name}-worker`, {
@@ -62,26 +66,36 @@ export class LegacyPlatform extends pulumi.ComponentResource {
           image: getImageSha('asaxplayinghorse', 'worker', 'master'),
           env: {
             NODE_ENV: 'production',
+            NODE_TLS_REJECT_UNAUTHORIZED: '0',
             REDIS_HOST: this.redis.hostname,
             REDIS_PASSWORD: this.redis.credentials.password,
             REDIS_PORT: '6379',
-            bot_token: pulumi.getStack() === "main" ? config.requireSecret('legacy-bot-token-emilia') : config.requireSecret('legacy-bot-token'),
+            bot_token: pulumi.getStack() === "prod" ? config.requireSecret('legacy-bot-token-emilia') : config.requireSecret('legacy-bot-token'),
             connstring: pulumi.all([
               this.dbCredentials.username,
               this.dbCredentials.password,
               args.database.host,
-              args.database.database.name
+              args.database.database.name,
+              args.postgresPort
             ])
-              .apply(([dbUser, dbPass, host, db]) => {
-                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
-                console.log(`Bot Emilia connstring: ${connStr}`);
+              .apply(([dbUser, dbPass, host, db, port]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}:${port}/${db}?ssl=true`;
+                console.log(`Worker connstring: ${connStr}`);
                 return connStr;
               }),
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.s3AccessKey.id,
             file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
-          }
+          },
+          configs: [{
+            configId: 'lrssxjdhzv953xw6cwb2zn9wf',
+            configName: 'postgres-ca-cert-v1',
+            fileName: '/run/configs/postgres-ca.crt',
+            fileGid: '0',
+            fileUid: '0',
+            fileMode: 0o444
+          }]
         },
         logDriver: defaultLogDriver(`${name}-worker`, false),
         networks: [
@@ -97,7 +111,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
 
   private buildBots(name: string, args: LegacyPlatformArgs) {
     console.log(pulumi.getStack())
-    if (pulumi.getStack() === 'main') {
+    if (pulumi.getStack() === 'prod') {
       this.buildProductionBot(name, args);
     } else {
       this.buildStagingBot(name, args);
@@ -116,6 +130,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
           image: getImageSha('asaxplayinghorse', 'bot', 'master'),
           env: {
             NODE_ENV: 'production',
+            NODE_TLS_REJECT_UNAUTHORIZED: '0',
             REDIS_HOST: this.redis.hostname,
             REDIS_PASSWORD: this.redis.credentials.password,
             REDIS_PORT: '6379',
@@ -125,18 +140,27 @@ export class LegacyPlatform extends pulumi.ComponentResource {
               this.dbCredentials.username,
               this.dbCredentials.password,
               args.database.host,
-              args.database.database.name
+              args.database.database.name,
+              args.postgresPort
             ])
-              .apply(([dbUser, dbPass, host, db]) => {
-                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
-                console.log(`Worker connstring: ${connStr}`);
+              .apply(([dbUser, dbPass, host, db, port]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}:${port}/${db}?ssl=true`;
+                console.log(`Bot Emilio connstring: ${connStr}`);
                 return connStr;
               }),
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.s3AccessKey.id,
             file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
-          }
+          },
+          configs: [{
+            configId: 'lrssxjdhzv953xw6cwb2zn9wf',
+            configName: 'postgres-ca-cert-v1',
+            fileName: '/run/configs/postgres-ca.crt',
+            fileGid: '0',
+            fileUid: '0',
+            fileMode: 0o444
+          }]
         },
         networks: [
           // args.postgresNetworkId,
@@ -156,6 +180,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
           image: getImageSha('asaxplayinghorse', 'bot', 'master'),
           env: {
             NODE_ENV: 'production',
+            NODE_TLS_REJECT_UNAUTHORIZED: '0',
             REDIS_HOST: this.redis.hostname,
             REDIS_PASSWORD: this.redis.credentials.password,
             REDIS_PORT: '6379',
@@ -165,18 +190,27 @@ export class LegacyPlatform extends pulumi.ComponentResource {
               this.dbCredentials.username,
               this.dbCredentials.password,
               args.database.host,
-              args.database.database.name
+              args.database.database.name,
+              args.postgresPort
             ])
-              .apply(([dbUser, dbPass, host, db]) => {
-                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
-                console.log(`Bot Emilio connstring: ${connStr}`);
+              .apply(([dbUser, dbPass, host, db, port]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}:${port}/${db}?ssl=true`;
+                console.log(`Bot Emilia connstring: ${connStr}`);
                 return connStr;
               }),
             file_bucket: args.minio.bucket.bucket,
             file_token: args.minio.s3AccessKey.id,
             file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
-          }
+          },
+          configs: [{
+            configId: 'lrssxjdhzv953xw6cwb2zn9wf',
+            configName: 'postgres-ca-cert-v1',
+            fileName: '/run/configs/postgres-ca.crt',
+            fileGid: '0',
+            fileUid: '0',
+            fileMode: 0o444
+          }]
         },
         networks: [
           // args.postgresNetworkId,
@@ -200,6 +234,7 @@ export class LegacyPlatform extends pulumi.ComponentResource {
           image: getImageSha('asaxplayinghorse', 'bot', 'master'),
           env: {
             NODE_ENV: 'production',
+            NODE_TLS_REJECT_UNAUTHORIZED: '0',
             REDIS_HOST: this.redis.hostname,
             REDIS_PASSWORD: this.redis.credentials.password,
             REDIS_PORT: '6379',
@@ -209,10 +244,11 @@ export class LegacyPlatform extends pulumi.ComponentResource {
               this.dbCredentials.username,
               this.dbCredentials.password,
               args.database.host,
-              args.database.database.name
+              args.database.database.name,
+              args.postgresPort
             ])
-              .apply(([dbUser, dbPass, host, db]) => {
-                const connStr = `postgresql://${dbUser}:${dbPass}@${host}/${db}?sslmode=require`;
+              .apply(([dbUser, dbPass, host, db, port]) => {
+                const connStr = `postgresql://${dbUser}:${dbPass}@${host}:${port}/${db}?ssl=true`;
                 console.log(`Staging Bot connstring: ${connStr}`);
                 return connStr;
               }),
@@ -220,7 +256,15 @@ export class LegacyPlatform extends pulumi.ComponentResource {
             file_token: args.minio.s3AccessKey.id,
             file_token_secret: args.minio.s3AccessKey.secret,
             SPROCKET: 'yes'
-          }
+          },
+          configs: [{
+            configId: 'lrssxjdhzv953xw6cwb2zn9wf',
+            configName: 'postgres-ca-cert-v1',
+            fileName: '/run/configs/postgres-ca.crt',
+            fileGid: '0',
+            fileUid: '0',
+            fileMode: 0o444
+          }]
         },
         networks: [
           // args.postgresNetworkId,
@@ -232,6 +276,12 @@ export class LegacyPlatform extends pulumi.ComponentResource {
   }
 
   private buildPostgresGrants(name: string, args: LegacyPlatformArgs) {
+    new postgres.Grant(`${name}-grant-connect`, {
+      database: args.database.database.name,
+      objectType: 'database',
+      privileges: ['CONNECT'],
+      role: this.dbCredentials.username
+    }, { parent: this, provider: args.postgresProvider });
     new postgres.Grant(`${name}-grant-usage`, {
       database: args.database.database.name,
       objectType: 'schema',

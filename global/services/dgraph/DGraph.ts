@@ -49,11 +49,27 @@ export class DGraph extends pulumi.ComponentResource {
             parent: this
         })
 
-        this.dataVolume = new docker.Volume(`${name}-data-vol`, {name: `${name}-data`}, {
+        this.dataVolume = new docker.Volume(`${name}-data-vol`, {
+            name: `${name}-data`,
+            driver: "local",
+            driverOpts: {
+                "type": "none",
+                "o": "bind",
+                "device": "/mnt/sprocketbot_influx_data/dgraph"
+            }
+        }, {
             parent: this,
             retainOnDelete: true
         })
-        this.zeroVolume = new docker.Volume(`${name}-zero-vol`, {name: `${name}-zero-data`}, {
+        this.zeroVolume = new docker.Volume(`${name}-zero-vol`, {
+            name: `${name}-zero-data`,
+            driver: "local",
+            driverOpts: {
+                "type": "none",
+                "o": "bind",
+                "device": "/mnt/sprocketbot_influx_data/dgraph_zero"
+            }
+        }, {
             parent: this,
             retainOnDelete: true
         })
