@@ -17,7 +17,9 @@ export default (serviceName: string, isUtil: boolean): { name: string; options: 
     return {
         name: "fluentd",
         options: {
-            "fluentd-address": "localhost:24224",
+            // Use Docker gateway IP instead of localhost for more reliable startup
+            // The gateway routes to the host where fluentd is published in host mode
+            "fluentd-address": "172.18.0.1:24224",
             "tag": "docker.{{.FullID}}.{{.Name}}",
             "fluentd-async": "true",
             "fluentd-retry-wait": "1s",
