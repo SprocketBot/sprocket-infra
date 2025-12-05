@@ -1,7 +1,7 @@
 # Sprocket Infrastructure Deployment Guide
 
-**Version**: 1.0
-**Last Updated**: November 8, 2025
+**Version**: 1.1
+**Last Updated**: December 4, 2025
 **Difficulty**: Advanced
 **Estimated Time**: 4-6 hours (first-time deployment)
 
@@ -1183,10 +1183,53 @@ docker exec $API_CONTAINER aws s3 ls s3://sprocket-storage/ --endpoint-url https
 - Should see Vault login page
 - Can login with GitHub OAuth or root token
 
-**Grafana**:
+**Grafana (Unified Logs & Metrics)**:
 - Navigate to https://grafana.sprocket.mlesports.gg
 - Should see Grafana login
 - Default credentials (if not changed): admin/admin
+- **Unified Interface**: Access both metrics (InfluxDB/Telegraf) and logs (Loki) from single dashboard
+- Use **Explore** view to query logs with LogQL: `{service="prod-sprocket-core-service"} |= "ERROR"`
+- Use **Dashboards** to view real-time metrics and system health
+
+#### 8. Direct Master Node Access (Advanced Debugging)
+
+For low-level debugging, you can access the Digital Ocean master node directly:
+
+**Via Digital Ocean Console**:
+1. Log into https://cloud.digitalocean.com
+2. Navigate to: Droplets → Select your droplet
+3. Click "Console" (web-based SSH terminal)
+4. Login and run debugging commands:
+   ```bash
+   docker service ls              # List all services
+   docker service logs <service>  # View service logs
+   docker stats --no-stream       # Check resource usage
+   docker system df               # Check disk usage
+   ```
+
+**Via SSH**:
+```bash
+ssh root@<droplet-ip>
+# Or with key: ssh -i ~/.ssh/your-key root@<droplet-ip>
+```
+
+**Common Debugging Commands**:
+```bash
+# Exec into a running container
+CONTAINER_ID=$(docker ps -q -f name=prod-sprocket-core)
+docker exec -it $CONTAINER_ID sh
+
+# Check system resources
+df -h                  # Disk usage
+free -h                # Memory usage
+docker system df       # Docker storage
+
+# Network debugging
+docker network inspect traefik-ingress
+nslookup vault.sprocket.mlesports.gg
+```
+
+See [OPERATIONS_RUNBOOK.md](./OPERATIONS_RUNBOOK.md#digital-ocean-master-node-access-for-debugging) for detailed debugging procedures.
 
 ---
 
@@ -1605,6 +1648,6 @@ For troubleshooting, see the [Troubleshooting](#troubleshooting) section above o
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: November 8, 2025
+**Document Version**: 1.1
+**Last Updated**: December 4, 2025
 **Maintained By**: Infrastructure Team
