@@ -34,7 +34,14 @@ export class RabbitMq extends pulumi.ComponentResource {
             filepath: args.configFilepath
         }, {parent: this})
 
-        this.volume = new docker.Volume(`${name}-data`, {}, {retainOnDelete: true, parent: this})
+        this.volume = new docker.Volume(`${name}-data`, {
+            driver: "local",
+            driverOpts: {
+                "type": "none",
+                "o": "bind",
+                "device": "/mnt/sprocketbot_influx_data/rabbitmq"
+            }
+        }, {retainOnDelete: true, parent: this})
 
         this.service = new docker.Service(`${name}-service`, {
             taskSpec: {

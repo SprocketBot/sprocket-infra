@@ -14,7 +14,14 @@ export class Loki extends pulumi.ComponentResource {
     constructor(name: string, args: LokiArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Loki", name, {}, opts);
 
-        this.volume = new docker.Volume(`${name}-volume`, {}, { parent: this })
+        this.volume = new docker.Volume(`${name}-volume`, {
+            driver: "local",
+            driverOpts: {
+                "type": "none",
+                "o": "bind",
+                "device": "/mnt/sprocketbot_influx_data/loki"
+            }
+        }, { parent: this })
 
         this.service = new docker.Service(`${name}-service`, {
             name: name,

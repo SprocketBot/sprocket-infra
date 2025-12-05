@@ -18,3 +18,7 @@ config:
   platform:tailscale-ip: 100.110.185.84
   platform:platform/discord-bot-token:
     secure: AAABAL4AAGwkTCZdeRn8Fs6CQhrWeaV2JOWfRlxmC3TwF8URsbRy6d9ZTGl1R+ZecCiAzwYg1LOgGaiCAsQv9VxuCC/NHNCiVvpnX//ZuSTg++TZ+WCSYNa8UEWPODahjek/IEphMR0=
+  platform:legacy-bot-token-emilio:
+    secure: AAABAOoEM1RL3IXgmpysN8BTjMsg2uJC2rbu7KE8zcltamIj1X1nmcr7+UCaNkqsZ4ovQU+gNuS8f9wLgOVi5s4KFD2R3kR3VWJKIB/By3xhuYgniHT2pyhISJ8lcPdHuVx8znSw
+  platform:legacy-bot-token-emilia:
+    secure: AAABALMAPgvoFvUaDbFQukMswT7MbB/p9WTiokU08tIW1uEEcBfS9XR6NdM89gFeXUK5EZxskTNQGJdc/GggfppCkuU9XahIz51n0bTBm/1jp0Mh+SWp5l6DdtUnkZJG8jUdeKRd

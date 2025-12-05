@@ -433,6 +433,8 @@ export class Platform extends pulumi.ComponentResource {
         new LegacyPlatform(`${name}-legacy`, {
             database: this.database,
             minio: this.objectStorage,
+            postgresPort: this.postgresPort,
+            ingressNetworkId: args.ingressNetworkId,
             postgresProvider: args.postgresProvider,
             vaultProvider: args.vault.infrastructure
         }, { parent: this })
@@ -444,7 +446,7 @@ export class Platform extends pulumi.ComponentResource {
         configFile: { sourceFilePath: `${configRoot}/services/${name}.json` },
         configValues: {
             transport: pulumi.all([this.datastore.rabbitmq.hostname, this.key.result]).apply(([rmqHost, key]) => JSON.stringify({
-                url: `amqp://${rmqHost}:5672`,
+                url: `amqp://${rmqHost}:5672?heartbeat=60`,
                 matchmaking_queue: `${pulumi.getStack()}-matchmaking`,
                 core_queue: `${pulumi.getStack()}-core`,
                 bot_queue: `${pulumi.getStack()}-bot`,
@@ -457,7 +459,7 @@ export class Platform extends pulumi.ComponentResource {
                 notification_queue: `${pulumi.getStack()}-notifications`
             }, null, 2)),
             logger: {
-                levels: pulumi.getStack() === "main" ? '["error", "warn", "log"]' : '["error", "warn", "log", "debug"]'
+                levels: pulumi.getStack() === "prod" ? '["error", "warn", "log"]' : '["error", "warn", "log", "debug"]'
             },
             database: {
                 host: this.database.host,
@@ -491,7 +493,7 @@ export class Platform extends pulumi.ComponentResource {
                 }
             },
             celery: {
-                broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}`) ?? "",
+                broker: this.datastore.rabbitmq?.hostname.apply(h => `amqp://${h}?heartbeat=60`) ?? "",
                 backend: pulumi.all([this.datastore.redis?.hostname, this.datastore.redis?.credentials.password]).apply(([h, p]) => `redis://:${p}@${h}`) ?? "",
                 queue: `${this.environmentSubdomain}-celery`
             },
@@ -510,7 +512,7 @@ export class Platform extends pulumi.ComponentResource {
             },
             chatwoot: {
                 url: this.chatwootUrl,
-                websiteToken: pulumi.getStack() === 'main' ? PRODUCTION_CHATWOOT_WEBSITE_TOKEN : DEV_CHATWOOT_WEBSITE_TOKEN,
+                websiteToken: pulumi.getStack() === 'prod' ? PRODUCTION_CHATWOOT_WEBSITE_TOKEN : DEV_CHATWOOT_WEBSITE_TOKEN,
             },
             stack: pulumi.getStack(),
         }

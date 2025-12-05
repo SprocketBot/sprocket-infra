@@ -32,8 +32,11 @@ export class Influx extends pulumi.ComponentResource {
         }, { parent: this })
 
         this.volume = new docker.Volume(`${name}-volume`, {
+            driver: "local",
             driverOpts: {
-                "size": "5G"
+                "type": "none",
+                "o": "bind",
+                "device": "/mnt/sprocketbot_influx_data"
             }
         }, { parent: this })
 

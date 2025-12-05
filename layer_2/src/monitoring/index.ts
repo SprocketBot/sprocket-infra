@@ -40,6 +40,7 @@ export class Monitoring extends pulumi.ComponentResource {
         this.grafana = new Grafana("grafana", {
             monitoringNetworkId: this.network.id,
             ingressNetworkId: ingressNetworkId,
+            influxToken: this.influx.credentials.password,
             providers
         }, { parent: this })
 
