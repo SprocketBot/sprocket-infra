@@ -1,7 +1,7 @@
 # Sprocket Infrastructure Operations Runbook
 
-**Version**: 1.0
-**Last Updated**: November 8, 2025
+**Version**: 1.1
+**Last Updated**: December 4, 2025
 **Audience**: Operations Team, DevOps Engineers
 
 ---
@@ -554,18 +554,58 @@ Remaining budget: 22 minutes
 
 ### Accessing Monitoring Tools
 
-#### Grafana Dashboards
+#### Grafana Unified Logs and Metrics Interface
+
+**Unified Access Point**: https://grafana.sprocket.mlesports.gg
+
+Grafana provides a **unified interface** for both logs and metrics, consolidating monitoring into a single dashboard:
 
 ```bash
 # URL: https://grafana.sprocket.mlesports.gg
 # Login: admin / <password from Vault>
 
+# Unified Interface Features:
+# - Metrics: Real-time system and application metrics via InfluxDB/Telegraf
+# - Logs: Centralized log aggregation via Loki
+# - Correlation: View metrics and logs side-by-side for troubleshooting
+# - Time-sync: Correlate events across logs and metrics with unified timeline
+
 # Key Dashboards:
-# - System Overview: Node resources, Docker stats
-# - Application Metrics: Request rates, latencies
-# - Database: PostgreSQL performance
-# - Service Health: Container states, restarts
+# - System Overview: Node resources, Docker stats, CPU, memory, disk
+# - Application Metrics: Request rates, latencies, error rates
+# - Database: PostgreSQL performance, connection pools, query times
+# - Service Health: Container states, restarts, health checks
+# - Logs Explorer: Query and filter logs from all services
+
+# Log Query Examples (in Explore view):
+# {service="prod-sprocket-core-service"} |= "ERROR"
+# {service="traefik"} |= "404"
+# {service="vault"} |~ "unseal|seal"
 ```
+
+**How to Use the Unified Interface**:
+
+1. **View Metrics**:
+   - Navigate to **Dashboards** → Select dashboard
+   - View real-time graphs and metrics
+   - Drill down into specific time ranges
+
+2. **Query Logs**:
+   - Navigate to **Explore** (compass icon)
+   - Select **Loki** as data source
+   - Use LogQL queries to filter logs
+   - Example: `{service="prod-sprocket-core-service"} |= "ERROR"`
+
+3. **Correlate Logs and Metrics**:
+   - In **Explore**, add multiple queries
+   - Use split view to compare metrics and logs
+   - Sync time ranges to correlate events
+   - Click on metric spikes to see corresponding logs
+
+4. **Common Workflows**:
+   - **Debugging**: Select time range on metric graph → View corresponding logs
+   - **Performance**: Compare response time metrics with error logs
+   - **Capacity**: Monitor resource metrics while reviewing application logs
 
 #### Gatus Service Monitoring
 
@@ -579,19 +619,113 @@ Remaining budget: 22 minutes
 # - Health check history
 ```
 
-#### Log Aggregation (Loki)
+#### Digital Ocean Master Node Access for Debugging
 
+The infrastructure runs on a single Digital Ocean Droplet that serves as the Docker Swarm master node. You can access it via the Digital Ocean UI for direct debugging:
+
+**Access Methods**:
+
+1. **Via Digital Ocean Console (Web-based SSH)**:
+   ```bash
+   # 1. Log into Digital Ocean console: https://cloud.digitalocean.com
+   # 2. Navigate to: Droplets → Select your droplet (e.g., "sprocket-master-node")
+   # 3. Click "Console" in the top-right (or "Access" → "Launch Droplet Console")
+   # 4. Login with root or your configured user
+   ```
+
+2. **Via SSH (Direct)**:
+   ```bash
+   # From your local machine
+   ssh root@<droplet-ip>
+   # Or if using SSH keys:
+   ssh -i ~/.ssh/your-key root@<droplet-ip>
+   ```
+
+**Common Debugging Tasks on the Master Node**:
+
+**1. Check Service Health**:
 ```bash
-# Access via Grafana
-# Explore → Select Loki data source
+# List all Docker services
+docker service ls
 
-# Common queries:
-# {service="prod-sprocket-core-service"} |= "ERROR"
-# {service="traefik"} |= "404"
-# {service="vault"} |~ "unseal|seal"
+# Check specific service status
+docker service ps prod-sprocket-core-service
 
-# Filter by time range, service, log level
+# View service logs
+docker service logs -f prod-sprocket-core-service --tail 100
+
+# Check resource usage
+docker stats --no-stream
 ```
+
+**2. Inspect Container State**:
+```bash
+# List running containers
+docker ps
+
+# Get container ID for a service
+CONTAINER_ID=$(docker ps -q -f name=prod-sprocket-core)
+
+# Exec into running container for debugging
+docker exec -it $CONTAINER_ID sh
+# Or bash if available:
+docker exec -it $CONTAINER_ID bash
+
+# Inside container, check:
+env                    # Environment variables
+netstat -tuln         # Network connections
+ps aux                # Running processes
+df -h                 # Disk usage
+```
+
+**3. Check System Resources**:
+```bash
+# Disk usage
+df -h
+du -sh /var/lib/docker/*
+
+# Memory usage
+free -h
+
+# CPU usage
+top
+# Press 'q' to quit
+
+# Docker storage
+docker system df
+```
+
+**4. Network Debugging**:
+```bash
+# Test DNS resolution
+nslookup vault.sprocket.mlesports.gg
+
+# Test internal service connectivity
+curl http://layer2redis-redis-primary:6379
+curl http://rabbitmq-service:5672
+
+# Check Docker networks
+docker network ls
+docker network inspect traefik-ingress
+```
+
+**5. View Docker Swarm Status**:
+```bash
+# Check swarm status
+docker info | grep Swarm
+
+# List nodes (should show master + workers if multi-node)
+docker node ls
+
+# View swarm tasks
+docker service ps $(docker service ls -q)
+```
+
+**Security Note**: Access to the master node provides full control over the infrastructure. Only authorized personnel should have SSH access. Consider:
+- Using SSH key authentication (disable password auth)
+- Restricting SSH access to specific IP addresses via firewall
+- Using tools like `fail2ban` to prevent brute-force attacks
+- Enabling audit logging for SSH sessions
 
 ### Setting Up Alerts
 
@@ -1427,6 +1561,33 @@ docker exec $CONTAINER_ID nslookup <service-name>
 
 ### Clear Docker Resources
 
+**Background**: Docker storage can grow significantly over time due to:
+- Container layer duplication in overlay2
+- Unlimited log growth from services
+- Unused images and volumes
+- Build cache accumulation
+
+**Monitoring Storage**:
+```bash
+# Check overall Docker disk usage
+docker system df
+
+# Check detailed breakdown
+docker system df -v
+
+# Check overlay2 directory size
+du -sh /var/lib/docker/overlay2
+
+# Check system disk usage
+df -h /var/lib/docker
+```
+
+**Storage Management Improvements** (implemented Nov 2025):
+- Enhanced log rotation: 5MB max size, 5 files, compression enabled
+- Volume size limits: Redis (2GB), MinIO (10GB), InfluxDB (5GB), Airbyte (5GB)
+- Automated cleanup scripts available in repository root
+
+**Cleanup Commands**:
 ```bash
 # Remove stopped containers
 docker container prune -f
@@ -1440,11 +1601,52 @@ docker volume prune -f
 # Remove unused networks
 docker network prune -f
 
-# All at once
+# All at once (recommended for routine cleanup)
 docker system prune -a -f
 
 # Check space saved
 docker system df
+```
+
+**Automated Cleanup Script**:
+```bash
+# Use the automated cleanup script (if available)
+./docker-storage-cleanup.sh
+
+# This script:
+# - Prunes all unused Docker resources
+# - Analyzes overlay2 directory
+# - Reports storage savings
+# - Provides recommendations
+```
+
+**When to Run Cleanup**:
+- Monthly maintenance (scheduled)
+- When disk usage >80%
+- After major deployments
+- When Docker overlay2 exceeds 15GB
+
+**Expected Results**:
+- Typical cleanup: Reclaim 2-5GB
+- Major cleanup (after months): Reclaim 10-18GB
+- Post-cleanup overlay2: ~6-10GB (with containers running)
+
+**RabbitMQ Connection Management** (added Nov 2025):
+RabbitMQ services now include improved connection handling:
+- Proper health checks to prevent connection leaks
+- Connection pooling configuration
+- Auto-reconnect on connection failures
+
+If experiencing RabbitMQ connection issues:
+```bash
+# Check RabbitMQ service health
+docker service ps rabbitmq-service
+
+# View RabbitMQ logs
+docker service logs rabbitmq-service --tail 100
+
+# Restart RabbitMQ if needed
+docker service update --force rabbitmq-service
 ```
 
 ---
@@ -1541,10 +1743,10 @@ pg_restore -h <host> -p <port> -U <user> -d <db> <file> # Restore
 
 ---
 
-**Operations Runbook Version**: 1.0
-**Last Updated**: November 8, 2025
+**Operations Runbook Version**: 1.1
+**Last Updated**: December 4, 2025
 **Review Cycle**: Quarterly
-**Next Review**: February 2026
+**Next Review**: March 2026
 
 ---
 

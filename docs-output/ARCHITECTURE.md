@@ -1,7 +1,7 @@
 # Sprocket Infrastructure Architecture
 
-**Version**: 1.0
-**Last Updated**: November 8, 2025
+**Version**: 1.1
+**Last Updated**: December 4, 2025
 **Status**: Production
 
 ---
@@ -1123,59 +1123,84 @@ Same 50 metrics at 1/second:
 
 ---
 
-#### Grafana
-**Purpose**: Metrics visualization and dashboards
+#### Grafana (Unified Observability Interface)
+**Purpose**: Unified metrics visualization, log querying, and observability dashboards
 
 **Why We Use Grafana**:
 
-Raw metrics in InfluxDB are just numbers. Grafana turns those numbers into actionable insights:
+Grafana serves as our **single pane of glass** for observability, consolidating metrics and logs:
 
-**Without Visualization**:
+**Without Unified Interface**:
 ```
-Query InfluxDB manually:
-"What was the error rate yesterday?"
-→ Returns: 1500 rows of timestamps and error counts
-→ You: *manually calculate percentages, compare to baselines*
-→ Time: 10-20 minutes per question
-→ Hard to spot trends or anomalies
+Investigating an incident:
+1. Query InfluxDB for metrics → See error spike at 3pm
+2. SSH into server → grep logs for errors
+3. Manually correlate timestamps between metrics and logs
+4. Switch between tools (CLI, metrics UI, log files)
+→ Time: 20-30 minutes to correlate data
 ```
 
-**With Grafana**:
+**With Grafana Unified Interface**:
 ```
-Open dashboard:
-→ See error rate graph over last 7 days
-→ See spike yesterday at 3pm
-→ Click spike → see related metrics (CPU, memory, requests)
-→ Click service → see error logs
-→ Time: 30 seconds to identify issue
+Open Grafana:
+→ Dashboard shows error spike at 3pm
+→ Click time range on graph
+→ Switch to Explore → Query logs: {service="prod-sprocket-core"} |= "ERROR"
+→ Logs show: "Database connection pool exhausted"
+→ Click related metrics → See DB connections maxed out
+→ Time: 2-3 minutes, no SSH needed
 ```
 
 **Real Impact**:
-- Identify issues 10-20x faster
-- Spot trends before they become problems (e.g., gradual memory leak)
-- Share insights with team (live dashboards vs. screenshots)
-- Historical analysis (what happened during last deployment?)
-- Alerts on anomalies (email/Slack when error rate > threshold)
+- **10-20x faster** issue identification
+- **No SSH required** for log analysis (query via Grafana UI)
+- **Correlation built-in**: Metrics and logs time-synced in one view
+- **Team collaboration**: Share live dashboards vs. pasting log snippets
+- **Historical analysis**: What happened during last deployment?
+- **Proactive alerts**: Email/Slack when error rate > threshold
+
+**Unified Features**:
+- **Metrics Dashboards**: Real-time visualization (InfluxDB/Telegraf data)
+- **Log Querying**: LogQL queries against Loki (no SSH to server)
+- **Time Correlation**: Sync time ranges between metrics and logs
+- **Split View**: Compare metrics and logs side-by-side
+- **Alerting**: Unified alerts for metrics or log patterns
 
 **Our Dashboards**:
 - System health (CPU, memory, disk, network)
-- Service metrics (response times, error rates)
-- Business metrics (active players, matches created, match completion rates)
+- Service metrics (response times, error rates, request rates)
+- Business metrics (active players, matches created, completion rates)
 - Database performance (query times, connection pool usage)
+- Log explorer (centralized log search across all services)
+
+**Common Workflows**:
+```bash
+# 1. Metrics-First Investigation
+Dashboard → See CPU spike → Explore logs for that time → Find cause
+
+# 2. Logs-First Investigation
+Explore → Query logs for errors → See timestamp → Check metrics dashboard
+
+# 3. Correlation
+Split view → Metrics on left → Logs on right → Synchronized time range
+```
 
 **Image**: `grafana/grafana:latest`
 
 **Data Sources**:
-- InfluxDB (primary metrics)
-- Loki (logs)
-
-**Dashboards**:
-- Service health
-- System metrics
-- Application metrics
-- Custom business metrics
+- **InfluxDB**: System and application metrics
+- **Loki**: Centralized logs from all Docker services
+- **PostgreSQL**: Direct database queries (optional)
 
 **Access**: https://grafana.sprocket.mlesports.gg
+
+**Authentication**: admin / <password from Vault>
+
+**How to Use**:
+1. **Dashboards** → Pre-built metric visualizations
+2. **Explore** → Ad-hoc log queries (LogQL) or metric queries
+3. **Alerts** → Configure notifications based on thresholds
+4. **Correlate** → Click metric spike → View logs for same time
 
 ---
 
