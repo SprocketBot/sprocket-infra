@@ -15,11 +15,12 @@ export class SprocketPostgresProvider extends postgres.Provider {
     readonly port: number;
 
     constructor({ vaultProvider, ...args }: SprocketPostgresProviderArgs, opts?: pulumi.ResourceOptions) {
-        const secret = vault.generic.getSecretOutput({
-            path: "infrastructure/data/postgres/root"
-        }, {
-            provider: vaultProvider
-        });
+        // Temporarily disabled - using config instead of Vault
+        // const secret = vault.generic.getSecretOutput({
+        //     path: "infrastructure/data/postgres/root"
+        // }, {
+        //     provider: vaultProvider
+        // });
 
         const username = config.require('postgres-username');
         const password = config.require('postgres-password');
