@@ -1,5 +1,4 @@
 import * as docker from "@pulumi/docker"
-import * as postgresql from "@pulumi/postgresql"
 import * as pulumi from "@pulumi/pulumi"
 import * as vault from "@pulumi/vault"
 import * as aws from "@pulumi/aws"
@@ -26,7 +25,6 @@ export interface PlatformArgs {
         platform: vault.Provider
     }
 
-    postgresProvider: postgresql.Provider
     postgresHostname: string | pulumi.Output<string>
     postgresPort: number | pulumi.Output<number>
 
@@ -105,9 +103,7 @@ export class Platform extends pulumi.ComponentResource {
 
         this.database = new PlatformDatabase(`${name}-database`, {
             environmentSubdomain: this.environmentSubdomain,
-            postgresHostname: args.postgresHostname,
-            postgresProvider: args.postgresProvider,
-            vaultProvider: args.vault.infrastructure
+            postgresHostname: args.postgresHostname
         }, { parent: this })
 
         this.secrets = new PlatformSecrets(`${name}-secrets`, {
@@ -447,7 +443,6 @@ export class Platform extends pulumi.ComponentResource {
             minio: this.objectStorage,
             postgresPort: this.postgresPort,
             ingressNetworkId: args.ingressNetworkId,
-            postgresProvider: args.postgresProvider,
             vaultProvider: args.vault.infrastructure
         }, { parent: this })
     }

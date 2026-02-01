@@ -6,7 +6,7 @@ config:
   platform:postgres-port: "25060"
   platform:postgres-host: sprocketbot-postgres-d5033d2-do-user-24528890-0.j.db.ondigitalocean.com
   platform:postgres-password:
-    secure: AAABACbBsrxEDT139w4GBAOopEgHd403W3TfsWPTthI16JsX+2Tnlj1Vg81ad3GQQS0Ud8Fg3E4=
+    secure: AAABAFd/724jFgDhT2eXVgllFZbcVkMa7KYABASJp4JUWvKA9AFF6aCWRAMK3I/KPed/cEkGlFA=
   platform:subdomain: "main"
   platform:discord-bot-token:
     secure: AAABAH1Lr9RviW7TevfCtFUV8debaBZybIE/i75siqFBO9d34WHH5fuzl/LZbBGuIYFqm490lKfuWmSOUCGl5fwHuB2EssJ0J6TbA5LHje0fb/MRMEEyhzewZdO6uYyUHKREZy945UM=
@@ -22,3 +22,5 @@ config:
     secure: AAABAOoEM1RL3IXgmpysN8BTjMsg2uJC2rbu7KE8zcltamIj1X1nmcr7+UCaNkqsZ4ovQU+gNuS8f9wLgOVi5s4KFD2R3kR3VWJKIB/By3xhuYgniHT2pyhISJ8lcPdHuVx8znSw
   platform:legacy-bot-token-emilia:
     secure: AAABALMAPgvoFvUaDbFQukMswT7MbB/p9WTiokU08tIW1uEEcBfS9XR6NdM89gFeXUK5EZxskTNQGJdc/GggfppCkuU9XahIz51n0bTBm/1jp0Mh+SWp5l6DdtUnkZJG8jUdeKRd
+  platform:postgres-password-legacy:
+    secure: AAABAO1bJU4/tNUmnrWi1U45vpuF0xnZeNfp6sfRy05qIzahlb4BhVo/gSSwo6I/eKz5nX17SiY=

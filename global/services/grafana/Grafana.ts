@@ -60,10 +60,7 @@ export class Grafana extends pulumi.ComponentResource {
                 },
                 containerSpec: {
                     image: "grafana/grafana:main",
-                    env: pulumi.all([
-                        vault.generic.getSecretOutput({ path: "infrastructure/data/smtp" }, { provider: args.providers.vault }),
-                        args.influxToken
-                    ]).apply(([s, influxToken]) => ({
+                    env: pulumi.output(args.influxToken).apply((influxToken) => ({
                         GF_SERVER_ROOT_URL: `https://grafana.${HOSTNAME}`,
                         GF_DATABASE_TYPE: "postgres",
                         GF_DATABASE_HOST: `${config.require('postgres-host')}:${config.require('postgres-port')}`,
@@ -75,8 +72,8 @@ export class Grafana extends pulumi.ComponentResource {
                         GF_SMTP_HOST: "smtp.sendgrid.net:465",
                         GF_FROM_ADDRESS: "noreply@sprocket.gg",
                         GF_FROM_NAME: "Sprocket Noreply",
-                        GF_SMTP_PASSWORD: "nopassword", //s.data['password'],
-                        GF_SMTP_USER: "nobody", //s.data['username'],
+                        GF_SMTP_PASSWORD: "nopassword",
+                        GF_SMTP_USER: "nobody",
                         GF_INSTALL_PLUGINS: "grafana-github-datasource,ryantxu-annolist-panel,neocat-cal-heatmap-panel,grafana-polystat-panel,fifemon-graphql-datasource,redis-datasource,marcusolsson-treemap-panel,digiapulssi-breadcrumb-panel",
                         INFLUX_TOKEN: influxToken
                     })),

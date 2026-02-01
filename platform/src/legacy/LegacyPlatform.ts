@@ -1,10 +1,8 @@
 import * as docker from '@pulumi/docker';
 import * as vault from '@pulumi/vault';
 import * as pulumi from '@pulumi/pulumi';
-import * as postgres from '@pulumi/postgresql';
 
 import { Redis } from 'global/services';
-import { PostgresUser } from 'global/helpers/datastore/PostgresUser';
 import defaultLogDriver from 'global/helpers/docker/DefaultLogDriver';
 import { getImageSha } from 'global/helpers/docker/getImageSha';
 import { PlatformDatabase } from '../PlatformDatabase';
@@ -19,8 +17,7 @@ export interface LegacyPlatformArgs {
 
   ingressNetworkId: docker.Network["id"],
 
-  vaultProvider: vault.Provider,
-  postgresProvider: postgres.Provider
+  vaultProvider: vault.Provider
 }
 
 export class LegacyPlatform extends pulumi.ComponentResource {
@@ -30,23 +27,23 @@ export class LegacyPlatform extends pulumi.ComponentResource {
   readonly redis: Redis;
   readonly network: docker.Network;
 
-  private readonly dbCredentials: PostgresUser;
+  private readonly dbCredentials: {
+    username: string
+    password: pulumi.Output<string>
+  };
 
   constructor(name: string, args: LegacyPlatformArgs, opts?: pulumi.ComponentResourceOptions) {
     super('SprocketBot:LegacyPlatform', name, {}, opts);
 
-    this.dbCredentials = new PostgresUser(`${name}-db-user`, {
-      providers: { postgres: args.postgresProvider, vault: args.vaultProvider },
+    // Get credentials from Pulumi config
+    this.dbCredentials = {
       username: `sprocket_${pulumi.getStack()}_legacy`,
-      roleArgs: {
-        searchPaths: ['mledb']
-      }
-    }, { parent: this });
+      password: config.requireSecret("postgres-password-legacy")
+    };
+
     this.network = new docker.Network(`${name}-net`, {
       driver: 'overlay'
     }, { parent: this });
-
-    this.buildPostgresGrants(name, args);
 
     this.redis = new Redis(`${name}-redis`, {
       configFilepath: `${__dirname}/../config/datastores/redis.conf`,
@@ -275,26 +272,4 @@ export class LegacyPlatform extends pulumi.ComponentResource {
     }, { parent: this });
   }
 
-  private buildPostgresGrants(name: string, args: LegacyPlatformArgs) {
-    new postgres.Grant(`${name}-grant-connect`, {
-      database: args.database.database.name,
-      objectType: 'database',
-      privileges: ['CONNECT'],
-      role: this.dbCredentials.username
-    }, { parent: this, provider: args.postgresProvider });
-    new postgres.Grant(`${name}-grant-usage`, {
-      database: args.database.database.name,
-      objectType: 'schema',
-      schema: args.database.mledbSchema.name,
-      privileges: ['USAGE'],
-      role: this.dbCredentials.username
-    }, { parent: this, provider: args.postgresProvider });
-    new postgres.Grant(`${name}-grant`, {
-      role: this.dbCredentials.username,
-      database: args.database.database.name,
-      objectType: 'table',
-      schema: args.database.mledbSchema.name,
-      privileges: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
-    }, { parent: this, provider: args.postgresProvider });
-  }
 }
