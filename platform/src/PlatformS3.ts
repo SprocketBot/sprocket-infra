@@ -1,11 +1,11 @@
 import * as pulumi from "@pulumi/pulumi"
 import * as aws from "@pulumi/aws"
-import * as vault from "@pulumi/vault"
 
 export interface PlatformS3Args {
     s3Provider: aws.Provider
     s3Endpoint: pulumi.Output<string> | string
-    vaultProvider: vault.Provider
+    accessKey: pulumi.Output<string>
+    secretKey: pulumi.Output<string>
     environment: string
 }
 
@@ -49,18 +49,10 @@ export class PlatformS3 extends pulumi.ComponentResource {
             acl: "private"
         }, { parent: this, provider: args.s3Provider })
 
-        // DigitalOcean Spaces doesn't support IAM user creation via API
-        // Instead, we retrieve the credentials from Vault that were manually created in DO console
-        const s3Credentials = vault.generic.getSecretOutput({
-            path: "infrastructure/data/minio/root"
-        }, {
-            provider: args.vaultProvider
-        })
-
         // Use the root credentials for S3 access
         this.s3AccessKey = {
-            id: s3Credentials.data.apply(d => d.username as string),
-            secret: s3Credentials.data.apply(d => d.password as string)
+            id: args.accessKey,
+            secret: args.secretKey
         }
 
         // Use the provided endpoint

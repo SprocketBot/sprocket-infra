@@ -1,11 +1,10 @@
 import * as pulumi from '@pulumi/pulumi';
-import * as vault from '@pulumi/vault';
 import * as docker from '@pulumi/docker';
 import { SprocketService, SprocketServiceArgs } from './SprocketService';
 import { DGraph } from 'global/services';
 import { buildHost } from 'global/helpers/buildHost';
 
-type EloServiceArgs = SprocketServiceArgs & { vault: vault.Provider, ingressNetworkId: docker.Network['id'] }//, n8nNetworkId: docker.Network["id"] }
+type EloServiceArgs = SprocketServiceArgs & { ingressNetworkId: docker.Network['id'] }//, n8nNetworkId: docker.Network["id"] }
 
 export class EloService extends pulumi.ComponentResource {
   readonly dgraph: DGraph;
@@ -16,7 +15,6 @@ export class EloService extends pulumi.ComponentResource {
     super('SprocketBot:Application:Microservice:Elo', name, {});
 
     this.dgraph = new DGraph(`${name}-dgraph`, {
-      vaultProvider: args.vault,
       platformNetworkId: args.platformNetworkId,
       ingressNetworkId: args.ingressNetworkId,
       environment: pulumi.getStack(),

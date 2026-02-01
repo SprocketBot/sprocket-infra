@@ -179,12 +179,12 @@ export class SprocketService extends pulumi.ComponentResource {
                 placement: {
                     maxReplicas: args.instanceCount ?? 2,
                 },
-                networks: [
-                    args.platformNetworkId,
-                    ...networks,
-                    ...(args.networks ?? [])
-                ],
-                logDriver: defaultLogDriver(name, false)
+                logDriver: defaultLogDriver(name, false),
+                networksAdvanceds: [
+                    { name: args.platformNetworkId },
+                    ...networks.map(n => ({ name: n })),
+                    ...(args.networks ?? []).map(n => ({ name: n }))
+                ]
             },
             labels: args.labels
         }, { parent: this, provider: DockerProvider })

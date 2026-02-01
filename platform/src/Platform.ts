@@ -1,6 +1,5 @@
 import * as docker from "@pulumi/docker"
 import * as pulumi from "@pulumi/pulumi"
-import * as vault from "@pulumi/vault"
 import * as aws from "@pulumi/aws"
 import * as random from "@pulumi/random";
 
@@ -12,7 +11,6 @@ import { buildHost } from "global/helpers/buildHost";
 import { CHATWOOT_SUBDOMAIN, DEV_CHATWOOT_WEBSITE_TOKEN, HOSTNAME, PRODUCTION_CHATWOOT_WEBSITE_TOKEN } from "global/constants"
 import { PlatformSecrets } from "./PlatformSecrets";
 import { PlatformDatabase } from "./PlatformDatabase";
-import { PlatformVault } from "./PlatformVault";
 import { PlatformS3 } from "./PlatformS3";
 import { EloService } from "./microservices/EloService";
 import { LegacyPlatform } from './legacy/LegacyPlatform';
@@ -20,16 +18,13 @@ import { LegacyPlatform } from './legacy/LegacyPlatform';
 const config = new pulumi.Config()
 
 export interface PlatformArgs {
-    vault: {
-        infrastructure: vault.Provider,
-        platform: vault.Provider
-    }
-
     postgresHostname: string | pulumi.Output<string>
     postgresPort: number | pulumi.Output<number>
 
     s3Provider: aws.Provider
     s3Endpoint: string | pulumi.Output<string>
+    s3AccessKey: pulumi.Output<string>
+    s3SecretKey: pulumi.Output<string>
 
     ingressNetworkId: docker.Network["id"],
     monitoringNetworkId: docker.Network["id"],
@@ -64,7 +59,6 @@ export class Platform extends pulumi.ComponentResource {
 
     readonly key: random.RandomUuid
 
-    readonly vaultSync: PlatformVault
 
     readonly services: {
         imageGen: SprocketService,
@@ -90,13 +84,13 @@ export class Platform extends pulumi.ComponentResource {
             environment: this.environmentSubdomain,
             s3Provider: args.s3Provider,
             s3Endpoint: args.s3Endpoint,
-            vaultProvider: args.vault.infrastructure
+            accessKey: args.s3AccessKey,
+            secretKey: args.s3SecretKey
         }, { parent: this })
 
         this.datastore = new PlatformDatastore(`${name}-datastores`, {
             environmentSubdomain: this.environmentSubdomain,
             ingressNetworkId: args.ingressNetworkId,
-            vaultProvider: args.vault.infrastructure,
             platformNetworkId: this.network.id,
             configRoot: `${args.configRoot}/datastores`
         }, { parent: this })
@@ -110,7 +104,6 @@ export class Platform extends pulumi.ComponentResource {
             datastore: this.datastore,
             database: this.database,
             s3AccessKey: this.objectStorage.s3AccessKey,
-            vault: args.vault.platform,
             environment: this.environmentSubdomain
         }, { parent: this })
 
@@ -354,7 +347,6 @@ export class Platform extends pulumi.ComponentResource {
             }, { parent: this }),
 
             elo: new EloService(`${name}-elo-service`, {
-                vault: args.vault.platform,
                 ...this.buildDefaultConfiguration("elo-service", args.configRoot),
                 env: {
                     REDIS_HOST: this.datastore.redis.hostname,
@@ -393,37 +385,6 @@ export class Platform extends pulumi.ComponentResource {
             })
         };
 
-        this.vaultSync = new PlatformVault(`${name}-vault-sync`, {
-            vaultProvider: args.vault.platform,
-            environment: this.environmentSubdomain,
-            redis: {
-                url: this.datastore.redis.url ?? "",
-                password: this.datastore.redis.credentials.password
-            },
-            rabbitmq: {
-                url: this.datastore.rabbitmq.url,
-                management: this.datastore.rabbitmq.managementUrl
-            },
-            postgres: {
-                url: HOSTNAME,
-                port: "30000",
-                database: this.database.database.name
-            },
-            postgresDataScience: {
-                url: HOSTNAME,
-                port: "30000",
-                database: this.database.database.name
-            },
-            minio: {
-                url: this.objectStorage.s3Url,
-                accessKey: this.objectStorage.s3AccessKey.id,
-                secretKey: this.objectStorage.s3AccessKey.secret,
-                bucket: this.objectStorage.bucket.bucket,
-                imageGenerationBucket: this.objectStorage.imageGenBucket.bucket,
-                replayBucket: this.objectStorage.replayBucket.bucket
-            }
-        })
-
         // Don't include a staging version
         if (pulumi.getStack() === 'staging') return;
         new LegacyPlatform(`${name}-legacy`, {
@@ -431,7 +392,6 @@ export class Platform extends pulumi.ComponentResource {
             minio: this.objectStorage,
             postgresPort: this.postgresPort,
             ingressNetworkId: args.ingressNetworkId,
-            vaultProvider: args.vault.infrastructure
         }, { parent: this })
     }
 

@@ -1,5 +1,4 @@
 import * as docker from '@pulumi/docker';
-import * as vault from '@pulumi/vault';
 import * as pulumi from '@pulumi/pulumi';
 
 import { Redis } from 'global/services';
@@ -16,8 +15,6 @@ export interface LegacyPlatformArgs {
   postgresPort: number | pulumi.Output<number>
 
   ingressNetworkId: docker.Network["id"],
-
-  vaultProvider: vault.Provider
 }
 
 export class LegacyPlatform extends pulumi.ComponentResource {
@@ -47,7 +44,6 @@ export class LegacyPlatform extends pulumi.ComponentResource {
 
     this.redis = new Redis(`${name}-redis`, {
       configFilepath: `${__dirname}/../config/datastores/redis.conf`,
-      vaultProvider: args.vaultProvider,
       platformNetworkId: this.network.id,
       ingressNetworkId: args.ingressNetworkId
     }, { parent: this });
@@ -95,9 +91,9 @@ export class LegacyPlatform extends pulumi.ComponentResource {
           }]
         },
         logDriver: defaultLogDriver(`${name}-worker`, false),
-        networks: [
-          // args.postgresNetworkId,
-          this.network.id
+        networksAdvanceds: [
+          // { name: args.postgresNetworkId },
+          { name: this.network.id }
         ]
       }
     }, { parent: this });
@@ -159,9 +155,9 @@ export class LegacyPlatform extends pulumi.ComponentResource {
             fileMode: 0o444
           }]
         },
-        networks: [
-          // args.postgresNetworkId,
-          this.network.id
+        networksAdvanceds: [
+          // { name: args.postgresNetworkId },
+          { name: this.network.id }
         ],
         logDriver: defaultLogDriver(`${name}-emilio`, false)
       }
@@ -209,9 +205,9 @@ export class LegacyPlatform extends pulumi.ComponentResource {
             fileMode: 0o444
           }]
         },
-        networks: [
-          // args.postgresNetworkId,
-          this.network.id
+        networksAdvanceds: [
+          // { name: args.postgresNetworkId },
+          { name: this.network.id }
         ],
         logDriver: defaultLogDriver(`${name}-emilia`, false)
       }
@@ -263,9 +259,9 @@ export class LegacyPlatform extends pulumi.ComponentResource {
             fileMode: 0o444
           }]
         },
-        networks: [
-          // args.postgresNetworkId,
-          this.network.id
+        networksAdvanceds: [
+          // { name: args.postgresNetworkId },
+          { name: this.network.id }
         ],
         logDriver: defaultLogDriver(`${name}-bot`, false)
       }

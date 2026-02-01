@@ -1,7 +1,6 @@
 import * as docker from "@pulumi/docker"
 import * as pulumi from "@pulumi/pulumi"
 import * as random from "@pulumi/random"
-import * as vault from "@pulumi/vault"
 
 import {LayerTwo, LayerTwoExports} from "global/refs"
 import {PlatformDatastore} from "./PlatformDatastore";
@@ -17,7 +16,6 @@ export interface PlatformSecretsArgs {
         id: pulumi.Output<string>,
         secret: pulumi.Output<string>
     },
-    vault: vault.Provider,
     environment: string
 }
 
@@ -85,65 +83,46 @@ export class PlatformSecrets extends pulumi.ComponentResource {
 
         // Google
 
-        const googleSecret = vault.generic.getSecretOutput({
-            path: `platform/${args.environment}/manual/oauth/google`
-        }, { parent: this, provider: args.vault })
-
         this.googleClientId = new docker.Secret(`${name}-google-client-id`, {
-            data: googleSecret.data.apply(d => btoa(d.clientId))
+            data: config.requireSecret("google-client-id").apply(btoa)
         }, { parent: this })
 
         this.googleClientSecret = new docker.Secret(`${name}-google-secret`, {
-            data: googleSecret.data.apply(d => btoa(d.clientSecret))
+            data: config.requireSecret("google-client-secret").apply(btoa)
         }, { parent: this })
 
         // Epic
 
-        const epicSecret = vault.generic.getSecretOutput({
-            path: `platform/${args.environment}/manual/oauth/epic`
-        }, { parent: this, provider: args.vault })
-
         this.epicClientId = new docker.Secret(`${name}-epic-client-id`, {
-            data: epicSecret.data.apply(d => btoa(d.clientId))
+            data: config.requireSecret("epic-client-id").apply(btoa)
         }, { parent: this })
 
         this.epicClientSecret = new docker.Secret(`${name}-epic-secret`, {
-            data: epicSecret.data.apply(d => btoa(d.clientSecret))
+            data: config.requireSecret("epic-client-secret").apply(btoa)
         }, { parent: this })
 
         // Steam
 
-        const steamSecret = vault.generic.getSecretOutput({
-            path: `platform/${args.environment}/manual/oauth/steam`
-        }, { parent: this, provider: args.vault })
-
         this.steamApiKey = new docker.Secret(`${name}-steam-api-key`, {
-            data: steamSecret.data.apply(d => btoa(d.apiKey))
+            data: config.requireSecret("steam-api-key").apply(btoa)
         }, { parent: this })
 
         // Discord
 
-        const discordSecret = vault.generic.getSecretOutput({
-            path: `platform/${args.environment}/manual/oauth/discord`
-        }, { parent: this, provider: args.vault })
-
         this.discordClientSecret = new docker.Secret(`${name}-discord-secret`, {
-            data: discordSecret.data.apply(d => btoa(d.client_secret))
+            data: config.requireSecret("discord-client-secret").apply(btoa)
         }, { parent: this })
 
         this.discordClientId = new docker.Secret(`${name}-discord-client-id`, {
-            data: discordSecret.data.apply(d => btoa(d.client_id))
+            data: config.requireSecret("discord-client-id").apply(btoa)
         }, { parent: this })
 
         this.ballchasingApiToken = new docker.Secret(`${name}-ballchasing-token`, {
-            data: vault.generic.getSecretOutput({ path: "platform/ballchasing"}, {parent: this, provider: args.vault}).data.apply((d) => btoa(d.token))
+            data: config.requireSecret("ballchasing-token").apply(btoa)
         }, { parent: this })
 
         this.chatwootHmacKey = new docker.Secret(`${name}-chatwoot-hmac-key`, {
-            data: vault.generic.getSecretOutput(
-                { path: `platform/${args.environment}/chatwoot` },
-                { parent: this, provider: args.vault }
-            ).data.apply((d) => btoa(d.hmacKey))
+            data: config.requireSecret("chatwoot-hmac-key").apply(btoa)
         }, { parent: this })
     }
 }

@@ -4,7 +4,7 @@
     "secure": true,
     "chatwoot": {
       "enabled": true,
-      "url": "https://chatwoot.spr.ocket.cloud",
+      "url": "https://chatwoot.sprocket.mlesports.gg",
       "websiteToken": "{{ chatwoot.websiteToken }}"
     }
   },
