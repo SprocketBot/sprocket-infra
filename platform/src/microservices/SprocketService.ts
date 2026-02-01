@@ -14,6 +14,7 @@ type SecretSpec = docker.types.input.ServiceTaskSpecContainerSpecSecret[]
 type EnvSpec = docker.types.input.ServiceTaskSpecContainerSpec["env"]
 type ConfigSpec = docker.types.input.ServiceTaskSpecContainerSpecConfig
 type LabelSpec = docker.types.input.ServiceLabel
+type ResourceSpec = docker.types.input.ServiceTaskSpecResources
 
 type ConfigInput = {
     sourceFilePath: string,
@@ -109,6 +110,7 @@ export type SprocketServiceArgs = {
     labels?: LabelSpec[],
     instanceCount?: number
     commands?: string[]
+    resources?: ResourceSpec
 }
 
 export class SprocketService extends pulumi.ComponentResource {
@@ -176,6 +178,7 @@ export class SprocketService extends pulumi.ComponentResource {
                     },
                     configs
                 },
+                resources: args.resources,
                 placement: {
                     maxReplicas: args.instanceCount ?? 2,
                 },
