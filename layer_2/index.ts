@@ -10,10 +10,10 @@ module.exports = {
     [LayerTwoExports.PostgresPort]: src.pg.port,
     [LayerTwoExports.PostgresNetworkId]: src.pg.networkId,
     [LayerTwoExports.PostgresUrl]: src.pg.url,
-    [LayerTwoExports.InfrastructureVaultToken]: src.policies.infraToken.clientToken,
-    [LayerTwoExports.PlatformVaultToken]: src.policies.platformToken.clientToken,
     [LayerTwoExports.InfluxDbToken]: src.monitoring.influx.credentials.password,
     [LayerTwoExports.MinioHostname]: config.require('s3-endpoint'),
     [LayerTwoExports.MinioUrl]: config.require('s3-endpoint'),
+    [LayerTwoExports.MinioAccessKey]: config.requireSecret('s3-access-key'),
+    [LayerTwoExports.MinioSecretKey]: config.requireSecret('s3-secret-key'),
     // [LayerTwoExports.N8nNetwork]: src.n8n.network.id
 }

@@ -13,6 +13,8 @@ export enum LayerTwoExports {
     InfluxDbToken = "InfluxDbToken",
     MinioHostname = "MinioHostname",
     MinioUrl = "MinioUrl",
+    MinioAccessKey = "MinioAccessKey",
+    MinioSecretKey = "MinioSecretKey",
 
     N8nNetwork = "N8nNetworkId"
 }

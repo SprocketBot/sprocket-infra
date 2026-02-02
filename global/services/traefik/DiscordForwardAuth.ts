@@ -3,6 +3,7 @@ import * as pulumi from "@pulumi/pulumi";
 import {getImageSha} from "../../helpers/docker/getImageSha";
 import {ConfigFile} from "../../helpers/docker/ConfigFile";
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
+import {HOSTNAME} from "../../constants";
 const config = new pulumi.Config()
 
 export interface DiscordForwardAuthArgs {
@@ -40,15 +41,15 @@ export class DiscordForwardAuth extends pulumi.ComponentResource {
                         fileName: "/app/config.yaml"
                     }],
                 },
-                networks: [
-                    args.networkId
-                ],
+                networksAdvanceds: [
+                    { name: args.networkId }
+                ]
             },
             labels: [
                 ...new TraefikLabels("http")
                     .tls("lets-encrypt-tls")
                     .targetPort(3000)
-                    .rule("Host(`fa.spr.ocket.cloud`)")
+                    .rule(`Host(\`fa.${HOSTNAME}\`)`)
                     .complete
             ]
         }, { parent: this })

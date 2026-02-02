@@ -73,13 +73,13 @@ export class Airbyte extends pulumi.ComponentResource {
             target: "/local_parent"
           }]
         },
-        networks: [this.network.id],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
         logDriver: DefaultLogDriver(`${name}-init`, true),
+        networksAdvanceds: [{ name: this.network.id }]
       }
     }, { parent: this })
 
@@ -96,13 +96,13 @@ export class Airbyte extends pulumi.ComponentResource {
             target: "/var/lib/postgresql/data"
           }]
         },
-        networks: [this.network.id],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
-        logDriver: DefaultLogDriver(`${name}-db`, true)
+        logDriver: DefaultLogDriver(`${name}-db`, true),
+        networksAdvanceds: [{ name: this.network.id }]
       }
     }, { parent: this })
 
@@ -134,14 +134,13 @@ export class Airbyte extends pulumi.ComponentResource {
             target: workerEnv.LOCAL_ROOT
           }]
         },
-        networks: [this.network.id],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
         logDriver: DefaultLogDriver(`${name}-worker`, true),
-
+        networksAdvanceds: [{ name: this.network.id }]
       }
     }, { parent: this })
 
@@ -154,13 +153,13 @@ export class Airbyte extends pulumi.ComponentResource {
           hostname: "airbyte-bootloader",
           env: bootloaderEnv
         },
-        networks: [this.network.id],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
         logDriver: DefaultLogDriver(`${name}-bootloader`, true),
+        networksAdvanceds: [{ name: this.network.id }]
       }
     }, { parent: this })
     this.services.cron = new docker.Service(`${name}-cron`, {
@@ -176,13 +175,13 @@ export class Airbyte extends pulumi.ComponentResource {
             target: workerEnv.WORKSPACE_ROOT
           }]
         },
-        networks: [this.network.id],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
         logDriver: DefaultLogDriver(`${name}-cron`, true),
+        networksAdvanceds: [{ name: this.network.id }]
       }
     }, { parent: this })
     this.services.temporal = new docker.Service(`${name}-temporal`, {
@@ -198,13 +197,13 @@ export class Airbyte extends pulumi.ComponentResource {
             target: "/etc/temporal/config/dynamicconfig"
           }]
         },
-        networks: [this.network.id],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
         logDriver: DefaultLogDriver(`${name}-temporal`, true),
+        networksAdvanceds: [{ name: this.network.id }]
       }
     }, { parent: this })
     this.services.webapp = new docker.Service(`${name}-webapp`, {
@@ -221,13 +220,13 @@ export class Airbyte extends pulumi.ComponentResource {
           hostname: "airbyte-webapp",
           env: webappEnv,
         },
-        networks: [this.network.id, args.ingressNetworkId],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
         logDriver: DefaultLogDriver(`${name}-webapp`, true),
+        networksAdvanceds: [{ name: this.network.id }, { name: args.ingressNetworkId }]
       }
     }, { parent: this })
 
@@ -252,13 +251,13 @@ export class Airbyte extends pulumi.ComponentResource {
             target: workerEnv.WORKSPACE_ROOT
           }]
         },
-        networks: [this.network.id, args.ingressNetworkId],
         placement: {
           constraints: [
             "node.labels.role==airbyte",
           ]
         },
         logDriver: DefaultLogDriver(`${name}-server`, true),
+        networksAdvanceds: [{ name: this.network.id }, { name: args.ingressNetworkId }]
       }
     }, { parent: this })
   }

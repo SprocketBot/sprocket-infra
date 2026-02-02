@@ -1,13 +1,11 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import { VaultCredentials } from "../../helpers/vault/VaultCredentials";
-import * as vault from "@pulumi/vault";
+import { ServiceCredentials } from "../../helpers/ServiceCredentials";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels";
 import { HOSTNAME } from "../../constants";
 
 export interface MinioArgs {
-    vaultProvider: vault.Provider
     ingressNetworkId: docker.Network["id"]
 }
 
@@ -16,7 +14,7 @@ export class Minio extends pulumi.ComponentResource {
     readonly url: string
     readonly consoleUrl: string
     readonly hostname: docker.Service["name"]
-    readonly credentials: VaultCredentials
+    readonly credentials: ServiceCredentials
 
     private readonly volume: docker.Volume
     private readonly service: docker.Service
@@ -27,12 +25,8 @@ export class Minio extends pulumi.ComponentResource {
         this.url = `files.${HOSTNAME}`
         this.consoleUrl = `minio.${HOSTNAME}`
 
-        this.credentials = new VaultCredentials(`${name}-root-credentials`, {
+        this.credentials = new ServiceCredentials(`${name}-root-credentials`, {
             username: "minio_admin",
-            vault: {
-                path: "infrastructure/data/minio/root",
-                provider: args.vaultProvider
-            }
         }, { parent: this })
 
         this.volume = new docker.Volume(`${name}-volume`, {
@@ -59,14 +53,14 @@ export class Minio extends pulumi.ComponentResource {
                     },
                 },
                 logDriver: DefaultLogDriver("minio", true),
-                networks: [
-                    args.ingressNetworkId
-                ],
                 placement: {
                     constraints: [
                         "node.labels.role==storage",
                     ]
-                }
+                },
+                networksAdvanceds: [
+                    { name: args.ingressNetworkId }
+                ]
             },
             labels: [
                 ...new TraefikLabels("minio-endpoint")

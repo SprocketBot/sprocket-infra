@@ -335,18 +335,6 @@ export class Platform extends pulumi.ComponentResource {
                 env: {
                     ENV: "production"
                 },
-                commands: [
-                    "celery", "-A", "main", "worker",
-                    "--loglevel=INFO",
-                    "--concurrency=2",
-                    "--prefetch-multiplier=1",
-                    "--max-tasks-per-child=200",
-                    "--max-memory-per-child=350000"
-                ],
-                resources: {
-                    limits: { memoryBytes: 3 * 1024 * 1024 * 1024 },
-                    reservations: { memoryBytes: 1 * 1024 * 1024 * 1024 }
-                },
                 secrets: [{
                     secretId: this.secrets.s3SecretKey.id,
                     secretName: this.secrets.s3SecretKey.name,

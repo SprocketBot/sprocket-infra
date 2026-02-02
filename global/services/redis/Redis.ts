@@ -1,16 +1,14 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import * as vault from "@pulumi/vault"
 
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
 import { ConfigFile } from "../../helpers/docker/ConfigFile"
-import { VaultCredentials } from "../../helpers/vault/VaultCredentials"
+import { ServiceCredentials } from "../../helpers/ServiceCredentials"
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels"
 
 
 export interface RedisArgs {
     configFilepath: string
-    vaultProvider: vault.Provider
 
     platformNetworkId?: docker.Network["id"]
     ingressNetworkId?: docker.Network["id"]
@@ -21,7 +19,7 @@ export interface RedisArgs {
 export class Redis extends pulumi.ComponentResource {
 
     readonly hostname: docker.Service["name"]
-    readonly credentials: VaultCredentials
+    readonly credentials: ServiceCredentials
     readonly url?: string | pulumi.Output<string>
     private readonly config: ConfigFile
     private readonly volume: docker.Volume
@@ -30,12 +28,8 @@ export class Redis extends pulumi.ComponentResource {
     constructor(name: string, args: RedisArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Redis", name, {}, opts)
         this.url = args.url
-        this.credentials = new VaultCredentials(`${name}-root-credentials`, {
+        this.credentials = new ServiceCredentials(`${name}-root-credentials`, {
             username: "",
-            vault: {
-                path: "infrastructure/data/redis",
-                provider: args.vaultProvider
-            }
         }, { parent: this })
 
 
@@ -45,9 +39,9 @@ export class Redis extends pulumi.ComponentResource {
 
         this.volume = new docker.Volume(`${name}-volume`, {}, { parent: this, retainOnDelete: true })
 
-        const networks: docker.Network["id"][] = []
-        if (args.platformNetworkId) networks.push(args.platformNetworkId)
-        if (args.ingressNetworkId) networks.push(args.ingressNetworkId)
+        const networks: {name: docker.Network["id"]}[] = []
+        if (args.platformNetworkId) networks.push({ name: args.platformNetworkId })
+        if (args.ingressNetworkId) networks.push({ name: args.ingressNetworkId })
 
         this.service = new docker.Service(`${name}-redis-primary`, {
             taskSpec: {
@@ -73,7 +67,7 @@ export class Redis extends pulumi.ComponentResource {
                     }]
                 },
                 logDriver: DefaultLogDriver(name, true),
-                networks: networks
+                networksAdvanceds: networks
             },
             labels: args.url ? new TraefikLabels(`${name}`, "tcp")
                 .rule(`HostSNI(\`${args.url}\`)`)

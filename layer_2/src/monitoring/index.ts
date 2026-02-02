@@ -24,13 +24,12 @@ export class Monitoring extends pulumi.ComponentResource {
     constructor(name: string, { exposeInfluxUi, ingressNetworkId, providers }: MonitoringArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Monitoring", name, {}, opts)
 
-        this.network = new docker.Network(`${name}-network`, { driver: "overlay" }, { parent: this })
+        this.network = new docker.Network(`${name}-network-v2`, { driver: "overlay" }, { parent: this })
 
         this.influx = new Influx("influx", {
             monitoringNetworkId: this.network.id,
             exposeUi: exposeInfluxUi,
             ingressNetworkId: ingressNetworkId,
-            vaultProvider: providers.vault
         }, { parent: this })
 
         this.loki = new Loki("loki", {

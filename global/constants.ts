@@ -3,9 +3,9 @@ const config = new pulumi.Config()
 
 
 
-export const HOSTNAME = config.get("hostname") ?? "spr.ocket.cloud";
+export const HOSTNAME = config.get("hostname") ?? "sprocket.mlesports.gg";
 
-export const UTIL_HOSTNAME = config.get("util-hostname") ?? "spr.ocket.cloud";
+export const UTIL_HOSTNAME = config.get("util-hostname") ?? "sprocket.mlesports.gg";
 
 export const CHATWOOT_SUBDOMAIN = "chatwoot";
 

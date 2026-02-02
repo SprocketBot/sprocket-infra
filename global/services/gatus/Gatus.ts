@@ -1,6 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import * as vault from "@pulumi/vault";
 
 import { HOSTNAME } from "../../constants";
 import { ConfigFile } from "../../helpers/docker/ConfigFile";
@@ -51,8 +50,8 @@ export class Gatus extends pulumi.ComponentResource {
                         fileName: "/config/config.yaml",
                     }],
                 },
-                networks: [args.ingressNetworkId],
                 logDriver: DefaultLogDriver(name, true),
+                networksAdvanceds: [{ name: args.ingressNetworkId }]
             },
             labels: traefikLabels,
         });

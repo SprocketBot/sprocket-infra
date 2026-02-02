@@ -26,6 +26,10 @@ export class SocketProxy extends pulumi.ComponentResource {
                         SWARM: "1",
                         NETWORKS: "1",
                         TASKS: "1",
+                        NODES: "1",
+                        EVENTS: "1",
+                        PING: "1",
+                        VERSION: "1",
                     },
                     mounts: [{
                         type: "bind",
@@ -35,15 +39,15 @@ export class SocketProxy extends pulumi.ComponentResource {
                     }],
                 },
                 logDriver: DefaultLogDriver("socketProxy", true),
-                networks: [
-                    this.network.id
-                ],
                 placement: {
                     platforms: [{
                         architecture: "amd64",
                         os: "linux"
                     }]
-                }
+                },
+                networksAdvanceds: [
+                    { name: this.network.id }
+                ]
             }
         }, { parent: this })
 

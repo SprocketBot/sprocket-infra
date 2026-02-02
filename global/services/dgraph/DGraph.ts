@@ -1,14 +1,12 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import * as vault from "@pulumi/vault"
-import {VaultCredentials} from "../../helpers/vault/VaultCredentials";
+import {ServiceCredentials} from "../../helpers/ServiceCredentials";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
-import {UTIL_HOSTNAME} from "../../constants";
+import {HOSTNAME} from "../../constants";
 import {buildHost} from "../../helpers/buildHost";
 
 export interface DGraphArgs {
-    vaultProvider: vault.Provider
     platformNetworkId?: docker.Network["id"]
     ingressNetworkId: docker.Network["id"]
     environment: string
@@ -16,31 +14,24 @@ export interface DGraphArgs {
 }
 
 export class DGraph extends pulumi.ComponentResource {
-    readonly credentials: VaultCredentials
+    readonly credentials: ServiceCredentials
     readonly hostname: docker.Service["name"]
-    readonly alphaPort: number
-
-    private readonly dataVolume: docker.Volume
-    private readonly zeroVolume: docker.Volume
-    // private readonly pluginVolume: docker.Volume
-    private readonly zero: docker.Service
-    private readonly alpha: docker.Service
+    readonly url: string
 
     private readonly dgraphNet: docker.Network
-
-    readonly url: string;
+    private readonly dataVolume: docker.Volume
+    private readonly zeroVolume: docker.Volume
+    private readonly zero: docker.Service
+    private readonly alpha: docker.Service
+    private readonly alphaPort: number
 
     constructor(name: string, args: DGraphArgs, opts?: pulumi.ComponentResourceOptions) {
-        super("SprocketBot:Services:Neo4j", name, {}, opts)
+        super("SprocketBot:Services:DGraph", name, {}, opts)
+        
+        this.url = buildHost("dgraph", args.environment, HOSTNAME)
 
-        this.url = buildHost("dgraph", args.environment, UTIL_HOSTNAME)
-
-        this.credentials = new VaultCredentials(`${name}-root-credentials`, {
+        this.credentials = new ServiceCredentials(`${name}-root-credentials`, {
             username: "dgraph",
-            vault: {
-                path: `platform/elo/${args.environment}/dgraph`,
-                provider: args.vaultProvider
-            },
         }, {parent: this})
 
         this.dgraphNet = new docker.Network(`${name}-net`, {
@@ -93,11 +84,11 @@ export class DGraph extends pulumi.ComponentResource {
                     }],
                 },
                 logDriver: DefaultLogDriver(`${name}-zero`, true),
-                networks: args.platformNetworkId ? [
-                    args.platformNetworkId,
-                    args.ingressNetworkId,
-                    this.dgraphNet.id
-                ] : [args.ingressNetworkId, this.dgraphNet.id]
+                networksAdvanceds: args.platformNetworkId ? [
+                    { name: args.platformNetworkId },
+                    { name: args.ingressNetworkId },
+                    { name: this.dgraphNet.id }
+                ] : [{ name: args.ingressNetworkId }, { name: this.dgraphNet.id }]
             },
         }, {parent: this})
 
@@ -122,12 +113,12 @@ export class DGraph extends pulumi.ComponentResource {
                     ],
                 },
                 logDriver: DefaultLogDriver(`${name}-alpha`, true),
-                networks: args.platformNetworkId ? [
-                    args.platformNetworkId,
-                    args.ingressNetworkId,
-                    this.dgraphNet.id,
-                    ...(args.additionalNetworks ?? []),
-                ] : [args.ingressNetworkId, this.dgraphNet.id],
+                networksAdvanceds: args.platformNetworkId ? [
+                    { name: args.platformNetworkId },
+                    { name: args.ingressNetworkId },
+                    { name: this.dgraphNet.id },
+                    ...(args.additionalNetworks ?? []).map(n => ({ name: n })),
+                ] : [{ name: args.ingressNetworkId }, { name: this.dgraphNet.id }],
             },
             labels: new TraefikLabels(name)
                 .tls("lets-encrypt-tls")

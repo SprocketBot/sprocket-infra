@@ -1,8 +1,7 @@
 // Handles self
-import { Gatus, Redis, VaultPolicies } from 'global/services';
+import { Gatus, Redis } from 'global/services';
 import { Monitoring } from './monitoring';
 import * as pulumi from '@pulumi/pulumi';
-import * as vault from '@pulumi/vault';
 import * as postgres from '@pulumi/postgresql';
 import * as docker from '@pulumi/docker';
 import { LayerOne, LayerOneExports } from 'global/refs';
@@ -12,19 +11,12 @@ import { SprocketPostgresProvider } from 'global/providers/SprocketPostgresProvi
 const config = new pulumi.Config();
 
 const ingressNetworkId = LayerOne.stack.requireOutput(LayerOneExports.IngressNetwork) as pulumi.Output<string>;
-export const policies = new VaultPolicies('policies', {});
-
-const vaultProvider = new vault.Provider('VaultProvider', {
-  address: LayerOne.stack.requireOutput(LayerOneExports.VaultAddress),
-  token: policies.infraToken.clientToken
-});
 
 const chatwootNetwork = new docker.Network('chatwoot-network', {
   driver: 'overlay'
 });
 
 export const pg = new SprocketPostgresProvider({
-  vaultProvider: vaultProvider
 }, {});
 
 export const postgresProvider: postgres.Provider = pg as postgres.Provider;
@@ -33,14 +25,13 @@ export const monitoring = new Monitoring('monitoring', {
   exposeInfluxUi: true,
   ingressNetworkId,
   providers: {
-    vault: vaultProvider, postgres: postgresProvider
+    postgres: postgresProvider
   }
 });
 
 const sharedRedis = new Redis("layer2redis", {
   configFilepath: `${__dirname}/config/redis/redis.conf`,
   ingressNetworkId: ingressNetworkId,
-  vaultProvider: vaultProvider,
   platformNetworkId: chatwootNetwork.id,
 });
 

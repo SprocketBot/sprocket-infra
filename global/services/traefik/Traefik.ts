@@ -62,7 +62,7 @@ export class Traefik extends pulumi.ComponentResource {
             taskSpec: {
                 containerSpec: {
                     // Pin the version to prevent unwanted updates
-                    image: "traefik:v2.6.1",
+                    image: "traefik:v2.11",
                     // Ensure our config file is loaded
                     args: ["--configFile=/static.yaml"],
 
@@ -91,11 +91,10 @@ export class Traefik extends pulumi.ComponentResource {
                 //     ]
                 // },
                 // Ensure we are on the ingress network, along with the socket proxy network
-                networks: [
-                    this.network.id,
-                    this.socketProxy.networkId
+                networksAdvanceds: [
+                    { name: this.network.id },
+                    { name: this.socketProxy.networkId }
                 ]
-
             },
             // Expose ports, because pulumi has decided this is how it works now.
             endpointSpec: {

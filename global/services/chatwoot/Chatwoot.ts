@@ -1,6 +1,5 @@
 import * as pulumi from "@pulumi/pulumi"
 import * as postgres from "@pulumi/postgresql"
-import * as vault from "@pulumi/vault"
 import * as random from "@pulumi/random"
 import * as minio from "@pulumi/minio"
 import * as docker from "@pulumi/docker"
@@ -18,7 +17,6 @@ export interface ChatwootArgs {
     networkId: docker.Network["id"]
     postgresNetworkId: docker.Network["id"],
     providers: {
-        vault: vault.Provider,
         postgres: postgres.Provider,
         minio: SprocketMinioProvider
     },
@@ -140,9 +138,9 @@ export class Chatwoot extends pulumi.ComponentResource {
                     ...containerSpec,
                     commands: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
                 },
-                networks: [
-                    args.postgresNetworkId,
-                    args.networkId
+                networksAdvanceds: [
+                    { name: args.postgresNetworkId },
+                    { name: args.networkId }
                 ]
             }
         }, { parent: this })
@@ -155,12 +153,12 @@ export class Chatwoot extends pulumi.ComponentResource {
                         'bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0'
                     ],
                 },
-                networks: [
-                    args.ingressNetworkId,
-                    args.networkId,
-                    args.postgresNetworkId
-                ],
-                logDriver: defaultLogDriver(name, true)
+                logDriver: defaultLogDriver(name, true),
+                networksAdvanceds: [
+                    { name: args.ingressNetworkId },
+                    { name: args.networkId },
+                    { name: args.postgresNetworkId }
+                ]
             },
             labels: new TraefikLabels(name)
                 .tls("lets-encrypt-tls")

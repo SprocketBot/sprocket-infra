@@ -66,11 +66,11 @@ export class RabbitMq extends pulumi.ComponentResource {
                         target: "/var/lib/rabbitmq"
                     }],
                 },
-                networks: [
-                    args.platformNetworkId,
-                    args.ingressNetworkId
-                ],
                 logDriver: DefaultLogDriver("rabbitmq", true),
+                networksAdvanceds: [
+                    { name: args.platformNetworkId },
+                    { name: args.ingressNetworkId }
+                ]
             },
             endpointSpec: {
                 mode: "dnsrr"

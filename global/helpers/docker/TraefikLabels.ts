@@ -1,4 +1,5 @@
 import * as pulumi from "@pulumi/pulumi"
+import { HOSTNAME } from "../../constants";
 const config = new pulumi.Config()
 
 
@@ -57,7 +58,7 @@ export class TraefikLabels {
     forwardAuthRule(rule: string): TraefikLabels {
         this.output.push({
             label: `${this.middlewarePrefix}.forwardauth.address`,
-            value: `https://fa.spr.ocket.cloud/login${rule ? `?rule=${rule}` : ""}`
+            value: `https://fa.${HOSTNAME}/login${rule ? `?rule=${rule}` : ""}`
         })
         if (!this.output.some(l => l.label.endsWith("middlewares"))) {
             this.output.push(this.routerLabel("middlewares", this.name))

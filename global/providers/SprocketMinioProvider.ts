@@ -1,12 +1,10 @@
-import * as vault from "@pulumi/vault";
-import { VaultCredentials } from "../helpers/vault/VaultCredentials";
+import { ServiceCredentials } from "../helpers/ServiceCredentials";
 import * as minio from "@pulumi/minio";
 import * as pulumi from "@pulumi/pulumi";
 import { HOSTNAME } from "../constants";
 
 export interface SprocketMinioProviderArgs extends Omit<minio.ProviderArgs, "minioAccessKey" | "minioSecretKey" | "minioServer" | "minioInsecure"> {
-    vaultProvider?: vault.Provider,
-    minioCredentials?: VaultCredentials,
+    minioCredentials?: ServiceCredentials,
     minioHostname: pulumi.Output<string> | string,
     useSsl?: boolean,
     accessKey?: pulumi.Output<string> | string,
@@ -14,7 +12,7 @@ export interface SprocketMinioProviderArgs extends Omit<minio.ProviderArgs, "min
 }
 
 export class SprocketMinioProvider extends minio.Provider {
-    constructor({ vaultProvider, minioCredentials, minioHostname, useSsl = true, accessKey, secretKey, ...args }: SprocketMinioProviderArgs, opts?: pulumi.ResourceOptions) {
+    constructor({ minioCredentials, minioHostname, useSsl = true, accessKey, secretKey, ...args }: SprocketMinioProviderArgs, opts?: pulumi.ResourceOptions) {
         let username, password;
 
         if (accessKey && secretKey) {
@@ -24,16 +22,8 @@ export class SprocketMinioProvider extends minio.Provider {
         } else if (minioCredentials) {
             username = minioCredentials.username;
             password = minioCredentials.password;
-        } else if (vaultProvider) {
-            const secret = vault.generic.getSecretOutput({
-                path: "infrastructure/data/minio/root"
-            }, {
-                provider: vaultProvider
-            })
-            username = secret.data.apply(d => { if (d && d.username) { return d.username } else { return "none"; } })
-            password = secret.data.apply(d => { if (d && d.password) { return d.password } else { return "none"; } })
         } else {
-            throw new Error("Must provide either accessKey/secretKey, minioCredentials, or vaultProvider");
+            throw new Error("Must provide either accessKey/secretKey or minioCredentials");
         }
 
         super("SprocketMinioProvider", {

@@ -1,7 +1,6 @@
 import * as pulumi from "@pulumi/pulumi"
 import * as docker from "@pulumi/docker";
 import * as postgres from "@pulumi/postgresql";
-import * as vault from "@pulumi/vault"
 
 import { HOSTNAME } from "../../constants";
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels"
@@ -17,7 +16,6 @@ export interface GrafanaArgs {
     additionalNetwokIds?: docker.Network["id"][],
     influxToken: pulumi.Output<string>,
     providers: {
-        vault: vault.Provider,
         postgres: postgres.Provider
     }
 }
@@ -34,13 +32,14 @@ export class Grafana extends pulumi.ComponentResource {
 
         this.dbUser = new PostgresUser(`${name}-db-user`, {
             username: "Grafana",
-            providers: args.providers
+            providers: args.providers,
+            importId: "Grafana"
         }, { parent: this })
 
         this.db = new postgres.Database(`${name}-db`, {
             name: name,
             owner: this.dbUser.username
-        }, { parent: this, provider: args.providers.postgres, dependsOn: [this.dbUser] })
+        }, { parent: this, provider: args.providers.postgres, dependsOn: [this.dbUser], import: name })
 
         this.datasourcesConfig = new ConfigFile(`${name}-datasources`, {
             filepath: `${__dirname}/config/datasources.yaml`
@@ -84,12 +83,12 @@ export class Grafana extends pulumi.ComponentResource {
                     }]
                 },
                 logDriver: DefaultLogDriver(name, true),
-                networks: [
-                    args.monitoringNetworkId,
-                    args.ingressNetworkId,
-                    ...args.additionalNetwokIds ?? []
+                networksAdvanceds: [
+                    { name: args.monitoringNetworkId },
+                    { name: args.ingressNetworkId },
+                    ...(args.additionalNetwokIds ?? []).map(id => ({ name: id }))
                 ]
-            },
+            }
         }, { parent: this })
     }
 }

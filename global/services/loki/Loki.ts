@@ -28,6 +28,7 @@ export class Loki extends pulumi.ComponentResource {
             taskSpec: {
                 containerSpec: {
                     image: "grafana/loki:main-1a7b170",
+                    user: "0",
                     mounts: [{
                         type: "volume",
                         source: this.volume.id,
@@ -35,14 +36,14 @@ export class Loki extends pulumi.ComponentResource {
                     }]
                 },
                 logDriver: DefaultLogDriver("loki", true),
-                networks: [
-                    args.monitoringNetworkId
-                ],
                 placement: {
                     constraints: [
                         "node.labels.role==storage",
                     ]
-                }
+                },
+                networksAdvanceds: [
+                    { name: args.monitoringNetworkId }
+                ]
             }
         }, { parent: this })
     }

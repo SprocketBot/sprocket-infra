@@ -2,9 +2,9 @@ provider: "discord"
 
 oauth:
   clientId: "846086564479631372"
-  callbackUrl: https://fa.spr.ocket.cloud/login
+  callbackUrl: https://fa.sprocket.mlesports.gg/login
 
-cookieDomain: "spr.ocket.cloud"
+cookieDomain: "sprocket.mlesports.gg"
 
 rules:
   - key: "SprocketAdmin"

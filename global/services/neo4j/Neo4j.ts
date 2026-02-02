@@ -1,21 +1,19 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import * as vault from "@pulumi/vault"
-import {VaultCredentials} from "../../helpers/vault/VaultCredentials";
+import {ServiceCredentials} from "../../helpers/ServiceCredentials";
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver";
 import {TraefikLabels} from "../../helpers/docker/TraefikLabels";
 import {HOSTNAME} from "../../constants";
 import {buildHost} from "../../helpers/buildHost";
 
 export interface Neo4jArgs {
-    vaultProvider: vault.Provider
     platformNetworkId?: docker.Network["id"]
     ingressNetworkId: docker.Network["id"]
     environment: string
 }
 
 export class Neo4j extends pulumi.ComponentResource {
-    readonly credentials: VaultCredentials
+    readonly credentials: ServiceCredentials
     readonly hostname: docker.Service["name"]
 
     private readonly dataVolume: docker.Volume
@@ -25,16 +23,8 @@ export class Neo4j extends pulumi.ComponentResource {
     constructor(name: string, args: Neo4jArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Neo4j", name, {}, opts)
 
-        this.credentials = new VaultCredentials(`${name}-root-credentials`, {
+        this.credentials = new ServiceCredentials(`${name}-root-credentials`, {
             username: "neo4j",
-            vault: {
-                path: `platform/elo/${args.environment}/neo4j`,
-                provider: args.vaultProvider
-            },
-            additionalVaultData: {
-                connectionUrl: `${buildHost("bolt", "neo4j", args.environment, HOSTNAME)}:80`,
-                webUrl: `https://${buildHost("neo4j", args.environment, HOSTNAME)}`
-            }
         }, {parent: this})
 
         this.dataVolume = new docker.Volume(`${name}-data-vol`, {name: `${name}-data`}, {
@@ -89,10 +79,10 @@ export class Neo4j extends pulumi.ComponentResource {
                         "node.labels.role==storage",
                     ]
                 },
-                networks: args.platformNetworkId ? [
-                    args.platformNetworkId,
-                    args.ingressNetworkId
-                ] : [args.ingressNetworkId]
+                networksAdvanceds: args.platformNetworkId ? [
+                    { name: args.platformNetworkId },
+                    { name: args.ingressNetworkId }
+                ] : [{ name: args.ingressNetworkId }]
             },
             labels: [
                 ...new TraefikLabels(name)

@@ -1,34 +1,34 @@
-import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import * as vault from "@pulumi/vault"
+import * as pulumi from "@pulumi/pulumi";
 
 import DefaultLogDriver from "../../helpers/docker/DefaultLogDriver"
-import { VaultCredentials } from "../../helpers/vault/VaultCredentials"
+import { ServiceCredentials } from "../../helpers/ServiceCredentials"
 import { TraefikLabels } from "../../helpers/docker/TraefikLabels"
-import { HOSTNAME } from "../../constants"
+import { HOSTNAME } from "../../constants";
+
 
 export interface InfluxArgs {
-    monitoringNetworkId: docker.Network["id"],
-    ingressNetworkId: docker.Network["id"],
-    exposeUi: boolean,
-    vaultProvider: vault.Provider
+    ingressNetworkId: docker.Network["id"]
+    monitoringNetworkId: docker.Network["id"]
+    exposeUi?: boolean
 }
 
-
-// TODO: Consider creating a CustomResource to sit next to this, that would be responsible for creating / destroying influxdb buckets.
 export class Influx extends pulumi.ComponentResource {
+    readonly url: string
+    readonly hostname: docker.Service["name"]
+    readonly credentials: ServiceCredentials
+    readonly network: docker.Network
+    readonly networkId: pulumi.Output<string>
 
-    private readonly service: docker.Service
     private readonly volume: docker.Volume
-    private readonly network: docker.Network
-
-    readonly networkId: docker.Network["id"]
-    readonly credentials: VaultCredentials
+    private readonly service: docker.Service
 
     constructor(name: string, args: InfluxArgs, opts?: pulumi.ComponentResourceOptions) {
         super("SprocketBot:Services:Influx", name, {}, opts)
-        this.credentials = new VaultCredentials(`${name}-credentials`, {
-            username: "admin", vault: { path: "infrastructure/influx", provider: args.vaultProvider }
+
+        this.url = "influx.sprocket.mlesports.gg"
+        this.credentials = new ServiceCredentials(`${name}-credentials`, {
+            username: "admin"
         }, { parent: this })
 
         this.volume = new docker.Volume(`${name}-volume`, {
@@ -76,20 +76,21 @@ export class Influx extends pulumi.ComponentResource {
                     }]
                 },
                 logDriver: DefaultLogDriver(`${name}`, true),
-                networks: [
-                    args.monitoringNetworkId,
-                    args.ingressNetworkId,
-                    this.network.id,
-
-                ],
                 placement: {
                     constraints: [
                         "node.labels.role==storage",
                     ]
-                }
+                },
+                networksAdvanceds: [
+                    { name: args.monitoringNetworkId },
+                    { name: args.ingressNetworkId },
+                    { name: this.network.id },
+                ]
             },
             labels: args.exposeUi ? traefikLabels : []
         }, { parent: this })
+
+        this.hostname = this.service.name
 
         this.registerOutputs({
             networkId: this.networkId

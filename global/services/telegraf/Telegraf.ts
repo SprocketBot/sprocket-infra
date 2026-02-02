@@ -1,5 +1,4 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as vault from "@pulumi/vault";
 import * as docker from "@pulumi/docker";
 import * as postgres from "@pulumi/postgresql"
 
@@ -14,7 +13,6 @@ export interface TelegrafArgs {
     additionalNetworkIds: docker.Network["id"][],
     additionalEnvironmentVariables: Record<string, string | pulumi.Output<string>>,
     providers: {
-        vault: vault.Provider,
         postgres: postgres.Provider
     },
     influxToken: string | pulumi.Output<string>
@@ -58,9 +56,9 @@ export class Telegraf extends pulumi.ComponentResource {
                         fileName: "/etc/telegraf/telegraf.conf"
                     }]
                 },
-                networks: [
-                    ...args.additionalNetworkIds,
-                    args.monitoringNetworkId
+                networksAdvanceds: [
+                    ...args.additionalNetworkIds.map(id => ({ name: id })),
+                    { name: args.monitoringNetworkId }
                 ]
             }
         }, { parent: this })

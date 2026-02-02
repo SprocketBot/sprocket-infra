@@ -66,9 +66,9 @@ export class Fluentd extends pulumi.ComponentResource {
                         fileName: "/etc/fluent/fluent.conf"
                     }]
                 },
-                networks: [
-                    args.monitoringNetworkId
-                ]
+                networksAdvanceds: [{
+                    name: args.monitoringNetworkId
+                }]
             }
         }, { parent: this })
 

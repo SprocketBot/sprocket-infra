@@ -1,7 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as docker from '@pulumi/docker';
 import * as postgres from '@pulumi/postgresql';
-import * as vault from '@pulumi/vault';
 import * as random from '@pulumi/random';
 import { PostgresUser } from '../../helpers/datastore/PostgresUser';
 import defaultLogDriver from '../../helpers/docker/DefaultLogDriver';
@@ -13,7 +12,6 @@ const config = new pulumi.Config();
 
 export interface N8nArgs {
   providers: {
-    vault: vault.Provider,
     postgres: postgres.Provider
   },
   postgresHostname: pulumi.Output<string> | string,
@@ -80,12 +78,12 @@ export class N8n extends pulumi.ComponentResource {
             'node.labels.role!=ingress'
           ]
         },
-        networks: [
-          args.postgresNetworkId,
-          args.ingressNetworkId,
-          this.network.id
-        ],
-        logDriver: defaultLogDriver(name, true)
+        logDriver: defaultLogDriver(name, true),
+        networksAdvanceds: [
+          { name: args.postgresNetworkId },
+          { name: args.ingressNetworkId },
+          { name: this.network.id }
+        ]
       },
       labels: [
         ...new TraefikLabels('n8n', 'http')
