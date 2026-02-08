@@ -334,9 +334,9 @@ export class Platform extends pulumi.ComponentResource {
                 ...this.buildDefaultConfiguration("replay-parse-service", args.configRoot),
                 env: {
                     ENV: "production",
-                    CELERY_WORKER_MAX_TASKS_PER_CHILD:50,
-                    CELERY_WORKER_MAX_MEMORY_PER_CHILD:307200, // 300MB in KB
-                    CELERY_WORKER_CONCURRENCY:4,               // Halving from 8
+                    CELERY_WORKER_MAX_TASKS_PER_CHILD:"50",
+                    CELERY_WORKER_MAX_MEMORY_PER_CHILD:"307200", // 300MB in KB
+                    CELERY_WORKER_CONCURRENCY:"4",               // Halving from 8
                 },
                 secrets: [{
                     secretId: this.secrets.s3SecretKey.id,
