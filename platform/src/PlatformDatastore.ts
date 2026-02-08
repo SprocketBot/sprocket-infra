@@ -2,13 +2,21 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 
 import {RabbitMq} from "global/services/rabbitmq/RabbitMq";
-import {Redis} from "global/services/redis/Redis";
 import {buildHost} from "global/helpers/buildHost";
 import {HOSTNAME} from "global/constants";
+
+export interface RedisConnection {
+    hostname: pulumi.Output<string>
+    credentials: {
+        password: pulumi.Output<string>
+    }
+}
 
 interface PlatformDatastoresArgs {
     ingressNetworkId: docker.Network["id"],
     platformNetworkId: docker.Network["id"]
+    redisHostname: pulumi.Output<string>
+    redisPassword: pulumi.Output<string>
 
     environmentSubdomain: string
     configRoot: string
@@ -16,7 +24,7 @@ interface PlatformDatastoresArgs {
 
 export class PlatformDatastore extends pulumi.ComponentResource {
     readonly rabbitmq: RabbitMq;
-    readonly redis: Redis;
+    readonly redis: RedisConnection;
 
     constructor(name: string, args: PlatformDatastoresArgs, opts?: pulumi.ComponentResourceOptions ) {
         super("SprocketBot:Platform:Datastores", name, {}, opts)
@@ -28,12 +36,12 @@ export class PlatformDatastore extends pulumi.ComponentResource {
             url: buildHost("rabbitMq", args.environmentSubdomain, HOSTNAME)
         }, { parent: this })
 
-        this.redis = new Redis(`${name}-redis`, {
-            configFilepath: `${args.configRoot}/redis.conf`,
-            ingressNetworkId: args.ingressNetworkId,
-            platformNetworkId: args.platformNetworkId,
-            url: buildHost("redis", args.environmentSubdomain, HOSTNAME)
-        })
+        this.redis = {
+            hostname: args.redisHostname,
+            credentials: {
+                password: args.redisPassword
+            }
+        }
     }
 
 }

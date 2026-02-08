@@ -71,6 +71,7 @@ export class Redis extends pulumi.ComponentResource {
             },
             labels: args.url ? new TraefikLabels(`${name}`, "tcp")
                 .rule(`HostSNI(\`${args.url}\`)`)
+                .entryPoints("redis")
                 .tls("lets-encrypt-tls")
                 .targetPort(6379)
                 .complete : []

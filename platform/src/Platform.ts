@@ -20,6 +20,8 @@ const config = new pulumi.Config()
 export interface PlatformArgs {
     postgresHostname: string | pulumi.Output<string>
     postgresPort: number | pulumi.Output<number>
+    redisHostname: pulumi.Output<string>
+    redisPassword: pulumi.Output<string>
 
     s3Provider: aws.Provider
     s3Endpoint: string | pulumi.Output<string>
@@ -35,6 +37,7 @@ export interface PlatformArgs {
 
 export class Platform extends pulumi.ComponentResource {
     readonly environmentSubdomain: string
+    readonly ingressNetworkId: docker.Network["id"]
 
     readonly datastore: PlatformDatastore
     readonly network: docker.Network
@@ -76,6 +79,7 @@ export class Platform extends pulumi.ComponentResource {
         this.key = new random.RandomUuid(`${name}-key`)
 
         this.environmentSubdomain = config.require("subdomain")
+        this.ingressNetworkId = args.ingressNetworkId
         this.postgresPort = args.postgresPort
         this.network = new docker.Network(`${name}-net`, { driver: "overlay" }, { parent: this })
 
@@ -92,6 +96,8 @@ export class Platform extends pulumi.ComponentResource {
             environmentSubdomain: this.environmentSubdomain,
             ingressNetworkId: args.ingressNetworkId,
             platformNetworkId: this.network.id,
+            redisHostname: args.redisHostname,
+            redisPassword: args.redisPassword,
             configRoot: `${args.configRoot}/datastores`
         }, { parent: this })
 
@@ -312,7 +318,8 @@ export class Platform extends pulumi.ComponentResource {
             analytics: new SprocketService(`${name}-server-analytics-service`, {
                 ...this.buildDefaultConfiguration("server-analytics-service", args.configRoot),
                 networks: [
-                    args.monitoringNetworkId
+                    args.monitoringNetworkId,
+                    args.ingressNetworkId
                 ],
                 secrets: [{
                     secretId: this.secrets.influxToken.id,
@@ -395,12 +402,17 @@ export class Platform extends pulumi.ComponentResource {
             minio: this.objectStorage,
             postgresPort: this.postgresPort,
             ingressNetworkId: args.ingressNetworkId,
+            platformNetworkId: this.network.id,
+            redis: this.datastore.redis,
         }, { parent: this })
     }
 
     buildDefaultConfiguration = (name: string, configRoot: string): SprocketServiceArgs => ({
         image: { namespace: "asaxplayinghorse", repository: name, tag: config.require("image-tag") },
         platformNetworkId: this.network.id,
+        networks: [
+            this.ingressNetworkId
+        ],
         configFile: { sourceFilePath: `${configRoot}/services/${name}.json` },
         configValues: {
             transport: pulumi.all([this.datastore.rabbitmq.hostname, this.key.result]).apply(([rmqHost, key]) => JSON.stringify({

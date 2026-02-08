@@ -5,6 +5,8 @@ import * as pulumi from '@pulumi/pulumi';
 import * as postgres from '@pulumi/postgresql';
 import * as docker from '@pulumi/docker';
 import { LayerOne, LayerOneExports } from 'global/refs';
+import { buildHost } from 'global/helpers/buildHost';
+import { HOSTNAME } from 'global/constants';
 
 import { SprocketPostgresProvider } from 'global/providers/SprocketPostgresProvider';
 
@@ -20,6 +22,7 @@ export const pg = new SprocketPostgresProvider({
 }, {});
 
 export const postgresProvider: postgres.Provider = pg as postgres.Provider;
+export const redisPublicHostname = buildHost("redis", HOSTNAME);
 
 export const monitoring = new Monitoring('monitoring', {
   exposeInfluxUi: true,
@@ -29,10 +32,11 @@ export const monitoring = new Monitoring('monitoring', {
   }
 });
 
-const sharedRedis = new Redis("layer2redis", {
+export const sharedRedis = new Redis("layer2redis", {
   configFilepath: `${__dirname}/config/redis/redis.conf`,
   ingressNetworkId: ingressNetworkId,
   platformNetworkId: chatwootNetwork.id,
+  url: redisPublicHostname,
 });
 
 export const GatusInternal = new Gatus("gatus-internal", {

@@ -108,6 +108,11 @@ export class Traefik extends pulumi.ComponentResource {
                     publishedPort: 443,
                     publishMode: "host",
                     protocol: "tcp"
+                }, {
+                    targetPort: 6379,
+                    publishedPort: 6379,
+                    publishMode: "host",
+                    protocol: "tcp"
                 }]
             }
         }, {
