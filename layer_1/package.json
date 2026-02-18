@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@pulumi/docker": "^4.10.0",
-        "@pulumi/pulumi": "^3.0.0",
+        "@pulumi/pulumi": "^3.221.0",
         "@pulumi/random": "^4.5.0",
         "global": "file:../global"
     }
